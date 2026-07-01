@@ -5,16 +5,15 @@ from mnspy import Biseccion
 
 class BiseccionAnimacion(MovingCameraScene):
     def construct(self):
-        # Definir la función para Bisección: f(x) = 8-4.5(x-\sin(x))
+        # Definir la función para Bisección: f(x) = sin(cos(e^x))
         def f(x):
             return np.sin(np.cos(np.exp(x)))
-
         bis = Biseccion(f, -1, 1.5, 0.1, tipo_error='%')
         # Configurar los ejes cartesianos
         axes = Axes(
             x_range=[-1.0, 2, 1],
             y_range=[-1.0, 1.0, 1],
-            axis_config={"include_tip": True}
+            axis_config={"include_tip": True, 'tip_shape': StealthTip, "include_numbers": True}
         )
         axes.to_edge(DOWN, buff=0.5)
         labels = axes.get_axis_labels(x_label="x", y_label="f(x)")
@@ -33,7 +32,10 @@ class BiseccionAnimacion(MovingCameraScene):
         # Reducen el stroke_width conforme la cámara disminuye su tamaño
         axes.add_updater(
             lambda mob: mob.set_stroke(width=4 * (self.camera.frame.height / altura_original))
+            # .x_axis.set(tick_size=0.1 * (self.camera.frame.height / altura_original))
+            # .y_axis.set(tick_size=0.1 * (self.camera.frame.height / altura_original))
         )
+
         graph.add_updater(
             lambda mob: mob.set_stroke(width=4 * (self.camera.frame.height / altura_original))
         )
@@ -61,7 +63,10 @@ class BiseccionAnimacion(MovingCameraScene):
             m = bis._tabla['x'][i]
             dot_m = Dot(axes.c2p(m, 0), color=RED).scale(escala)
             label_m = MathTex(f"m_{i}").scale(0.6 * escala).next_to(dot_m, UP * escala, buff=0.05)
-
+            self.play(
+                FadeIn(dot_m), FadeIn(label_m), run_time=1.5
+            )
+            self.wait(1)
             # 1. Convertimos los puntos 'a' y 'b' a coordenadas de pantalla
             coord_a = axes.c2p(a, 0)
             coord_b = axes.c2p(b, 0)
@@ -99,14 +104,14 @@ class BiseccionAnimacion(MovingCameraScene):
                 self.play(dot_b.animate.move_to(axes.c2p(m, 0)), run_time=2)
                 self.play(
                     FadeOut(line_a), FadeOut(line_b), FadeOut(dot_m), FadeOut(label_a), FadeOut(dot_a), FadeOut(dot_b),
-                    FadeOut(label_b), FadeOut(label_m), run_time=2.5
+                    FadeOut(label_b), FadeOut(label_m)
                 )
 
             else:
                 self.play(dot_a.animate.move_to(axes.c2p(m, 0)), run_time=2)
                 self.play(
                     FadeOut(line_a), FadeOut(line_b), FadeOut(dot_m), FadeOut(label_a), FadeOut(dot_a), FadeOut(dot_b),
-                    FadeOut(label_b), FadeOut(label_m), run_time=2.5
+                    FadeOut(label_b), FadeOut(label_m)
                 )
 
             # Limpiar para la siguiente iteración
