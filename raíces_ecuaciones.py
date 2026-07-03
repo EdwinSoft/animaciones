@@ -60,10 +60,10 @@ class BiseccionAnimacion(MovingCameraScene):
                               )
 
         axes.add_updater(
-            lambda mob: mob.set_stroke(width=4 * (self.camera.frame.height / altura_original))
+            lambda mob: mob.set_stroke(width=2 * (self.camera.frame.height / altura_original))
         )
         graph.add_updater(
-            lambda mob: mob.set_stroke(width=4 * (self.camera.frame.height / altura_original))
+            lambda mob: mob.set_stroke(width=2 * (self.camera.frame.height / altura_original))
         )
         # dot_a.add_updater
         self.play(FadeIn(dot_a, dot_b), run_time=1.5)
@@ -81,7 +81,7 @@ class BiseccionAnimacion(MovingCameraScene):
             distancia_x = abs(coord_b[0] - coord_a[0])
 
             # 3. Le añadimos un margen (e.g., multiplicarlo por 1.5 añade un 50% de espacio extra)
-            nuevo_ancho = distancia_x * 1.5
+            nuevo_ancho = distancia_x * 1.8
             escala = nuevo_ancho / config.frame_width
             line_a = axes.get_vertical_line(axes.c2p(a, f(a)), color=YELLOW, stroke_width=2 * escala,
                                             line_config={"dash_length": 0.05 * escala})
@@ -90,9 +90,12 @@ class BiseccionAnimacion(MovingCameraScene):
                                             line_config={"dash_length": 0.05 * escala})
             line_m = axes.get_vertical_line(axes.c2p(m, f(m)), color=RED, stroke_width=2 * escala,
                                             line_config={"dash_length": 0.05 * escala})
-            label_a = MathTex(f"a_{i}").scale(1 * escala).next_to(dot_a, UP * escala if f(a)<0 else DOWN * escala, buff=0.05)
-            label_b = MathTex(f"b_{i}").scale(1 * escala).next_to(dot_b, UP * escala if f(b)<0 else DOWN * escala, buff=0.05)
-            label_m = MathTex(f"m_{i}").scale(1 * escala).next_to(dot_m, UP * escala if f(m)<0 else DOWN * escala, buff=0.05)
+            label_a = MathTex(f"a_{i}").scale(1 * escala).next_to(dot_a, UP * escala if f(a) < 0 else DOWN * escala,
+                                                                  buff=0.05)
+            label_b = MathTex(f"b_{i}").scale(1 * escala).next_to(dot_b, UP * escala if f(b) < 0 else DOWN * escala,
+                                                                  buff=0.05)
+            label_m = MathTex(f"m_{i}").scale(1 * escala).next_to(dot_m, UP * escala if f(m) < 0 else DOWN * escala,
+                                                                  buff=0.05)
 
             self.play(
                 self.camera.frame.animate.set_width(nuevo_ancho).move_to(axes.c2p(pos_m.get_value(), 0)),
@@ -117,6 +120,60 @@ class BiseccionAnimacion(MovingCameraScene):
                 )
         self.play(Restore(self.camera.frame), run_time=2)
         self.wait(2)
+
+        # bis._fmt['iter'], bis._fmt['x_l'], bis._fmt['x_u'], bis._fmt['x'], bis._fmt['f'],bis._fmt['E_a'], bis._fmt['tol']
+
+        labels = [Tex('Iteracion')] + [MathTex(k) for k in
+                                       ['x_{l}', 'x_{u}', 'x_{r}', r'f\left(x_{r}\right)', r'\varepsilon_{a}']] + [
+                     Tex('Tolerancia')]
+        #labels = [MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion')]
+        #bis._tabla["Ea"][0]=0
+        #bis._fmt['E_a']=bis._fmt['tol']
+        rows = list()
+        for i in range(len(bis._tabla['x'])):
+            rows.append((str('{:' + bis._fmt['iter'] + '}').format(i + 1),
+                         str('{:' + bis._fmt['x_l'] + '}').format(bis._tabla["x_min"][i]),
+                         str('{:' + bis._fmt['x_u'] + '}').format(bis._tabla["x_max"][i]),
+                         str('{:' + bis._fmt['x'] + '}').format(bis._tabla["x"][i]),
+                         str('{:' + bis._fmt['f'] + '}').format(f(bis._tabla["x"][i])),
+                         str(str('{:' + bis._fmt['E_a'] + '}').format(bis._tabla["Ea"][i])).replace("%", r"\%"),
+                         str('{:' + bis._fmt['tol'] + '}').format(
+                             0.5 * (bis._tabla["x_max"][i] - bis._tabla["x_min"][i]))))
+            #rows.append(('1', '1', '1', '1', '1', '1', '1'))
+        #rows = list(zip(*[[f"{val:.2f}" for val in col] for col in bis._tabla.values()]))
+
+        # Configuración de la tabla estricta y compacta
+        tabla = Table(
+            rows,
+            col_labels=labels,
+            include_outer_lines=True,
+            v_buff=0.35,
+            h_buff=0.6,
+            line_config={"stroke_width": 1.5, "color": GRAY_B},
+            element_to_mobject=MathTex
+        ).scale(0.7)
+
+        tabla.move_to(ORIGIN)
+
+        # --- SOLUCIÓN AL ERROR ---
+        # 3. Agrupamos las líneas horizontales y verticales de la tabla
+        cuadricula = VGroup(
+            tabla.get_horizontal_lines(),
+            tabla.get_vertical_lines()
+        )
+
+        # 4. Animamos primero la cuadrícula (los bordes)
+        self.play(Create(cuadricula), run_time=1)
+
+        # 5. Animamos el contenido fila por fila
+        for row in tabla.get_rows():
+            self.play(Write(row), run_time=0.4)
+
+        self.wait()
+
+        # tabla = Table(rows, col_labels=labels)
+        # for row in tabla.get_rows():
+        #     self.play(Create(row.scale(0.2)))
 
 
 class FalsaPosicionAnimacion(MovingCameraScene):
