@@ -123,7 +123,7 @@ class BiseccionAnimacion(MovingCameraScene):
 
         # bis._fmt['iter'], bis._fmt['x_l'], bis._fmt['x_u'], bis._fmt['x'], bis._fmt['f'],bis._fmt['E_a'], bis._fmt['tol']
 
-        labels = [Tex('Iteracion')] + [MathTex(k) for k in
+        etiquetas = [Tex('Iteracion')] + [MathTex(k) for k in
                                        ['x_{l}', 'x_{u}', 'x_{r}', r'f\left(x_{r}\right)', r'\varepsilon_{a}']] + [
                      Tex('Tolerancia')]
         #labels = [MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion')]
@@ -143,34 +143,61 @@ class BiseccionAnimacion(MovingCameraScene):
         #rows = list(zip(*[[f"{val:.2f}" for val in col] for col in bis._tabla.values()]))
 
         # Configuración de la tabla estricta y compacta
-        tabla = Table(
-            rows,
-            col_labels=labels,
-            include_outer_lines=True,
-            v_buff=0.35,
-            h_buff=0.6,
-            line_config={"stroke_width": 1.5, "color": GRAY_B},
-            element_to_mobject=MathTex
-        ).scale(0.7)
-
-        tabla.move_to(ORIGIN)
-
-        # --- SOLUCIÓN AL ERROR ---
-        # 3. Agrupamos las líneas horizontales y verticales de la tabla
-        cuadricula = VGroup(
-            tabla.get_horizontal_lines(),
-            tabla.get_vertical_lines()
-        )
+        # tabla = Table(
+        #     rows,
+        #     col_labels=labels,
+        #     include_outer_lines=True,
+        #     v_buff=0.35,
+        #     h_buff=0.6,
+        #     line_config={"stroke_width": 1.5, "color": GRAY_B},
+        #     element_to_mobject=MathTex
+        # ).scale(0.5).move_to(ORIGIN)
+        #
+        #
+        # # --- SOLUCIÓN AL ERROR ---
+        # # 3. Agrupamos las líneas horizontales y verticales de la tabla
+        # cuadricula = VGroup(
+        #     tabla.get_horizontal_lines(),
+        #     tabla.get_vertical_lines()
+        # )
 
         # 4. Animamos primero la cuadrícula (los bordes)
-        self.play(Create(cuadricula), run_time=1)
-
+        # self.play(Create(cuadricula), run_time=1)
+        # self.play(Write(tabla.get_rows()[0]), run_time=2)
         # 5. Animamos el contenido fila por fila
-        for row in tabla.get_rows():
-            self.play(Write(row), run_time=0.4)
+        # for row in tabla.get_rows():
+        #     self.play(Write(row), run_time=0.4)
+        #
+        # self.wait()
 
-        self.wait()
-
+        for i in range(9):
+            etiquetas = [Tex('Iteracion')] + [MathTex(k) for k in
+                                              ['x_{l}', 'x_{u}', 'x_{r}', r'f\left(x_{r}\right)',
+                                               r'\varepsilon_{a}']] + [
+                            Tex('Tolerancia')]
+            tabla = Table(
+                rows[:i+1],
+                col_labels=etiquetas.copy(),
+                include_outer_lines=True,
+                v_buff=0.35,
+                h_buff=0.6,
+                line_config={"stroke_width": 1.5, "color": GRAY_B},
+                element_to_mobject=MathTex
+            ).scale(0.5).move_to(ORIGIN)
+            tabla.get_rows()[-1].set_color(RED)
+            # --- SOLUCIÓN AL ERROR ---
+            # 3. Agrupamos las líneas horizontales y verticales de la tabla
+            cuadricula = VGroup(
+                tabla.get_horizontal_lines(),
+                tabla.get_vertical_lines()
+            )
+            # self.play(FadeIn(tabla))
+            self.play(Create(cuadricula), run_time=1)
+            self.play(Write(tabla.get_rows()), run_time=2)
+            #self.play(Write(tabla.get_rows()[i]), run_time=2)
+            self.wait(1)
+            self.play(FadeOut(tabla), run_time=2)
+            self.wait(1)
         # tabla = Table(rows, col_labels=labels)
         # for row in tabla.get_rows():
         #     self.play(Create(row.scale(0.2)))
