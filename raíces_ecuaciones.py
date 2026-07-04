@@ -70,9 +70,9 @@ class BiseccionAnimacion(MovingCameraScene):
         self.play(
             FadeIn(dot_m), run_time=1.5
         )
-        etiquetas = [Tex('Iteracion')] + [MathTex(k) for k in
-                                          ['x_{l}', 'x_{u}', 'x_{r}', r'f\left(x_{r}\right)', r'\varepsilon_{a}']] + [
-                        Tex('Tolerancia')]
+        # etiquetas = [Tex('Iteracion')] + [MathTex(k) for k in
+        #                                   ['x_{l}', 'x_{u}', 'x_{r}', r'f\left(x_{r}\right)', r'\varepsilon_{a}']] + [
+        #                 Tex('Tolerancia')]
         # labels = [MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion')]
         # bis._tabla["Ea"][0]=0
         # bis._fmt['E_a']=bis._fmt['tol']
@@ -107,12 +107,15 @@ class BiseccionAnimacion(MovingCameraScene):
                                             line_config={"dash_length": 0.05 * escala})
             line_m = axes.get_vertical_line(axes.c2p(m, f(m)), color=RED, stroke_width=2 * escala,
                                             line_config={"dash_length": 0.05 * escala})
-            label_a = MathTex(f"a_{i}").scale(1 * escala).next_to(dot_a, UP * escala if f(a) < 0 else DOWN * escala,
-                                                                  buff=0.05)
-            label_b = MathTex(f"b_{i}").scale(1 * escala).next_to(dot_b, UP * escala if f(b) < 0 else DOWN * escala,
-                                                                  buff=0.05)
-            label_m = MathTex(f"m_{i}").scale(1 * escala).next_to(dot_m, UP * escala if f(m) < 0 else DOWN * escala,
-                                                                  buff=0.05)
+            label_a = MathTex(f"a_{{{i + 1}}}").scale(1 * escala).next_to(dot_a,
+                                                                          UP * escala if f(a) < 0 else DOWN * escala,
+                                                                          buff=0.05)
+            label_b = MathTex(f"b_{{{i + 1}}}").scale(1 * escala).next_to(dot_b,
+                                                                          UP * escala if f(b) < 0 else DOWN * escala,
+                                                                          buff=0.05)
+            label_m = MathTex(f"m_{{{i + 1}}}").scale(1 * escala).next_to(dot_m,
+                                                                          UP * escala if f(m) < 0 else DOWN * escala,
+                                                                          buff=0.05)
 
             self.play(
                 self.camera.frame.animate.set_width(nuevo_ancho).move_to(axes.c2p(pos_m.get_value(), 0)),
@@ -121,8 +124,8 @@ class BiseccionAnimacion(MovingCameraScene):
             self.wait(1)
             #####################
             self.play(FadeOut(grafica), run_time=2)
-            etiquetas = [Tex('Iteracion')] + [MathTex(k) for k in
-                                              ['x_{l}', 'x_{u}', 'x_{r}', r'f\left(x_{r}\right)',
+            etiquetas = [Tex('Iteración')] + [MathTex(k) for k in
+                                              ['a', 'b', 'm', r'f\left(m\right)',
                                                r'\varepsilon_{a}']] + [
                             Tex('Tolerancia')]
             tabla = Table(
@@ -131,9 +134,9 @@ class BiseccionAnimacion(MovingCameraScene):
                 include_outer_lines=True,
                 v_buff=0.35,
                 h_buff=0.6,
-                line_config={"stroke_width": 1.0, "color": GRAY_C},
+                line_config={"stroke_width": 1.0 * escala, "color": GRAY_C},
                 element_to_mobject=MathTex,
-            ).scale(0.5*escala).move_to(axes.c2p(m,0))
+            ).scale(0.5 * escala).move_to(axes.c2p(m, 0))
             # Creamos un rectángulo de fondo para aislar visualmente el encabezado
             encabezado = tabla.get_rows()[0]
             encabezado.set_color(TEAL_C)
@@ -192,14 +195,21 @@ class BiseccionAnimacion(MovingCameraScene):
 
             self.play(Create(cuadricula), Create(fondo_encabezado), run_time=1)
             self.play(FadeIn(tabla.get_rows()[:i + 1]))
-            self.play(Write(tabla.get_rows()[i + 1]), run_time=2)
+            # self.play(Write(tabla.get_rows()[i + 1]), run_time=2)
+            self.play(
+                LaggedStart(
+                    *[FadeIn(celda, shift=UP * 0.2) for celda in tabla.get_rows()[i + 1]],
+                    lag_ratio=0.2  # 0.2 significa 20% de retraso entre cada celda
+                ),
+                run_time=1
+            )
             # self.play(Write(tabla.get_rows()[i]), run_time=2)
             self.wait(2)
             # self.play(FadeOut(tabla), run_time=2)
-            if i == len(bis._tabla['x'])-1:
+            if i == len(bis._tabla['x']) - 1:
                 tabla.get_rows()[-1][5].set_color('RED')
                 self.wait(2)
-            self.play(FadeOut(tabla, fondo_encabezado) ,FadeIn(grafica), run_time=2)
+            self.play(FadeOut(tabla, fondo_encabezado), FadeIn(grafica), run_time=2)
             #####################
             self.play(Create(line_a), Create(line_b), Create(line_m), FadeIn(label_a), FadeIn(label_b), FadeIn(label_m))
             self.wait(1)
@@ -222,9 +232,8 @@ class BiseccionAnimacion(MovingCameraScene):
 
         # bis._fmt['iter'], bis._fmt['x_l'], bis._fmt['x_u'], bis._fmt['x'], bis._fmt['f'],bis._fmt['E_a'], bis._fmt['tol']
 
-
-            #rows.append(('1', '1', '1', '1', '1', '1', '1'))
-        #rows = list(zip(*[[f"{val:.2f}" for val in col] for col in bis._tabla.values()]))
+        # rows.append(('1', '1', '1', '1', '1', '1', '1'))
+        # rows = list(zip(*[[f"{val:.2f}" for val in col] for col in bis._tabla.values()]))
 
         # Configuración de la tabla estricta y compacta
         # tabla = Table(
