@@ -70,7 +70,24 @@ class BiseccionAnimacion(MovingCameraScene):
         self.play(
             FadeIn(dot_m), run_time=1.5
         )
-        for i in range(10):
+        etiquetas = [Tex('Iteracion')] + [MathTex(k) for k in
+                                          ['x_{l}', 'x_{u}', 'x_{r}', r'f\left(x_{r}\right)', r'\varepsilon_{a}']] + [
+                        Tex('Tolerancia')]
+        # labels = [MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion')]
+        # bis._tabla["Ea"][0]=0
+        # bis._fmt['E_a']=bis._fmt['tol']
+        rows = list()
+        for i in range(len(bis._tabla['x'])):
+            rows.append((str('{:' + bis._fmt['iter'] + '}').format(i + 1),
+                         str('{:' + bis._fmt['x_l'] + '}').format(bis._tabla["x_min"][i]),
+                         str('{:' + bis._fmt['x_u'] + '}').format(bis._tabla["x_max"][i]),
+                         str('{:' + bis._fmt['x'] + '}').format(bis._tabla["x"][i]),
+                         str('{:' + bis._fmt['f'] + '}').format(f(bis._tabla["x"][i])),
+                         str(str('{:' + bis._fmt['E_a'] + '}').format(bis._tabla["Ea"][i])).replace("%", r"\%"),
+                         str('{:' + bis._fmt['tol'] + '}').format(
+                             0.5 * (bis._tabla["x_max"][i] - bis._tabla["x_min"][i]))))
+        grafica = VGroup(axes, graph, dot_a, dot_b, dot_m, graph_label, *labels)
+        for i in range(len(bis._tabla['x'])):
             # Dibujar el intervalo [a, b]
             a, b, m = bis._tabla['x_min'][i], bis._tabla['x_max'][i], bis._tabla['x'][i]
             # 1. Convertimos los puntos 'a' y 'b' a coordenadas de pantalla
@@ -102,6 +119,88 @@ class BiseccionAnimacion(MovingCameraScene):
                 run_time=1.5
             )
             self.wait(1)
+            #####################
+            self.play(FadeOut(grafica), run_time=2)
+            etiquetas = [Tex('Iteracion')] + [MathTex(k) for k in
+                                              ['x_{l}', 'x_{u}', 'x_{r}', r'f\left(x_{r}\right)',
+                                               r'\varepsilon_{a}']] + [
+                            Tex('Tolerancia')]
+            tabla = Table(
+                rows[:i + 1],
+                col_labels=etiquetas.copy(),
+                include_outer_lines=True,
+                v_buff=0.35,
+                h_buff=0.6,
+                line_config={"stroke_width": 1.0, "color": GRAY_C},
+                element_to_mobject=MathTex,
+            ).scale(0.5*escala).move_to(axes.c2p(m,0))
+            # Creamos un rectángulo de fondo para aislar visualmente el encabezado
+            encabezado = tabla.get_rows()[0]
+            encabezado.set_color(TEAL_C)
+
+            # Obtenemos dinámicamente la cantidad de columnas directamente de la tabla
+            num_columnas = len(tabla.get_columns())
+
+            for col_idx in range(1, num_columnas + 1):
+                tabla.add_highlighted_cell(
+                    (1, col_idx),
+                    color=TEAL_E,
+                    fill_opacity=0.2  # <--- Pasamos la opacidad directamente aquí
+                )
+
+            # fondo_encabezado = SurroundingRectangle(
+            #     tabla.get_rows()[0],
+            #     color=TEAL_E,
+            #     fill_opacity=0.2,
+            #     stroke_width=0,
+            #     buff=0.15
+            # )
+            # add_to_back asegura que el fondo quede detrás del texto y las líneas
+
+            # Hacemos que la línea divisoria debajo del encabezado sea más gruesa y del color de acento
+            lineas_h = tabla.get_horizontal_lines()
+            # if len(lineas_h) > 1:
+            #     # El índice 1 corresponde a la línea que separa la cabecera de la fila 1
+            #     lineas_h[2].set_stroke(width=3.0, color=TEAL_C)
+
+            # ==========================================
+            # 3. ESTILIZACIÓN DE LOS DATOS (Foco Visual)
+            # ==========================================
+            # Si hay más de una fila de datos, atenuamos las iteraciones pasadas a gris
+            if len(tabla.get_rows()) > 2:
+                for fila_pasada in tabla.get_rows()[1:-1]:
+                    fila_pasada.set_color(GRAY_B)
+
+            tabla.get_rows()[-1].set_color(YELLOW)
+            # --- SOLUCIÓN AL ERROR ---
+            # 3. Agrupamos las líneas horizontales y verticales de la tabla
+            cuadricula = VGroup(
+                tabla.get_horizontal_lines(),
+                tabla.get_vertical_lines()
+            )
+            linea_sup = lineas_h[0]
+            linea_inf = lineas_h[2]
+
+            fondo_encabezado = Rectangle(
+                width=linea_sup.width,  # Toma el ancho exacto de la tabla
+                height=abs(linea_sup.get_y() - linea_inf.get_y()),  # Calcula el alto exacto de la celda
+                color=TEAL_E,
+                fill_opacity=0.2,
+                stroke_width=0
+            ).move_to((linea_sup.get_center() + linea_inf.get_center()) / 2)  # Lo centra entre las dos líneas
+            # self.play(FadeIn(tabla))
+
+            self.play(Create(cuadricula), Create(fondo_encabezado), run_time=1)
+            self.play(FadeIn(tabla.get_rows()[:i + 1]))
+            self.play(Write(tabla.get_rows()[i + 1]), run_time=2)
+            # self.play(Write(tabla.get_rows()[i]), run_time=2)
+            self.wait(2)
+            # self.play(FadeOut(tabla), run_time=2)
+            if i == len(bis._tabla['x'])-1:
+                tabla.get_rows()[-1][5].set_color('RED')
+                self.wait(2)
+            self.play(FadeOut(tabla, fondo_encabezado) ,FadeIn(grafica), run_time=2)
+            #####################
             self.play(Create(line_a), Create(line_b), Create(line_m), FadeIn(label_a), FadeIn(label_b), FadeIn(label_m))
             self.wait(1)
             if f(a) * f(m) < 0:
@@ -123,22 +222,7 @@ class BiseccionAnimacion(MovingCameraScene):
 
         # bis._fmt['iter'], bis._fmt['x_l'], bis._fmt['x_u'], bis._fmt['x'], bis._fmt['f'],bis._fmt['E_a'], bis._fmt['tol']
 
-        etiquetas = [Tex('Iteracion')] + [MathTex(k) for k in
-                                       ['x_{l}', 'x_{u}', 'x_{r}', r'f\left(x_{r}\right)', r'\varepsilon_{a}']] + [
-                     Tex('Tolerancia')]
-        #labels = [MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion'),MathTex('Iteracion')]
-        #bis._tabla["Ea"][0]=0
-        #bis._fmt['E_a']=bis._fmt['tol']
-        rows = list()
-        for i in range(len(bis._tabla['x'])):
-            rows.append((str('{:' + bis._fmt['iter'] + '}').format(i + 1),
-                         str('{:' + bis._fmt['x_l'] + '}').format(bis._tabla["x_min"][i]),
-                         str('{:' + bis._fmt['x_u'] + '}').format(bis._tabla["x_max"][i]),
-                         str('{:' + bis._fmt['x'] + '}').format(bis._tabla["x"][i]),
-                         str('{:' + bis._fmt['f'] + '}').format(f(bis._tabla["x"][i])),
-                         str(str('{:' + bis._fmt['E_a'] + '}').format(bis._tabla["Ea"][i])).replace("%", r"\%"),
-                         str('{:' + bis._fmt['tol'] + '}').format(
-                             0.5 * (bis._tabla["x_max"][i] - bis._tabla["x_min"][i]))))
+
             #rows.append(('1', '1', '1', '1', '1', '1', '1'))
         #rows = list(zip(*[[f"{val:.2f}" for val in col] for col in bis._tabla.values()]))
 
@@ -170,37 +254,67 @@ class BiseccionAnimacion(MovingCameraScene):
         #
         # self.wait()
 
-        for i in range(9):
-            etiquetas = [Tex('Iteracion')] + [MathTex(k) for k in
-                                              ['x_{l}', 'x_{u}', 'x_{r}', r'f\left(x_{r}\right)',
-                                               r'\varepsilon_{a}']] + [
-                            Tex('Tolerancia')]
-            tabla = Table(
-                rows[:i+1],
-                col_labels=etiquetas.copy(),
-                include_outer_lines=True,
-                v_buff=0.35,
-                h_buff=0.6,
-                line_config={"stroke_width": 1.5, "color": GRAY_B},
-                element_to_mobject=MathTex
-            ).scale(0.5).move_to(ORIGIN)
-            tabla.get_rows()[-1].set_color(RED)
-            # --- SOLUCIÓN AL ERROR ---
-            # 3. Agrupamos las líneas horizontales y verticales de la tabla
-            cuadricula = VGroup(
-                tabla.get_horizontal_lines(),
-                tabla.get_vertical_lines()
-            )
-            # self.play(FadeIn(tabla))
-            self.play(Create(cuadricula), run_time=1)
-            self.play(Write(tabla.get_rows()), run_time=2)
-            #self.play(Write(tabla.get_rows()[i]), run_time=2)
-            self.wait(1)
-            self.play(FadeOut(tabla), run_time=2)
-            self.wait(1)
-        # tabla = Table(rows, col_labels=labels)
-        # for row in tabla.get_rows():
-        #     self.play(Create(row.scale(0.2)))
+        # self.play(FadeOut(grafica))
+        # for i in range(len(bis._tabla['x'])):
+        #     etiquetas = [Tex('Iteracion')] + [MathTex(k) for k in
+        #                                       ['x_{l}', 'x_{u}', 'x_{r}', r'f\left(x_{r}\right)',
+        #                                        r'\varepsilon_{a}']] + [
+        #                     Tex('Tolerancia')]
+        #     tabla = Table(
+        #         rows[:i+1],
+        #         col_labels=etiquetas.copy(),
+        #         include_outer_lines=True,
+        #         v_buff=0.35,
+        #         h_buff=0.6,
+        #         line_config={"stroke_width": 1.0, "color": GRAY_C},
+        #         element_to_mobject=MathTex,
+        #     ).scale(0.5).move_to(ORIGIN)
+        #     # Creamos un rectángulo de fondo para aislar visualmente el encabezado
+        #     fondo_encabezado = SurroundingRectangle(
+        #         tabla.get_rows()[0],
+        #         color=TEAL_E,
+        #         fill_opacity=0.2,
+        #         stroke_width=0,
+        #         buff=0.15
+        #     )
+        #     # add_to_back asegura que el fondo quede detrás del texto y las líneas
+        #     tabla.add_to_back(fondo_encabezado)
+        #     # Hacemos que la línea divisoria debajo del encabezado sea más gruesa y del color de acento
+        #     lineas_h = tabla.get_horizontal_lines()
+        #     if len(lineas_h) > 1:
+        #         # El índice 1 corresponde a la línea que separa la cabecera de la fila 1
+        #         lineas_h[1].set_stroke(width=3.0, color=TEAL_C)
+        #
+        #     # ==========================================
+        #     # 3. ESTILIZACIÓN DE LOS DATOS (Foco Visual)
+        #     # ==========================================
+        #     # Si hay más de una fila de datos, atenuamos las iteraciones pasadas a gris
+        #     if len(tabla.get_rows()) > 2:
+        #         for fila_pasada in tabla.get_rows()[1:-1]:
+        #             fila_pasada.set_color(GRAY_B)
+        #
+        #     tabla.get_rows()[-1].set_color(YELLOW)
+        #     # --- SOLUCIÓN AL ERROR ---
+        #     # 3. Agrupamos las líneas horizontales y verticales de la tabla
+        #     cuadricula = VGroup(
+        #         tabla.get_horizontal_lines(),
+        #         tabla.get_vertical_lines()
+        #     )
+        #     # self.play(FadeIn(tabla))
+        #     self.play(Create(cuadricula), Create(fondo_encabezado), run_time=1)
+        #     self.play(FadeIn(tabla.get_rows()[:i+1]))
+        #     self.play(Write(tabla.get_rows()[i+1]), run_time=2)
+        #     #self.play(Write(tabla.get_rows()[i]), run_time=2)
+        #     self.wait(2)
+        #     self.play(FadeOut(tabla), run_time=2)
+        # self.play(FadeIn(tabla), run_time=2)
+        # self.wait(2)
+        # tabla.get_rows()[-1][5].set_color('RED')
+        # #self.play(FadeOut(tabla.get_rows()[-1][5]), run_time=2)
+        # self.wait(2)
+        # # tabla = Table(rows, col_labels=labels)
+        # # for row in tabla.get_rows():
+        # #     self.play(Create(row.scale(0.2)))
 
 
 class FalsaPosicionAnimacion(MovingCameraScene):
