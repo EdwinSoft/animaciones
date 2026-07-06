@@ -508,7 +508,7 @@ class PuntoFijoAnimacion(MovingCameraScene):
             # 1. Convertimos los puntos 'a' y 'b' a coordenadas de pantalla
             coord_a = axes.c2p(a, f(a))
             coord_r = axes.c2p(r, f(r))
-            coord_centro = axes.c2p(0.5 * (a + r), 0.5 * (a + r))
+            coord_centro = axes.c2p(0.5 * (a + r), 0.5 *0.5* (a + r))
             # 2. Calculamos la distancia física en el eje X (índice 0)
             distancia_x = abs(coord_r[0] - coord_a[0])
             distancia_y = abs(f(r))
@@ -517,7 +517,7 @@ class PuntoFijoAnimacion(MovingCameraScene):
 
             # 3. Le añadimos un margen (e.g., multiplicarlo por 1.5 añade un 50% de espacio extra)
             nuevo_ancho = distancia_x * 1.1
-            nueva_altura = distancia_y * 1.5
+            nueva_altura = distancia_y * 4
             # escala = max(nuevo_ancho / config.frame_width, nueva_altura / config.frame_height)
             escala = nueva_altura / config.frame_height
             line_a = axes.get_vertical_line(coord_a, color=YELLOW, stroke_width=2 * escala,
