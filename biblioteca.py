@@ -27,6 +27,7 @@ def elemento_armadura(nodo_i: tuple[float, float], nodo_j: tuple[float, float], 
     armadura.move_to(centro).rotate(angle=ang)
     return VGroup(armadura, nodo_i, nodo_j)
 
+
 def elemento_marco(nodo_i: tuple[float, float], nodo_j: tuple[float, float], h: float | int, ejes: Axes) -> VMobject:
     coord_i = ejes.c2p(*nodo_i)
     coord_j = ejes.c2p(*nodo_j)
@@ -40,6 +41,25 @@ def elemento_marco(nodo_i: tuple[float, float], nodo_j: tuple[float, float], h: 
                                 corner_radius=h / 2, stroke_width=0)
     armadura.move_to(centro).rotate(angle=ang)
     return VGroup(armadura, nodo_i, nodo_j)
+
+
+def elemento_carga(nodo: tuple[float | int, float | int], ejes: Axes, longitud: float = 10.0,
+                   ang: float = 0.0) -> VMobject:
+    coord = ejes.c2p(*nodo)
+    print(coord)
+    final = np.array(coord)+  (np.array([[np.cos(ang), np.sin(ang), 0.0], [-np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+        [[longitud], [0.0], [0.0]])).flatten()
+    print(final)
+    fuerza_arrow = Arrow(
+        start=nodo,
+        end=final,
+        buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+        color=RED,
+        stroke_width=4,  # Grosor de la línea
+        max_tip_length_to_length_ratio=0.15  # Controla el tamaño de la punta
+    )
+    return fuerza_arrow
+
 
 def main():
     class demo(Scene):
@@ -63,6 +83,7 @@ def main():
             viga = elemento_viga(5, 10, 0.5, ejes)
             armadura = elemento_armadura((0, 0), (5, 5), 0.5, ejes)
             marco = elemento_marco((5, 5), (10, 2), 0.5, ejes)
+            fuerza = elemento_carga((10, 2), ejes)
             self.play(FadeIn(ejes), run_time=2)
             self.play(FadeIn(viga[1], viga[2]), run_time=2)
             self.play(FadeIn(viga[0]), run_time=2)
@@ -71,6 +92,7 @@ def main():
             # self.add(armadura)
             # self.add(viga)
             self.add(marco)
+            self.add(fuerza)
             self.wait(2)
 
     demo().render()
