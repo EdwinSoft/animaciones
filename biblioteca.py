@@ -59,10 +59,86 @@ def elemento_carga(nodo: tuple[float | int, float | int], ejes: Axes, longitud: 
         color=RED,
         stroke_width=4,  # Grosor de la línea
         tip_shape=StealthTip,  # Aquí cambias la forma
-        max_tip_length_to_length_ratio=0.15  # Controla el tamaño de la punta
+        max_tip_length_to_length_ratio=0.15 / longitud  # Controla el tamaño de la punta
     )
     return fuerza_arrow
 
+
+def elemento_carga_distribuida(nodo_i: tuple[float | int, float | int], nodo_j: tuple[float | int, float | int],
+                               ejes: Axes, h: float | int = 0, longitud: float = 2.0, n_cargas: int = 10, saliente=True) -> VMobject:
+    coord_i = ejes.c2p(*nodo_i)
+    coord_j = ejes.c2p(*nodo_j)
+    ang = np.arctan2(nodo_j[1] - nodo_i[1], nodo_j[0] - nodo_i[0]) + np.pi/2
+    coord_i += (np.array(
+        [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+        [[h], [0.0], [0.0]])).flatten()
+    coord_j += (np.array(
+        [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+        [[h], [0.0], [0.0]])).flatten()
+    inicio_vec = np.linspace(coord_i,coord_j,n_cargas, axis=0)
+    coord_f_i = coord_i + (np.array(
+        [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+        [[longitud], [0.0], [0.0]])).flatten()
+    coord_f_j = coord_j + (np.array(
+        [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+        [[longitud], [0.0], [0.0]])).flatten()
+    final_vec= np.linspace(coord_f_i, coord_f_j, n_cargas, axis=0)
+    carga_distribuida = VGroup()
+    for i in range(n_cargas):
+        inicio=inicio_vec[i]
+        final=final_vec[i]
+        if not saliente:
+            inicio, final = final, inicio
+        fuerza_arrow = Arrow(
+            start=inicio,
+            end=final,
+            buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+            color=RED,
+            stroke_width=4,  # Grosor de la línea
+            tip_shape=StealthTip,  # Aquí cambias la forma
+            max_tip_length_to_length_ratio=0.15 / longitud  # Controla el tamaño de la punta
+        )
+        carga_distribuida.add(fuerza_arrow)
+    return carga_distribuida
+
+def elemento_carga_trapezoidal(nodo_i: tuple[float | int, float | int], nodo_j: tuple[float | int, float | int],
+                               ejes: Axes, h: float | int = 0, longitud_i: float = 2.0, longitud_f: float = 2.0, n_cargas: int = 10, saliente=True) -> VMobject:
+    coord_i = ejes.c2p(*nodo_i)
+    coord_j = ejes.c2p(*nodo_j)
+    ang = np.arctan2(nodo_j[1] - nodo_i[1], nodo_j[0] - nodo_i[0]) + np.pi/2
+    coord_i += (np.array(
+        [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+        [[h], [0.0], [0.0]])).flatten()
+    coord_j += (np.array(
+        [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+        [[h], [0.0], [0.0]])).flatten()
+    inicio_vec = np.linspace(coord_i,coord_j,n_cargas, axis=0)
+    coord_f_i = coord_i + (np.array(
+        [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+        [[longitud_i], [0.0], [0.0]])).flatten()
+    coord_f_j = coord_j + (np.array(
+        [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+        [[longitud_f], [0.0], [0.0]])).flatten()
+    final_vec= np.linspace(coord_f_i, coord_f_j, n_cargas, axis=0)
+    carga_trapezoidal = VGroup()
+    for i in range(n_cargas):
+        inicio=inicio_vec[i]
+        final=final_vec[i]
+        longitud = np.linalg.norm(final - inicio)
+        if not saliente:
+            inicio, final = final, inicio
+        if longitud > 0.05:
+            fuerza_arrow = Arrow(
+                start=inicio,
+                end=final,
+                buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+                color=RED,
+                stroke_width=4,  # Grosor de la línea
+                tip_shape=StealthTip,  # Aquí cambias la forma
+                max_tip_length_to_length_ratio=0.15 / longitud  # Controla el tamaño de la punta
+            )
+            carga_trapezoidal.add(fuerza_arrow)
+    return carga_trapezoidal
 
 def elemento_momento(nodo: tuple[float | int, float | int], ejes: Axes, radio: float = 0.5,
                      ang: float = 0.0, positivo: bool = True) -> VMobject:
@@ -84,7 +160,7 @@ def elemento_momento(nodo: tuple[float | int, float | int], ejes: Axes, radio: f
         end_point=final,
         angle=ang_f - ang_i,  # Ángulo de la curvatura de la flecha
         stroke_width=4,  # Grosor de la línea
-        tip_length=0.15,  # Controla el tamaño absoluto de la punta
+        tip_length=0.25,  # Controla el tamaño absoluto de la punta
         tip_shape=StealthTip,  # Aquí cambias la forma
         color=GREEN
     ).move_arc_center_to(centro).rotate(ang, about_point=centro)
@@ -113,7 +189,7 @@ class CargasDistribuidas(Scene):
                     buff=0,
                     color=color,
                     tip_shape=ArrowTriangleFilledTip,
-                    max_tip_length_to_length_ratio=0.2
+                    max_tip_length_to_length_ratio=0.2 / magnitud
                 )
                 grupo_carga.add(flecha)
 
@@ -149,7 +225,7 @@ class CargasDistribuidas(Scene):
                         buff=0,
                         color=color,
                         tip_shape=ArrowTriangleFilledTip,
-                        max_tip_length_to_length_ratio=0.2
+                        max_tip_length_to_length_ratio=0.2 / altura_local
                     )
                     grupo_carga.add(flecha)
 
@@ -185,6 +261,7 @@ class CargasDistribuidas(Scene):
         self.play(Create(carga_rect), Create(carga_tri))
         self.wait(2)
 
+
 def main():
     class demo(Scene):
         def construct(self):
@@ -207,18 +284,23 @@ def main():
             viga = elemento_viga(5, 10, 0.5, ejes)
             armadura = elemento_armadura((0, 0), (5, 5), 0.5, ejes)
             marco = elemento_marco((5, 5), (10, 2), 0.5, ejes)
-            fuerza = elemento_carga((10, 2), ejes, ang=30, saliente=False)
-            momento = elemento_momento((5, 5), ejes, ang=0, positivo=False)
+            fuerza = elemento_carga((10, 2), ejes, ang=30, saliente=False, longitud=4)
+            momento = elemento_momento((5, 5), ejes, ang=90, positivo=False)
+            carga_d = elemento_carga_distribuida((0,0), (5,5), ejes, 0.5/2, 1, 20, saliente=False)
+            carga_d2 = elemento_carga_trapezoidal((5, 5), (10, 2), ejes, 0.5 / 2, 0, 2.5, 20, saliente=False)
+            carga_d2.set_color(BLUE)
             self.play(FadeIn(ejes), run_time=2)
             self.play(FadeIn(viga[1], viga[2]), run_time=2)
             self.play(FadeIn(viga[0]), run_time=2)
             self.play(FadeIn(armadura), run_time=2)
+            self.play(FadeIn(carga_d2), run_time=2)
             # self.add(ejes)
             # self.add(armadura)
             # self.add(viga)
             self.add(marco)
             self.add(fuerza)
             self.add(momento)
+            self.add(carga_d)
             self.wait(2)
 
     demo().render()
