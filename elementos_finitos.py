@@ -60,22 +60,23 @@ class EjemploVigasAnimacion(Scene):
             cargas.add(valor_2)
         soportes = VGroup()
         nodos = VGroup()
+        elementos = VGroup()
         mg.solucion()
         mg.diagrama_cargas()
+        for el in mg._lista_elementos:
+            print(el.get_nodo_inicial().punto)
+            punto_medio=ejes.c2p((np.array(el.get_nodo_inicial().punto)+np.array(el.get_nodo_final().punto))/2)
+            rec = np.array([punto_medio, punto_medio + np.array([0.3, 0.0, 0.0]),
+                            punto_medio + np.array([0.3, -0.3, 0.0]),
+                            punto_medio + np.array([0.0, -0.3, 0.0])])
+            elementos.add(
+                LabeledPolygram(rec, label=MathTex(el.nombre, color=WHITE, fill_color=GREEN).add_background_rectangle(
+                    color=BLACK,  # Color del fondo del texto
+                    opacity=0.8,  # Opacidad (1 = sólido, 0 = transparente)
+                    buff=0.15  # La "márgen" o padding alrededor de las letras
+                ), precision=0.1).scale(0.5))
         for n in mg._lista_nodos:
-            # nodos.add(LabeledDot(MathTex(n.nombre, color=WHITE), color=GREEN).next_to(ejes.c2p(n.punto), DR, buff=-0.1).scale(0.5))
-            rec = np.array([ejes.c2p(n.punto), ejes.c2p(n.punto) + np.array([0.5, 0.0, 0.0]),
-                            ejes.c2p(n.punto) + np.array([0.5, -0.5, 0.0]),
-                            ejes.c2p(n.punto) + np.array([0.0, -0.5, 0.0])])
-            nodos.add(
-                LabeledPolygram(rec, label=MathTex(n.nombre, color=WHITE,fill_color=GREEN).add_background_rectangle(
-            color=GREEN,       # Color del fondo del texto
-            opacity=0.8,       # Opacidad (1 = sólido, 0 = transparente)
-            buff=0.15          # La "márgen" o padding alrededor de las letras
-        ), precision=0.1,
-            fill_color=GREEN,
-            stroke_width=1,
-            fill_opacity=0.75).scale(0.7))
+            nodos.add(LabeledDot(MathTex(n.nombre, color=WHITE), color=GREEN).next_to(ejes.c2p(n.punto), DR, buff=-0.1).scale(0.5))
             tipo_sop = n.get_soporte()
             if len(tipo_sop) == 2:
                 tipo, estilo = tipo_sop
@@ -122,5 +123,6 @@ class EjemploVigasAnimacion(Scene):
         self.play(FadeIn(ev_1, ev_2, ev_3), run_time=2)
         self.play(FadeIn(soportes), run_time=2)
         self.play(FadeIn(nodos), run_time=2)
+        self.play(FadeIn(elementos), run_time=2)
         self.play(FadeIn(cargas), run_time=2)
         self.wait(2)
