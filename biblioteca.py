@@ -118,10 +118,12 @@ def elemento_soporte(nodo: tuple[float | int, float | int], ejes: Axes, tipo_sop
     return soporte
 
 
-def elemento_carga(nodo: tuple[float | int, float | int], ejes: Axes, longitud: float = 2.0,
+def elemento_carga(nodo: tuple[float | int, float | int], ejes: Axes, longitud: float = 2.0,h: float | int = 0,
                    ang: float = 0.0, saliente: bool = True) -> VMobject:
     ang = np.deg2rad(ang)
-    inicio = ejes.c2p(*nodo)
+    inicio = ejes.c2p(*nodo) + (np.array(
+        [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+        [[h], [0.0], [0.0]])).flatten()
     final = np.array(inicio) + (np.array(
         [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
         [[longitud], [0.0], [0.0]])).flatten()

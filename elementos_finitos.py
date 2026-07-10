@@ -3,6 +3,7 @@ import numpy as np
 from biblioteca import *
 from mnspy import Nodo, Viga, Ensamble
 
+
 class EjemploVigasAnimacion(Scene):
     def construct(self):
         n_1 = Nodo('1', 0, grados_libertad={'y': False, 'eje_z': False})
@@ -26,32 +27,44 @@ class EjemploVigasAnimacion(Scene):
         ).scale(0.5)
         ejes_planos = NumberPlane(
             x_range=[0, 25, 1],
-            y_range=[0, 12, 1],
-            background_line_style={
-                "stroke_opacity": 0.1  # Puedes atenuar las líneas de la cuadrícula si no las quieres ver
-            }
-        )
-        ejes_planos.to_edge(DOWN + LEFT)
-        ejes = ejes_coordenados
+            y_range=[-6, 6, 1],
+            axis_config={
+                "stroke_width": 0,  # Ejes más gruesos para resaltarlos
+            },
+            background_line_style={"stroke_opacity": 0.2
+                                   # Puedes atenuar las líneas de la cuadrícula si no las quieres ver
+                                   }
+        ).scale(0.5)
+        # ejes_planos.to_edge(DOWN + LEFT)
+        ejes = ejes_planos
         ev_1 = elemento_viga(e_1.get_nodo_inicial().punto[0], e_1.get_nodo_final().punto[0], 0.25, ejes)
         ev_2 = elemento_viga(e_2.get_nodo_inicial().punto[0], e_2.get_nodo_final().punto[0], 0.25, ejes)
         ev_3 = elemento_viga(e_3.get_nodo_inicial().punto[0], e_3.get_nodo_final().punto[0], 0.25, ejes)
         cargas = VGroup()
         for carga_puntual in mg._lista_cargas_puntuales:
-            cp = elemento_carga((carga_puntual[1][0][0]+carga_puntual[2], 0.0, 0.0),ejes,2,ang=90, saliente=False)
-            valor = MathTex(str(abs(carga_puntual[0]))+r"\,kN").next_to(cp, UP, buff=0.1)
+            cp = elemento_carga((carga_puntual[1][0][0] + carga_puntual[2], 0.0, 0.0), ejes, 3, ang=90, saliente=False,
+                                h=0.25 / 2)
+            valor = MathTex(str(abs(carga_puntual[0])) + r"\,kN").next_to(cp, UP, buff=0.1).scale(0.5)
             cargas.add(cp)
             cargas.add(valor)
         for carga_distribuida in mg._lista_cargas_distribuidas:
-            cp = elemento_carga_distribuida((carga_distribuida[1][0][0], 0.0, 0.0),(carga_distribuida[1][1][0], 0.0, 0.0), ejes, 0,
-                                saliente=False)
-            valor_1 = MathTex(str(abs(carga_distribuida[0][0])) + r"\,kN").next_to(cp, UL, buff=0.1)
-            valor_2 = MathTex(str(abs(carga_distribuida[0][1])) + r"\,kN").next_to(cp, UR, buff=0.1)
+            cp = elemento_carga_distribuida((carga_distribuida[1][0][0], 0.0, 0.0),
+                                            (carga_distribuida[1][1][0], 0.0, 0.0), ejes, 0.25 / 2,
+                                            saliente=False, longitud=1, n_cargas=20)
+            valor_1 = MathTex(str(abs(carga_distribuida[0][0])) + r"\,kN").next_to(cp, UL, buff=0.0).scale(0.5).shift(
+                RIGHT * 0.7)
+            valor_2 = MathTex(str(abs(carga_distribuida[0][1])) + r"\,kN").next_to(cp, UR, buff=0.0).scale(0.5).shift(
+                LEFT * 0.7)
             cargas.add(cp)
             cargas.add(valor_1)
             cargas.add(valor_2)
+        soportes = VGroup()
+        soportes.add(elemento_soporte(n_1.punto, ejes, 2))
+        soportes.add(elemento_soporte(n_2.punto, ejes, 0))
+        soportes.add(elemento_soporte(n_3.punto, ejes, 0))
+        soportes.add(elemento_soporte(n_4.punto, ejes, 2, ang=180))
         self.play(FadeIn(ejes), run_time=2)
         self.play(FadeIn(ev_1, ev_2, ev_3), run_time=2)
+        self.play(FadeIn(soportes), run_time=2)
         self.play(FadeIn(cargas), run_time=2)
         self.wait(2)
-
