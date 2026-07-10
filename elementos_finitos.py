@@ -59,12 +59,68 @@ class EjemploVigasAnimacion(Scene):
             cargas.add(valor_1)
             cargas.add(valor_2)
         soportes = VGroup()
-        soportes.add(elemento_soporte(n_1.punto, ejes, 2))
-        soportes.add(elemento_soporte(n_2.punto, ejes, 0))
-        soportes.add(elemento_soporte(n_3.punto, ejes, 0))
-        soportes.add(elemento_soporte(n_4.punto, ejes, 2, ang=180))
+        nodos = VGroup()
+        mg.solucion()
+        mg.diagrama_cargas()
+        for n in mg._lista_nodos:
+            # nodos.add(LabeledDot(MathTex(n.nombre, color=WHITE), color=GREEN).next_to(ejes.c2p(n.punto), DR, buff=-0.1).scale(0.5))
+            rec = np.array([ejes.c2p(n.punto), ejes.c2p(n.punto) + np.array([0.5, 0.0, 0.0]),
+                            ejes.c2p(n.punto) + np.array([0.5, -0.5, 0.0]),
+                            ejes.c2p(n.punto) + np.array([0.0, -0.5, 0.0])])
+            nodos.add(
+                LabeledPolygram(rec, label=MathTex(n.nombre, color=WHITE,fill_color=GREEN).add_background_rectangle(
+            color=GREEN,       # Color del fondo del texto
+            opacity=0.8,       # Opacidad (1 = sólido, 0 = transparente)
+            buff=0.15          # La "márgen" o padding alrededor de las letras
+        ), precision=0.1,
+            fill_color=GREEN,
+            stroke_width=1,
+            fill_opacity=0.75).scale(0.7))
+            tipo_sop = n.get_soporte()
+            if len(tipo_sop) == 2:
+                tipo, estilo = tipo_sop
+                if tipo == 0:  # pivotado
+                    if estilo == 0:  # móvil
+                        soportes.add(elemento_soporte(n.punto, ejes, 0, ang=0))
+                    elif estilo == 1:  # fijo
+                        soportes.add(elemento_soporte(n.punto, ejes, 1, ang=0))
+                    elif estilo == 2:  # móvil
+                        soportes.add(elemento_soporte(n.punto, ejes, 0, ang=180))
+                    elif estilo == 3:  # fijo
+                        soportes.add(elemento_soporte(n.punto, ejes, 1, ang=180))
+                    elif estilo == 4:  # móvil
+                        soportes.add(elemento_soporte(n.punto, ejes, 0, ang=270))
+                    elif estilo == 5:  # fijo
+                        soportes.add(elemento_soporte(n.punto, ejes, 1, ang=270))
+                    elif estilo == 6:  # móvil
+                        soportes.add(elemento_soporte(n.punto, ejes, 0, ang=90))
+                    elif estilo == 7:  # fijo
+                        soportes.add(elemento_soporte(n.punto, ejes, 1, ang=90))
+                elif tipo == 1:  # empotrado
+                    if estilo == 0:  # izquierda
+                        soportes.add(elemento_soporte(n.punto, ejes, 2, ang=0))
+                    elif estilo == 1:  # derecha
+                        soportes.add(elemento_soporte(n.punto, ejes, 2, ang=180))
+                    elif estilo == 2:  # abajo
+                        soportes.add(elemento_soporte(n.punto, ejes, 2, ang=90))
+                    elif estilo == 3:  # arriba
+                        soportes.add(elemento_soporte(n.punto, ejes, 2, ang=270))
+                    elif estilo == 4:  # izquierda con deslizadera
+                        soportes.add(elemento_soporte(n.punto, ejes, 3, ang=0))
+                    elif estilo == 5:  # derecha con deslizadera
+                        soportes.add(elemento_soporte(n.punto, ejes, 3, ang=180))
+                    elif estilo == 6:  # abajo con deslizadera
+                        soportes.add(elemento_soporte(n.punto, ejes, 3, ang=90))
+                    elif estilo == 7:  # arriba con deslizadera
+                        soportes.add(elemento_soporte(n.punto, ejes, 3, ang=270))
+
+        # soportes.add(elemento_soporte(n_1.punto, ejes, 2))
+        # soportes.add(elemento_soporte(n_2.punto, ejes, 0))
+        # soportes.add(elemento_soporte(n_3.punto, ejes, 0))
+        # soportes.add(elemento_soporte(n_4.punto, ejes, 2, ang=180))
         self.play(FadeIn(ejes), run_time=2)
         self.play(FadeIn(ev_1, ev_2, ev_3), run_time=2)
         self.play(FadeIn(soportes), run_time=2)
+        self.play(FadeIn(nodos), run_time=2)
         self.play(FadeIn(cargas), run_time=2)
         self.wait(2)
