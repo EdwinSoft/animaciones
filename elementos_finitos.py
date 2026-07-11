@@ -37,9 +37,6 @@ class EjemploVigasAnimacion(Scene):
         ).scale(0.5)
         # ejes_planos.to_edge(DOWN + LEFT)
         ejes = ejes_planos
-        ev_1 = elemento_viga(e_1.get_nodo_inicial().punto[0], e_1.get_nodo_final().punto[0], 0.25, ejes)
-        ev_2 = elemento_viga(e_2.get_nodo_inicial().punto[0], e_2.get_nodo_final().punto[0], 0.25, ejes)
-        ev_3 = elemento_viga(e_3.get_nodo_inicial().punto[0], e_3.get_nodo_final().punto[0], 0.25, ejes)
         cargas = VGroup()
         for carga_puntual in mg._lista_cargas_puntuales:
             cp = elemento_carga((carga_puntual[1][0][0] + carga_puntual[2], 0.0, 0.0), ejes, 3, ang=90, saliente=False,
@@ -58,25 +55,15 @@ class EjemploVigasAnimacion(Scene):
             cargas.add(cp)
             cargas.add(valor_1)
             cargas.add(valor_2)
-        soportes = VGroup()
-        nodos = VGroup()
-        elementos = VGroup()
         mg.solucion()
         mg.diagrama_cargas()
-        for el in mg._lista_elementos:
-            print(el.get_nodo_inicial().punto)
-            punto_medio=ejes.c2p((np.array(el.get_nodo_inicial().punto)+np.array(el.get_nodo_final().punto))/2)
-            rec = np.array([punto_medio, punto_medio + np.array([0.3, 0.0, 0.0]),
-                            punto_medio + np.array([0.3, -0.3, 0.0]),
-                            punto_medio + np.array([0.0, -0.3, 0.0])])
-            elementos.add(
-                LabeledPolygram(rec, label=MathTex(el.nombre, color=WHITE, fill_color=GREEN).add_background_rectangle(
-                    color=BLACK,  # Color del fondo del texto
-                    opacity=0.8,  # Opacidad (1 = sólido, 0 = transparente)
-                    buff=0.15  # La "márgen" o padding alrededor de las letras
-                ), precision=0.1).scale(0.5))
+
+        nodos = VGroup()
+        label_nodos = VGroup()
+        soportes = VGroup()
         for n in mg._lista_nodos:
-            nodos.add(LabeledDot(MathTex(n.nombre, color=WHITE), color=GREEN).next_to(ejes.c2p(n.punto), DR, buff=-0.1).scale(0.5))
+            nodos.add(Dot(ejes.c2p(n.punto), color=BLUE_A))
+            label_nodos.add(LabeledDot(MathTex(n.nombre, color=WHITE), color=GREEN).next_to(ejes.c2p(n.punto), DR, buff=-0.1).scale(0.5))
             tipo_sop = n.get_soporte()
             if len(tipo_sop) == 2:
                 tipo, estilo = tipo_sop
@@ -114,15 +101,43 @@ class EjemploVigasAnimacion(Scene):
                         soportes.add(elemento_soporte(n.punto, ejes, 3, ang=90))
                     elif estilo == 7:  # arriba con deslizadera
                         soportes.add(elemento_soporte(n.punto, ejes, 3, ang=270))
+        elementos = VGroup()
+        label_elementos = VGroup()
 
-        # soportes.add(elemento_soporte(n_1.punto, ejes, 2))
-        # soportes.add(elemento_soporte(n_2.punto, ejes, 0))
-        # soportes.add(elemento_soporte(n_3.punto, ejes, 0))
-        # soportes.add(elemento_soporte(n_4.punto, ejes, 2, ang=180))
-        self.play(FadeIn(ejes), run_time=2)
-        self.play(FadeIn(ev_1, ev_2, ev_3), run_time=2)
+        for el in mg._lista_elementos:
+            elementos.add(elemento_viga(el.get_nodo_inicial().punto[0], el.get_nodo_final().punto[0], 0.25, ejes))
+            punto_medio=ejes.c2p((np.array(el.get_nodo_inicial().punto)+np.array(el.get_nodo_final().punto))/2)
+            rec = np.array([punto_medio, punto_medio + np.array([0.3, 0.0, 0.0]),
+                            punto_medio + np.array([0.3, -0.3, 0.0]),
+                            punto_medio + np.array([0.0, -0.3, 0.0])])
+            label_elementos.add(
+                LabeledPolygram(rec, label=MathTex(el.nombre, color=WHITE, fill_color=GREEN).add_background_rectangle(
+                    color=BLACK,  # Color del fondo del texto
+                    opacity=0.8,  # Opacidad (1 = sólido, 0 = transparente)
+                    buff=0.15  # La "márgen" o padding alrededor de las letras
+                ), precision=0.1).scale(0.5))
+
+        cotas = VGroup()
+        p_1 = ejes.c2p([0.0, 0.0, 0.0]) + DOWN
+        p_2 = ejes.c2p([6.0, 0.0, 0.0]) + DOWN
+        cotas.add(crear_cota(p_1, p_2, r'6\,m', GRAY))
+        p_3 = ejes.c2p([10.0, 0.0, 0.0]) + DOWN
+        cotas.add(crear_cota(p_2, p_3, r'4\,m', GRAY))
+        p_4 = ejes.c2p([20.0, 0.0, 0.0]) + DOWN
+        cotas.add(crear_cota(p_3, p_4, r'4\,m', GRAY))
+        p_5 = ejes.c2p([25.0, 0.0, 0.0])+ DOWN
+        cotas.add(crear_cota(p_4, p_5, r'5\,m', GRAY))
+
+        escena = VGroup(nodos, elementos, soportes, label_elementos, label_nodos,cargas, cotas)
+        self.play(Create(ejes), run_time=2)
+        self.play(DrawBorderThenFill(nodos), run_time=2)
+        self.play(GrowFromEdge(elementos, edge=LEFT), run_time=2)
+        self.play(Create(cotas), run_time=2)
         self.play(FadeIn(soportes), run_time=2)
-        self.play(FadeIn(nodos), run_time=2)
-        self.play(FadeIn(elementos), run_time=2)
+        self.play(FadeIn(label_nodos), run_time=2)
+        self.play(FadeIn(label_elementos), run_time=2)
         self.play(FadeIn(cargas), run_time=2)
+        self.wait(2)
+        self.play(FadeOut(escena), run_time=2)
+        self.play(FadeIn(elementos[0][0]), run_time=2)
         self.wait(2)

@@ -8,9 +8,10 @@ def elemento_viga(x_i: float, x_f: float, h: float | int, ejes: Axes) -> VMobjec
     centro = (coord_i + coord_j) / 2
     L = np.linalg.norm(coord_j - coord_i)
     viga = Rectangle(height=h, width=L, color=BLUE, fill_color=BLUE, fill_opacity=0.5, stroke_width=1).move_to(centro)
-    nodo_i = Dot(coord_i, color=RED)
-    nodo_j = Dot(coord_j, color=RED)
-    return VGroup(viga, nodo_i, nodo_j)
+    # nodo_i = Dot(coord_i, color=RED)
+    # nodo_j = Dot(coord_j, color=RED)
+    # return VGroup(viga, nodo_i, nodo_j)
+    return viga
 
 
 def elemento_armadura(nodo_i: tuple[float, float], nodo_j: tuple[float, float], h: float | int, ejes: Axes) -> VMobject:
@@ -20,12 +21,13 @@ def elemento_armadura(nodo_i: tuple[float, float], nodo_j: tuple[float, float], 
     L = np.linalg.norm(coord_j - coord_i)
     ang = np.arctan2(nodo_j[1] - nodo_i[1], nodo_j[0] - nodo_i[0])
 
-    nodo_i = Dot(coord_i, color=RED)
-    nodo_j = Dot(coord_j, color=RED)
+    # nodo_i = Dot(coord_i, color=RED)
+    # nodo_j = Dot(coord_j, color=RED)
     armadura = RoundedRectangle(height=h, width=L + h, color=BLUE, fill_color=BLUE, fill_opacity=0.5,
                                 corner_radius=h / 2, stroke_width=1)
     armadura.move_to(centro).rotate(angle=ang)
-    return VGroup(armadura, nodo_i, nodo_j)
+    # return VGroup(armadura, nodo_i, nodo_j)
+    return armadura
 
 
 def elemento_marco(nodo_i: tuple[float, float], nodo_j: tuple[float, float], h: float | int, ejes: Axes) -> VMobject:
@@ -35,12 +37,13 @@ def elemento_marco(nodo_i: tuple[float, float], nodo_j: tuple[float, float], h: 
     L = np.linalg.norm(coord_j - coord_i)
     ang = np.arctan2(nodo_j[1] - nodo_i[1], nodo_j[0] - nodo_i[0])
 
-    nodo_i = Dot(coord_i, color=BLUE_A)
-    nodo_j = Dot(coord_j, color=BLUE_A)
+    # nodo_i = Dot(coord_i, color=BLUE_A)
+    # nodo_j = Dot(coord_j, color=BLUE_A)
     armadura = RoundedRectangle(height=h, width=L + h, color=BLUE, fill_color=BLUE, fill_opacity=1,
                                 corner_radius=h / 2, stroke_width=0)
     armadura.move_to(centro).rotate(angle=ang)
-    return VGroup(armadura, nodo_i, nodo_j)
+    # return VGroup(armadura, nodo_i, nodo_j)
+    return armadura
 
 
 def elemento_soporte(nodo: tuple[float | int, float | int], ejes: Axes, tipo_soporte: int = 0,
@@ -91,7 +94,7 @@ def elemento_soporte(nodo: tuple[float | int, float | int], ejes: Axes, tipo_sop
             achurado.add(linea)
         achurado.rotate(ang, about_point=punto)
         soporte.add(linea_base, achurado)
-    else: # empotrado con rodamientos por defecto empotrado izquierdo
+    else:  # empotrado con rodamientos por defecto empotrado izquierdo
         h = 0.3
         z = 0.5
         p_1 = punto + z * np.array([0, 1, 0])
@@ -108,17 +111,18 @@ def elemento_soporte(nodo: tuple[float | int, float | int], ejes: Axes, tipo_sop
             linea = Line(p - q * np.array([1, -1, 0]), p - r * np.array([1, -1, 0]), color=WHITE, stroke_width=1)
             achurado.add(linea)
         achurado.rotate(ang, about_point=punto)
-        n_rod=4
+        n_rod = 4
         for i in range(n_rod):
             soporte.add(Circle(radius=0.1, color=WHITE, stroke_width=1).move_to(
-                p_1 + np.array([-(h+0.1), -(i * (2*z-0.2)/(n_rod-1) + 0.1), 0.0])).rotate(ang, about_point=punto))
-        linea_base_2 = Line(p_1-np.array([h,0.0,0.0]), p_2-np.array([h,0.0,0.0]), color=WHITE, stroke_width=4)
+                p_1 + np.array([-(h + 0.1), -(i * (2 * z - 0.2) / (n_rod - 1) + 0.1), 0.0])).rotate(ang,
+                                                                                                    about_point=punto))
+        linea_base_2 = Line(p_1 - np.array([h, 0.0, 0.0]), p_2 - np.array([h, 0.0, 0.0]), color=WHITE, stroke_width=4)
         linea_base_2.rotate(ang, about_point=punto)
         soporte.add(linea_base, linea_base_2, achurado)
     return soporte
 
 
-def elemento_carga(nodo: tuple[float | int, float | int], ejes: Axes, longitud: float = 2.0,h: float | int = 0,
+def elemento_carga(nodo: tuple[float | int, float | int], ejes: Axes, longitud: float = 2.0, h: float | int = 0,
                    ang: float = 0.0, saliente: bool = True) -> VMobject:
     ang = np.deg2rad(ang)
     inicio = ejes.c2p(*nodo) + (np.array(
@@ -248,6 +252,48 @@ def elemento_momento(nodo: tuple[float | int, float | int], ejes: Axes, radio: f
     return momento
 
 
+def crear_cota(p1, p2, texto, color=WHITE, tamano_remate=0.15):
+    grupo_cota = VGroup()
+
+    # 1. La línea principal de la cota
+    linea_principal = Line(p1, p2, color=color, stroke_width=2)
+
+    # 2. Matemáticas para los remates (ticks) perpendiculares
+    vector = p2 - p1
+    # Calculamos el vector normal (perpendicular) rotando 90 grados
+    normal = np.array([-vector[1], vector[0], 0])
+    normal = normal / np.linalg.norm(normal)  # Normalizamos a longitud 1
+
+    # 3. Crear los remates en ambos extremos
+    remate_inicio = Line(
+        p1 - normal * tamano_remate,
+        p1 + normal * tamano_remate,
+        color=color, stroke_width=2
+    )
+    remate_fin = Line(
+        p2 - normal * tamano_remate,
+        p2 + normal * tamano_remate,
+        color=color, stroke_width=2
+    )
+
+    # 4. Configurar el texto (Etiqueta)
+    etiqueta = MathTex(texto, color=color).scale(0.7)
+    # Fondo para que la línea principal no tache el número
+    etiqueta.add_background_rectangle(color=BLACK, opacity=1, buff=0.1)
+    etiqueta.move_to(linea_principal.get_center())
+
+    # 5. Rotar el texto para que se alinee con la cota
+    angulo = np.arctan2(vector[1], vector[0])
+    # Si la cota está "al revés", rotamos 180° extra para que el texto no quede de cabeza
+    if abs(angulo) > PI / 2:
+        angulo -= PI
+    etiqueta.rotate(angulo)
+
+    # 6. Agrupar todo
+    grupo_cota.add(linea_principal, remate_inicio, remate_fin, etiqueta)
+    return grupo_cota
+
+
 def main():
     class demo(Scene):
         def construct(self):
@@ -283,6 +329,7 @@ def main():
             self.play(FadeIn(viga[0]), run_time=2)
             self.play(FadeIn(armadura), run_time=2)
             self.play(FadeIn(carga_d2), run_time=2)
+            self.play(FadeIn(crear_cota(ejes.c2p([2, 1, 0]), ejes.c2p([8, 1, 0]), r'6\,m', GRAY, 0.15)), run_time=2)
             # self.add(ejes)
             # self.add(armadura)
             # self.add(viga)
