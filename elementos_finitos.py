@@ -59,11 +59,13 @@ class EjemploVigasAnimacion(Scene):
         mg.diagrama_cargas()
 
         nodos = VGroup()
-        label_nodos = VGroup()
-        soportes = VGroup()
+        label_nodos = VGroup().set_z_index(1.5)
+        soportes = VGroup().set_z_index(1)
         for n in mg._lista_nodos:
             nodos.add(Dot(ejes.c2p(n.punto), color=BLUE_A))
-            label_nodos.add(LabeledDot(MathTex(n.nombre, color=WHITE), color=GREEN).next_to(ejes.c2p(n.punto), DR, buff=-0.1).scale(0.5))
+            label_nodos.add(
+                LabeledDot(MathTex(n.nombre, color=WHITE), color=GREEN).next_to(ejes.c2p(n.punto), DR, buff=-0.1).scale(
+                    0.5))
             tipo_sop = n.get_soporte()
             if len(tipo_sop) == 2:
                 tipo, estilo = tipo_sop
@@ -102,20 +104,19 @@ class EjemploVigasAnimacion(Scene):
                     elif estilo == 7:  # arriba con deslizadera
                         soportes.add(elemento_soporte(n.punto, ejes, 3, ang=270))
         elementos = VGroup()
-        label_elementos = VGroup()
-
+        label_elementos = VGroup().set_z_index(1.5)
         for el in mg._lista_elementos:
             elementos.add(elemento_viga(el.get_nodo_inicial().punto[0], el.get_nodo_final().punto[0], 0.25, ejes))
-            punto_medio=ejes.c2p((np.array(el.get_nodo_inicial().punto)+np.array(el.get_nodo_final().punto))/2)
-            rec = np.array([punto_medio, punto_medio + np.array([0.3, 0.0, 0.0]),
-                            punto_medio + np.array([0.3, -0.3, 0.0]),
-                            punto_medio + np.array([0.0, -0.3, 0.0])])
+            punto_medio = ejes.c2p((np.array(el.get_nodo_inicial().punto) + np.array(el.get_nodo_final().punto)) / 2)
+            rec = np.array([punto_medio + np.array([-0.15, 0.15, 0.0]), punto_medio + np.array([0.15, 0.15, 0.0]),
+                            punto_medio + np.array([0.15, -0.15, 0.0]),
+                            punto_medio + np.array([-0.15, -0.15, 0.0])])
             label_elementos.add(
-                LabeledPolygram(rec, label=MathTex(el.nombre, color=WHITE, fill_color=GREEN).add_background_rectangle(
-                    color=BLACK,  # Color del fondo del texto
+                LabeledPolygram(rec, label=MathTex(el.nombre, color=WHITE).add_background_rectangle(
+                    color=RED,  # Color del fondo del texto
                     opacity=0.8,  # Opacidad (1 = sólido, 0 = transparente)
-                    buff=0.15  # La "márgen" o padding alrededor de las letras
-                ), precision=0.1).scale(0.5))
+                    buff=0.1  # La "márgen" o padding alrededor de las letras
+                ), stroke_width=0, precision=0.0).scale(0.5).shift(np.array([0.0, -0.4, 0.0])))
 
         cotas = VGroup()
         p_1 = ejes.c2p([0.0, 0.0, 0.0]) + DOWN
@@ -124,20 +125,44 @@ class EjemploVigasAnimacion(Scene):
         p_3 = ejes.c2p([10.0, 0.0, 0.0]) + DOWN
         cotas.add(crear_cota(p_2, p_3, r'4\,m', GRAY))
         p_4 = ejes.c2p([20.0, 0.0, 0.0]) + DOWN
-        cotas.add(crear_cota(p_3, p_4, r'4\,m', GRAY))
-        p_5 = ejes.c2p([25.0, 0.0, 0.0])+ DOWN
+        cotas.add(crear_cota(p_3, p_4, r'10\,m', GRAY))
+        p_5 = ejes.c2p([25.0, 0.0, 0.0]) + DOWN
         cotas.add(crear_cota(p_4, p_5, r'5\,m', GRAY))
+        enunciado = Tex(
+            r"Determine las reacciones y las fuerzas en los extremos\\",
+            r"de los elementos de la viga continua de tres vanos mostrada\\",
+            r"en la Figura utilizando el método de rigidez matricial. $EI$= cte.",
+            tex_environment="flushleft",  # Esto alinea el texto a la izquierda
+            font_size=36
+        ).to_edge(UP + LEFT)
+        viga = elemento_viga(0.0, 25.0, 0.25, ejes)
+        viga.set_color(GRAY_D)
+        self.play(Write(enunciado), run_time=5)
+        escena_inicial = VGroup(viga, soportes, cargas, cotas)
+        escena_inicial.save_state()
+        escena_inicial.to_edge(DOWN + LEFT)
+        escena_elemento_1 = VGroup(elementos[0], nodos[0:2], soportes[0], label_elementos[0], label_nodos[0:2],
+                                   cargas[0:2], cotas[0:2])
+        escena = VGroup(nodos, elementos, soportes, label_elementos, label_nodos, cargas, cotas)
 
-        escena = VGroup(nodos, elementos, soportes, label_elementos, label_nodos,cargas, cotas)
+        self.play(FadeIn(escena_inicial), run_time=2)
+        self.wait(5)
+        self.play(FadeOut(enunciado), run_time=2)
+        self.play(Restore(escena_inicial), run_time=2)
+        self.wait(5)
         self.play(Create(ejes), run_time=2)
-        self.play(DrawBorderThenFill(nodos), run_time=2)
-        self.play(GrowFromEdge(elementos, edge=LEFT), run_time=2)
-        self.play(Create(cotas), run_time=2)
-        self.play(FadeIn(soportes), run_time=2)
-        self.play(FadeIn(label_nodos), run_time=2)
-        self.play(FadeIn(label_elementos), run_time=2)
-        self.play(FadeIn(cargas), run_time=2)
-        self.wait(2)
+        self.play(FadeOut(viga), run_time=2)
+        self.play(DrawBorderThenFill(nodos), DrawBorderThenFill(elementos), run_time=2)
+        self.play(Write(label_nodos), Write(label_elementos), run_time=2)
+        self.wait(5)
+
+        # self.play(GrowFromEdge(elementos, edge=LEFT), run_time=2)
+        # self.play(Create(cotas), run_time=2)
+        # self.play(FadeIn(soportes), run_time=2)
+
+        # self.play(FadeIn(label_elementos), run_time=2)
+        # self.play(FadeIn(cargas), run_time=2)
+        # self.wait(2)
         self.play(FadeOut(escena), run_time=2)
-        self.play(FadeIn(elementos[0][0]), run_time=2)
+        self.play(FadeIn(escena_elemento_1), run_time=2)
         self.wait(2)

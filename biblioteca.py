@@ -61,6 +61,7 @@ def elemento_soporte(nodo: tuple[float | int, float | int], ejes: Axes, tipo_sop
             soporte.add(Circle(radius=0.1, color=WHITE, stroke_width=1).move_to(
                 p_1 + np.array([i * 0.2 + 0.1, -0.1, 0.0])).rotate(ang, about_point=punto))
         soporte.add(pol)
+        soporte.add(Circle(radius=0.05, color=WHITE, stroke_width=1).set_fill(BLACK, opacity=1) .move_to(punto))
     elif tipo_soporte == 1:  # pivotado fijo
         pol = Polygon(punto, p_1, p_2, fill_color=GRAY_B, stroke_width=1, fill_opacity=0.95, color=WHITE)
         pol.rotate(ang, about_point=punto)
@@ -76,6 +77,7 @@ def elemento_soporte(nodo: tuple[float | int, float | int], ejes: Axes, tipo_sop
             achurado.add(linea)
         achurado.rotate(ang, about_point=punto)
         soporte.add(pol, achurado)
+        soporte.add(Circle(radius=0.05, color=WHITE, stroke_width=1).set_fill(BLACK, opacity=1) .move_to(punto))
     elif tipo_soporte == 2:  # empotrado por defecto empotrado izquierdo
         h = 0.3
         z = 0.5
