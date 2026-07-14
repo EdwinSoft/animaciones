@@ -55,7 +55,7 @@ class EjemploVigasAnimacion(Scene):
             cargas.add(cp)
             cargas.add(valor_1)
             cargas.add(valor_2)
-        mg.solucion()
+        # mg.solucion()
         mg.diagrama_cargas()
 
         nodos = VGroup()
@@ -108,16 +108,23 @@ class EjemploVigasAnimacion(Scene):
         for el in mg._lista_elementos:
             elementos.add(elemento_viga(el.get_nodo_inicial().punto[0], el.get_nodo_final().punto[0], 0.25, ejes))
             punto_medio = ejes.c2p((np.array(el.get_nodo_inicial().punto) + np.array(el.get_nodo_final().punto)) / 2)
-            rec = np.array([punto_medio + np.array([-0.15, 0.15, 0.0]), punto_medio + np.array([0.15, 0.15, 0.0]),
-                            punto_medio + np.array([0.15, -0.15, 0.0]),
-                            punto_medio + np.array([-0.15, -0.15, 0.0])])
-            label_elementos.add(
-                LabeledPolygram(rec, label=MathTex(el.nombre, color=WHITE).add_background_rectangle(
-                    color=RED,  # Color del fondo del texto
-                    opacity=0.8,  # Opacidad (1 = sólido, 0 = transparente)
-                    buff=0.1  # La "márgen" o padding alrededor de las letras
-                ), stroke_width=0, precision=0.0).scale(0.5).shift(np.array([0.0, -0.4, 0.0])))
+            # 1. Crear solo el texto
+            texto = MathTex(el.nombre, color=WHITE)
 
+            # 2. Crear el fondo que envuelve automáticamente al texto
+            fondo = SurroundingRectangle(
+                texto,
+                color=RED,  # Color del fondo
+                fill_opacity=0.8,  # Opacidad
+                stroke_width=0,  # Sin línea de borde
+                buff=0.1  # Padding
+            )
+            # 3. Agrupar, escalar y posicionar
+            # El shift(np.array([0.0, -0.4, 0.0])) es equivalente a shift(DOWN * 0.4)
+            etiqueta_completa = VGroup(fondo, texto).scale(0.5)
+            etiqueta_completa.move_to(punto_medio).shift(DOWN * 0.4)
+            # 4. Añadir a la colección
+            label_elementos.add(etiqueta_completa)
         cotas = VGroup()
         p_1 = ejes.c2p([0.0, 0.0, 0.0]) + DOWN
         p_2 = ejes.c2p([6.0, 0.0, 0.0]) + DOWN
@@ -137,14 +144,70 @@ class EjemploVigasAnimacion(Scene):
         ).to_edge(UP + LEFT)
         viga = elemento_viga(0.0, 25.0, 0.25, ejes)
         viga.set_color(GRAY_D)
+        gdl_y_1 = elemento_grado_libertad(n_1.punto, ejes, gdl='y', libre=False, offset=0.0, longitud=0.8)
+        gdl_eje_z_1 = elemento_grado_libertad(n_1.punto, ejes, gdl='eje_z', libre=False, longitud=1, offset=90)
+        gdl_y_2 = elemento_grado_libertad(n_2.punto, ejes, gdl='y', libre=False, offset=0.0, longitud=0.8)
+        gdl_eje_z_2 = elemento_grado_libertad(n_2.punto, ejes, gdl='eje_z', libre=True, longitud=1, offset=-90)
+        label_y_1 = MathTex(r'v_{1}=0', color=RED).next_to(gdl_y_1, UP, buff=0.02).scale(0.5)
+        label_eje_z_1 = MathTex(r'\phi_{1}=0', color=RED).next_to(gdl_eje_z_1, DR, buff=-0.4).scale(0.5)
+        label_y_2 = MathTex(r'v_{2}=0', color=RED).next_to(gdl_y_2, DOWN, buff=0.02).scale(0.5)
+        label_eje_z_2 = MathTex(r'\phi_{2}', color=GREEN).next_to(gdl_eje_z_2, UR, buff=-0.25).scale(0.5)
         self.play(Write(enunciado), run_time=5)
         escena_inicial = VGroup(viga, soportes, cargas, cotas)
         escena_inicial.save_state()
         escena_inicial.to_edge(DOWN + LEFT)
-        escena_elemento_1 = VGroup(elementos[0], nodos[0:2], soportes[0], label_elementos[0], label_nodos[0:2],
+        escena_elemento_1 = VGroup(elementos[0], nodos[0:2], soportes[0:2], label_elementos[0], label_nodos[0:2],
                                    cargas[0:2], cotas[0:2])
         escena = VGroup(nodos, elementos, soportes, label_elementos, label_nodos, cargas, cotas)
-
+        mr_elemento_1 = MathTex(
+            r"\left\{\begin{array}{c}f^{(1)}_{1y}\\m^{(1)}_{1}\\f^{(1)}_{2y}\\m^{(1)}_{2}\end{array}\right\}_{\{f\}} = ",
+            r"\left[\begin{array}{cccc}0.012&0.06&-0.012&0.06\\0.06&0.4&-0.06&0.2\\-0.012&-0.06&0.012&-0.06\\0.06&0.2&-0.06&0.4\end{array}\right]_{[k]} \cdot ",
+            r"\left\{\begin{array}{c}v_{1}=0\\\phi_{1}=0\\v_{2}=0\\\phi_{2}\end{array}\right\}_{\{d\}} - ",
+            r"\left\{\begin{array}{c}-28.16\\-76.8\\-51.84\\115.2\end{array}\right\}_{\{f_{o}\}}",
+            tex_to_color_map={
+                r"\phi_{2}": BLUE  # Busca exactamente esto y lo pinta de azul
+            }
+        )
+        # [0] Vector de fuerzas y el igual
+        # [1] Matriz de rigidez [k] y el punto de multiplicación
+        # [2] Vector de desplazamientos {d} (El objetivo de nuestra transformación)
+        # [3] Vector de fuerzas iniciales {-f_o}
+        vector_fuerzas = Matrix(
+            [["f^{(1)}_{1y}"], ["m^{(1)}_{1}"], ["f^{(1)}_{2y}"], ["m^{(1)}_{2}"]],
+            left_bracket=r"\{",  # Llave izquierda
+            right_bracket=r"\}"  # Llave derecha
+        )
+        signo_igual = MathTex('=')
+        factor_matrix_rigidez = MathTex(r'\frac{EI}{L^{3}}')
+        matrix_rigidez = Matrix(
+            [['12', '6L', '-12', '6L'],
+             ['6L', '4L^{2}', '-6L', '2L^{2}'],
+             ['-12', '-6L', '12', '-6L'],
+             ['6L', '2L^{2}', '-6L', '4L^{2}']]
+        )
+        vector_desplazamientos = Matrix(
+            [["v_1"], [r"\phi_1"], ["v_2"], [r"\phi_2"]],
+            left_bracket=r"\{",  # Llave izquierda
+            right_bracket=r"\}",  # Llave derecha
+            element_to_mobject_config={
+                "tex_to_color_map": {
+                    r"\phi_{2}": BLUE
+                }
+            }
+        )
+        signo_mas = MathTex('+')
+        vector_fuerzas_iniciales = Matrix(
+            [["f^{(1)}_{1yo}"], ["m^{(1)}_{1o}"], ["f^{(1)}_{2yo}"], ["m^{(1)}_{2o}"]],
+            left_bracket=r"\{",  # Llave izquierda
+            right_bracket=r"\}"  # Llave derecha
+        )
+        subindice_fo = MathTex(r'\{f_{o}\}').next_to(vector_fuerzas_iniciales, RIGHT, aligned_edge=DOWN,
+                                                     buff=0.1).scale(0.7)
+        grupo_vector_fuerzas_iniciales= VGroup(vector_fuerzas_iniciales, subindice_fo)
+        mr_elemento_1 = VGroup(vector_fuerzas, signo_igual, factor_matrix_rigidez, matrix_rigidez,
+                               vector_desplazamientos, signo_mas, grupo_vector_fuerzas_iniciales).arrange(RIGHT,
+                                                                                                                  buff=0.2)
+        mr_elemento_1.to_edge(DOWN).scale(0.4)
         self.play(FadeIn(escena_inicial), run_time=2)
         self.wait(5)
         self.play(FadeOut(enunciado), run_time=2)
@@ -165,4 +228,8 @@ class EjemploVigasAnimacion(Scene):
         # self.wait(2)
         self.play(FadeOut(escena), run_time=2)
         self.play(FadeIn(escena_elemento_1), run_time=2)
-        self.wait(2)
+        self.play(FadeOut(soportes[0:2]), run_time=2)
+        self.play(FadeIn(gdl_y_1), FadeIn(gdl_eje_z_1), FadeIn(gdl_y_2), FadeIn(gdl_eje_z_2), run_time=2)
+        self.play(Write(label_y_1), Write(label_eje_z_1), Write(label_y_2), Write(label_eje_z_2), run_time=2)
+        self.play(Write(mr_elemento_1), run_time=2)
+        self.wait(5)

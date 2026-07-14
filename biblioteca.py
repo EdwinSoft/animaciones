@@ -61,7 +61,7 @@ def elemento_soporte(nodo: tuple[float | int, float | int], ejes: Axes, tipo_sop
             soporte.add(Circle(radius=0.1, color=WHITE, stroke_width=1).move_to(
                 p_1 + np.array([i * 0.2 + 0.1, -0.1, 0.0])).rotate(ang, about_point=punto))
         soporte.add(pol)
-        soporte.add(Circle(radius=0.05, color=WHITE, stroke_width=1).set_fill(BLACK, opacity=1) .move_to(punto))
+        soporte.add(Circle(radius=0.05, color=WHITE, stroke_width=1).set_fill(BLACK, opacity=1).move_to(punto))
     elif tipo_soporte == 1:  # pivotado fijo
         pol = Polygon(punto, p_1, p_2, fill_color=GRAY_B, stroke_width=1, fill_opacity=0.95, color=WHITE)
         pol.rotate(ang, about_point=punto)
@@ -77,7 +77,7 @@ def elemento_soporte(nodo: tuple[float | int, float | int], ejes: Axes, tipo_sop
             achurado.add(linea)
         achurado.rotate(ang, about_point=punto)
         soporte.add(pol, achurado)
-        soporte.add(Circle(radius=0.05, color=WHITE, stroke_width=1).set_fill(BLACK, opacity=1) .move_to(punto))
+        soporte.add(Circle(radius=0.05, color=WHITE, stroke_width=1).set_fill(BLACK, opacity=1).move_to(punto))
     elif tipo_soporte == 2:  # empotrado por defecto empotrado izquierdo
         h = 0.3
         z = 0.5
@@ -232,7 +232,6 @@ def elemento_momento(nodo: tuple[float | int, float | int], ejes: Axes, radio: f
     ang_i = np.deg2rad(90)
     ang_f = np.deg2rad(325)
     ang = np.deg2rad(ang)
-    alfa = (ang_i + ang_f) / 2
     centro = ejes.c2p(*nodo)
     inicio = np.array(centro) + (np.array(
         [[np.cos(ang_i), -np.sin(ang_i), 0.0], [np.sin(ang_i), np.cos(ang_i), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
@@ -252,6 +251,73 @@ def elemento_momento(nodo: tuple[float | int, float | int], ejes: Axes, radio: f
         color=GREEN
     ).move_arc_center_to(centro).rotate(ang, about_point=centro)
     return momento
+
+
+def elemento_grado_libertad(nodo: tuple[float | int, float | int], ejes: Axes, longitud: float = 0.5,
+                            offset: float = 0.0, gdl: str = 'x', libre: bool = True, color: None | str = None,
+                            ang: float | int = 0.0) -> VMobject:
+    if color is None:
+        color = RED if not libre else GREEN
+    if gdl == 'x':
+        ang = np.deg2rad(ang)  # usado cuando el gdl está rotado
+        inicio = ejes.c2p(*nodo) + (np.array(
+            [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+            [[-longitud / 2 + offset], [0.0], [0.0]])).flatten()
+        final = ejes.c2p(*nodo) + (np.array(
+            [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+            [[longitud / 2 + offset], [0.0], [0.0]])).flatten()
+        grado_libertad = DoubleArrow(
+            start=inicio,
+            end=final,
+            buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+            color=color,
+            stroke_width=4,  # Grosor de la línea
+            tip_shape_start=StealthTip,
+            tip_shape_end=StealthTip,
+            max_tip_length_to_length_ratio=0.15 / longitud  # Controla el tamaño de la punta
+        )
+    elif gdl == 'y':
+        ang = np.deg2rad(ang)  # usado cuando el gdl está rotado
+        inicio = ejes.c2p(*nodo) + (np.array(
+            [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+            [[0.0], [-longitud / 2 + offset], [0.0]])).flatten()
+        final = ejes.c2p(*nodo) + (np.array(
+            [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+            [[0.0], [longitud / 2 + offset], [0.0]])).flatten()
+        grado_libertad = DoubleArrow(
+            start=inicio,
+            end=final,
+            buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+            color=color,
+            stroke_width=4,  # Grosor de la línea
+            tip_shape_start=StealthTip,
+            tip_shape_end=StealthTip,
+            max_tip_length_to_length_ratio=0.15 / longitud  # Controla el tamaño de la punta
+        )
+    else:
+        radio = longitud / 2
+        ang_i = np.deg2rad(90)
+        ang_f = np.deg2rad(270)
+        ang = np.deg2rad(offset)
+        centro = ejes.c2p(*nodo)
+        inicio = np.array(centro) + (np.array(
+            [[np.cos(ang_i), -np.sin(ang_i), 0.0], [np.sin(ang_i), np.cos(ang_i), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+            [[radio], [0.0], [0.0]])).flatten()
+        final = np.array(centro) + (np.array(
+            [[np.cos(ang_f), -np.sin(ang_f), 0.0], [np.sin(ang_f), np.cos(ang_f), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+            [[radio], [0.0], [0.0]])).flatten()
+
+        grado_libertad = CurvedDoubleArrow(
+            start_point=inicio,
+            end_point=final,
+            angle=ang_f - ang_i,  # Ángulo de la curvatura de la flecha
+            stroke_width=4,  # Grosor de la línea
+            tip_length=0.15,  # Controla el tamaño absoluto de la punta
+            tip_shape_start=StealthTip,
+            tip_shape_end=StealthTip,
+            color=color
+        ).move_arc_center_to(centro).rotate(ang, about_point=centro)
+    return grado_libertad
 
 
 def crear_cota(p1, p2, texto, color=WHITE, tamano_remate=0.15):
