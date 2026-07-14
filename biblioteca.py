@@ -362,6 +362,35 @@ def crear_cota(p1, p2, texto, color=WHITE, tamano_remate=0.15):
     return grupo_cota
 
 
+def ecuacion_matriz_rigidez_viga() -> VMobject:
+    factor_matrix_rigidez = MathTex(r'\dfrac{EI}{L^{3}}')
+    matrix_rigidez = Matrix(
+        [['12', '6L', '-12', '6L'],
+         ['6L', '4L^{2}', '-6L', '2L^{2}'],
+         ['-12', '-6L', '12', '-6L'],
+         ['6L', '2L^{2}', '-6L', '4L^{2}']]
+    )
+    return VGroup(factor_matrix_rigidez, matrix_rigidez)
+
+
+def ecuacion_vector_fuerza_viga(id_elemento: int | str = '1', id_nodo_inicial: int | str = '1',
+                                id_nodo_final: int | str = '2') -> VMobject:
+    if type(id_elemento) != str:
+        id_elemento = str(id_elemento)
+    if type(id_nodo_inicial) != str:
+        id_nodo_inicial = str(id_nodo_inicial)
+    if type(id_nodo_final) != str:
+        id_nodo_final = str(id_nodo_final)
+    vector_fuerzas = Matrix(
+        [["f^{(" + id_elemento + ")}_{" + id_nodo_inicial + "y}"],
+         ["m^{(" + id_elemento + ")}_{" + id_nodo_inicial + "}"],
+         ["f^{(" + id_elemento + ")}_{" + id_nodo_final + "y}"], ["m^{(" + id_elemento + ")}_{" + id_nodo_final + "}"]],
+        left_bracket=r"\{",  # Llave izquierda
+        right_bracket=r"\}"  # Llave derecha
+    )
+    return vector_fuerzas
+
+
 def main():
     class demo(Scene):
         def construct(self):

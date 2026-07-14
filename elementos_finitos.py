@@ -159,34 +159,50 @@ class EjemploVigasAnimacion(Scene):
         escena_elemento_1 = VGroup(elementos[0], nodos[0:2], soportes[0:2], label_elementos[0], label_nodos[0:2],
                                    cargas[0:2], cotas[0:2])
         escena = VGroup(nodos, elementos, soportes, label_elementos, label_nodos, cargas, cotas)
-        mr_elemento_1 = MathTex(
-            r"\left\{\begin{array}{c}f^{(1)}_{1y}\\m^{(1)}_{1}\\f^{(1)}_{2y}\\m^{(1)}_{2}\end{array}\right\}_{\{f\}} = ",
-            r"\left[\begin{array}{cccc}0.012&0.06&-0.012&0.06\\0.06&0.4&-0.06&0.2\\-0.012&-0.06&0.012&-0.06\\0.06&0.2&-0.06&0.4\end{array}\right]_{[k]} \cdot ",
-            r"\left\{\begin{array}{c}v_{1}=0\\\phi_{1}=0\\v_{2}=0\\\phi_{2}\end{array}\right\}_{\{d\}} - ",
-            r"\left\{\begin{array}{c}-28.16\\-76.8\\-51.84\\115.2\end{array}\right\}_{\{f_{o}\}}",
-            tex_to_color_map={
-                r"\phi_{2}": BLUE  # Busca exactamente esto y lo pinta de azul
-            }
-        )
-        # [0] Vector de fuerzas y el igual
-        # [1] Matriz de rigidez [k] y el punto de multiplicación
-        # [2] Vector de desplazamientos {d} (El objetivo de nuestra transformación)
-        # [3] Vector de fuerzas iniciales {-f_o}
+        # mr_elemento_1 = MathTex(
+        #     r"\left\{\begin{array}{c}f^{(1)}_{1y}\\m^{(1)}_{1}\\f^{(1)}_{2y}\\m^{(1)}_{2}\end{array}\right\}_{\{f\}} = ",
+        #     r"\left[\begin{array}{cccc}0.012&0.06&-0.012&0.06\\0.06&0.4&-0.06&0.2\\-0.012&-0.06&0.012&-0.06\\0.06&0.2&-0.06&0.4\end{array}\right]_{[k]} \cdot ",
+        #     r"\left\{\begin{array}{c}v_{1}=0\\\phi_{1}=0\\v_{2}=0\\\phi_{2}\end{array}\right\}_{\{d\}} - ",
+        #     r"\left\{\begin{array}{c}-28.16\\-76.8\\-51.84\\115.2\end{array}\right\}_{\{f_{o}\}}",
+        #     tex_to_color_map={
+        #         r"\phi_{2}": BLUE  # Busca exactamente esto y lo pinta de azul
+        #     }
+        # )
+        matriz_k_1 = MathTex(r'\left[k\right]_{1}=')
         vector_fuerzas = Matrix(
             [["f^{(1)}_{1y}"], ["m^{(1)}_{1}"], ["f^{(1)}_{2y}"], ["m^{(1)}_{2}"]],
             left_bracket=r"\{",  # Llave izquierda
             right_bracket=r"\}"  # Llave derecha
         )
         signo_igual = MathTex('=')
-        factor_matrix_rigidez = MathTex(r'\frac{EI}{L^{3}}')
+        factor_matrix_rigidez = MathTex(r'\dfrac{EI}{L^{3}}')
+        factor_matrix_rigidez_1_1 = MathTex(r'\dfrac{EI}{1000}')
+        factor_matrix_rigidez_1_2 = MathTex('EI')
         matrix_rigidez = Matrix(
             [['12', '6L', '-12', '6L'],
              ['6L', '4L^{2}', '-6L', '2L^{2}'],
              ['-12', '-6L', '12', '-6L'],
              ['6L', '2L^{2}', '-6L', '4L^{2}']]
         )
+        matrix_rigidez_1_1 = Matrix(
+            [['12', '60', '-12', '60'],
+             ['60', '400', '-60', '200'],
+             ['-12', '-60', '12', '-60'],
+             ['60', '200', '-60', '400']]
+        )
+        matrix_rigidez_1_2 = Matrix(
+            [['0.012', '0.06', '-0.012', '0.06'],
+             ['0.06', '0.4', '-0.06', '0.2'],
+             ['-0.012', '-0.06', '0.012', '-0.06'],
+             ['0.06', '0.2', '-0.060', '0.4']]
+        )
         vector_desplazamientos = Matrix(
-            [["v_1"], [r"\phi_1"], ["v_2"], [r"\phi_2"]],
+            [["v_{1}"], [r"\phi_{1}"], ["v_{2}"], [r"\phi_{2}"]],
+            left_bracket=r"\{",  # Llave izquierda
+            right_bracket=r"\}",  # Llave derecha
+        )
+        vector_desplazamientos_modificado = Matrix(
+            [["v_{1}=0"], [r"\phi_{1}=0"], ["v_{2}=0"], [r"\phi_{2}"]],
             left_bracket=r"\{",  # Llave izquierda
             right_bracket=r"\}",  # Llave derecha
             element_to_mobject_config={
@@ -203,11 +219,19 @@ class EjemploVigasAnimacion(Scene):
         )
         subindice_fo = MathTex(r'\{f_{o}\}').next_to(vector_fuerzas_iniciales, RIGHT, aligned_edge=DOWN,
                                                      buff=0.1).scale(0.7)
-        grupo_vector_fuerzas_iniciales= VGroup(vector_fuerzas_iniciales, subindice_fo)
-        mr_elemento_1 = VGroup(vector_fuerzas, signo_igual, factor_matrix_rigidez, matrix_rigidez,
-                               vector_desplazamientos, signo_mas, grupo_vector_fuerzas_iniciales).arrange(RIGHT,
-                                                                                                                  buff=0.2)
-        mr_elemento_1.to_edge(DOWN).scale(0.4)
+        grupo_vector_fuerzas_iniciales = VGroup(vector_fuerzas_iniciales, subindice_fo)
+        # mr_elemento_1 = VGroup(vector_fuerzas, signo_igual, factor_matrix_rigidez, matrix_rigidez,
+        #                        vector_desplazamientos, signo_mas, grupo_vector_fuerzas_iniciales).arrange(RIGHT,
+        #                                                                                                           buff=0.2)
+        # mr_elemento_1.to_edge(DOWN).scale(0.4)
+        # vector_desplazamientos_modificado.scale(0.4).move_to(mr_elemento_1[4])
+        mr_elemento_1 = VGroup(matriz_k_1.copy(),factor_matrix_rigidez, matrix_rigidez).arrange(RIGHT, buff=0.2)
+        mr_elemento_1.to_edge(DOWN).scale(0.6)
+        mr_elemento_1_1 = VGroup(matriz_k_1.copy(), factor_matrix_rigidez_1_1, matrix_rigidez_1_1).arrange(RIGHT, buff=0.2)
+        mr_elemento_1_1.to_edge(DOWN).scale(0.6)
+        mr_elemento_1_2 = VGroup(matriz_k_1.copy(), factor_matrix_rigidez_1_2, matrix_rigidez_1_2).arrange(RIGHT,
+                                                                                                           buff=0.2)
+        mr_elemento_1_2.to_edge(DOWN).scale(0.6)
         self.play(FadeIn(escena_inicial), run_time=2)
         self.wait(5)
         self.play(FadeOut(enunciado), run_time=2)
@@ -232,4 +256,22 @@ class EjemploVigasAnimacion(Scene):
         self.play(FadeIn(gdl_y_1), FadeIn(gdl_eje_z_1), FadeIn(gdl_y_2), FadeIn(gdl_eje_z_2), run_time=2)
         self.play(Write(label_y_1), Write(label_eje_z_1), Write(label_y_2), Write(label_eje_z_2), run_time=2)
         self.play(Write(mr_elemento_1), run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(mr_elemento_1, mr_elemento_1_1), run_time=2)
+        self.wait(1)
+        self.play(ReplacementTransform(mr_elemento_1_1, mr_elemento_1_2), run_time=2)
+        self.wait(1)
+
+        # self.play(
+        #     ReplacementTransform(vector_desplazamientos.get_brackets(),
+        #                          vector_desplazamientos_modificado.get_brackets()),
+        #     FadeOut(vector_desplazamientos.get_entries()),
+        #     # FadeOut(VGroup(label_y_1, label_eje_z_1, label_y_2, label_eje_z_2)),
+        #     ReplacementTransform(label_y_1, vector_desplazamientos_modificado.get_entries()[0]),
+        #     ReplacementTransform(label_eje_z_1, vector_desplazamientos_modificado.get_entries()[1]),
+        #     ReplacementTransform(label_y_2, vector_desplazamientos_modificado.get_entries()[2]),
+        #     ReplacementTransform(label_eje_z_2, vector_desplazamientos_modificado.get_entries()[3]),
+        #
+        #     run_time=2.5  # Tiempo suficiente para apreciar cómo viajan los números
+        # )
         self.wait(5)
