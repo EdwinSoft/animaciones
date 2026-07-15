@@ -387,12 +387,35 @@ def ecuacion_vector_fuerza_viga(id_elemento: int | str = '1', id_nodo_inicial: i
     )
     return vector_fuerzas
 
-def ecuacion_array_a_matriz(arr: np.ndarray) -> VMobject:
+
+def ecuacion_vector_desplazamiento_viga(id_nodo_inicial: int | str = '1', id_nodo_final: int | str = '2') -> VMobject:
+    str_nodo_ini = str(id_nodo_inicial)
+    str_nodo_fin = str(id_nodo_final)
+    vector_deformacion = Matrix(
+        [["v_{" + str_nodo_ini + "}"],
+         [r"\phi_{" + str_nodo_ini + "}"],
+         ["v_{" + str_nodo_fin + "}"],
+         [r"\phi_{" + str_nodo_fin + "}"]
+         ],
+        left_bracket=r"\{",  # Llave izquierda
+        right_bracket=r"\}"  # Llave derecha
+    )
+    return vector_deformacion
+
+
+def ecuacion_array_a_matriz(arr: np.ndarray, **kwargs) -> VMobject:
     if arr.ndim == 1:
+        kwargs.setdefault("left_bracket", r"\{")
+        kwargs.setdefault("right_bracket", r"\}")
         data = [[f"{x:g}"] for x in arr]
-        return Matrix(data, left_bracket=r"\{", right_bracket=r"\}")
+        return Matrix(data, **kwargs)
     data = [[f"{x:g}" for x in row] for row in arr]
-    return Matrix(data)
+    return Matrix(data, **kwargs)
+
+
+def ecuacion_signo_igual():
+    return MathTex('=')
+
 
 def main():
     class demo(Scene):
@@ -424,10 +447,10 @@ def main():
             sop = elemento_soporte((1, 1), ejes, 0, 45)
             sop_2 = elemento_soporte((5, 2), ejes, 2, 0)
             sop_3 = elemento_soporte((6, 2), ejes, 3, 180)
-            test = np.array([1,2,3])
-            self.play(FadeIn(ecuacion_array_a_matriz(test)), run_time=2)
+            test = np.array([1, 2, 3])
+            self.play(FadeIn(ecuacion_array_a_matriz(test, left_bracket=r"[", right_bracket=r"]")), run_time=2)
             self.play(FadeIn(ejes), run_time=2)
-            #self.play(FadeIn(viga[1], viga[2]), run_time=2)
+            # self.play(FadeIn(viga[1], viga[2]), run_time=2)
             self.play(FadeIn(viga[0]), run_time=2)
             self.play(FadeIn(armadura), run_time=2)
             self.play(FadeIn(carga_d2), run_time=2)

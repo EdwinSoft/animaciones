@@ -39,7 +39,7 @@ class EjemploVigasAnimacion(Scene):
         ejes = ejes_planos
         cargas = VGroup()
         for carga_puntual in mg._lista_cargas_puntuales:
-            cp = elemento_carga((carga_puntual[1][0][0] + carga_puntual[2], 0.0, 0.0), ejes, 3, ang=90, saliente=False,
+            cp = elemento_carga((carga_puntual[1][0][0] + carga_puntual[2], 0.0, 0.0), ejes, 2, ang=90, saliente=False,
                                 h=0.25 / 2)
             valor = MathTex(str(abs(carga_puntual[0])) + r"\,kN").next_to(cp, UP, buff=0.1).scale(0.5)
             cargas.add(cp)
@@ -64,7 +64,7 @@ class EjemploVigasAnimacion(Scene):
         for n in mg._lista_nodos:
             nodos.add(Dot(ejes.c2p(n.punto), color=BLUE_A))
             label_nodos.add(
-                LabeledDot(MathTex(n.nombre, color=WHITE), color=GREEN).next_to(ejes.c2p(n.punto), DR, buff=-0.1).scale(
+                LabeledDot(MathTex(n.nombre, color=WHITE), color=GREEN,stroke_color=GREEN,  stroke_width=1, fill_opacity=0.8).next_to(ejes.c2p(n.punto), DR, buff=-0.1).scale(
                     0.5))
             tipo_sop = n.get_soporte()
             if len(tipo_sop) == 2:
@@ -116,7 +116,7 @@ class EjemploVigasAnimacion(Scene):
                 texto,
                 color=RED,  # Color del fondo
                 fill_opacity=0.8,  # Opacidad
-                stroke_width=0,  # Sin línea de borde
+                stroke_width=1,  # Sin línea de borde
                 buff=0.1  # Padding
             )
             # 3. Agrupar, escalar y posicionar
@@ -152,12 +152,19 @@ class EjemploVigasAnimacion(Scene):
         label_eje_z_1 = MathTex(r'\phi_{1}=0', color=RED).next_to(gdl_eje_z_1, DR, buff=-0.4).scale(0.5)
         label_y_2 = MathTex(r'v_{2}=0', color=RED).next_to(gdl_y_2, DOWN, buff=0.02).scale(0.5)
         label_eje_z_2 = MathTex(r'\phi_{2}', color=GREEN).next_to(gdl_eje_z_2, UR, buff=-0.25).scale(0.5)
+        # Elemento 1
+        f_1_0 = elemento_carga(n_1.punto, ejes, longitud=1, saliente=False, ang=90)
+        label_f_1_0 = MathTex(str(abs(mg._lista_cargas_distribuidas[0][0][0])) + r"\,kN").next_to(f_1_0, UL, buff=0.0).scale(0.5).shift(
+                RIGHT * 0.7)
+
         self.play(Write(enunciado), run_time=5)
+        grados_el_1 = VGroup(gdl_y_1, gdl_eje_z_1, gdl_y_2, gdl_eje_z_2)
+        label_etiquetas_grados_el_1 = VGroup(label_y_1, label_eje_z_1, label_y_2, label_eje_z_2)
         escena_inicial = VGroup(viga, soportes, cargas, cotas)
         escena_inicial.save_state()
         escena_inicial.to_edge(DOWN + LEFT)
         escena_elemento_1 = VGroup(elementos[0], nodos[0:2], soportes[0:2], label_elementos[0], label_nodos[0:2],
-                                   cargas[0:2], cotas[0:2])
+                                   cargas[0:2])
         escena = VGroup(nodos, elementos, soportes, label_elementos, label_nodos, cargas, cotas)
         # mr_elemento_1 = MathTex(
         #     r"\left\{\begin{array}{c}f^{(1)}_{1y}\\m^{(1)}_{1}\\f^{(1)}_{2y}\\m^{(1)}_{2}\end{array}\right\}_{\{f\}} = ",
@@ -168,12 +175,13 @@ class EjemploVigasAnimacion(Scene):
         #         r"\phi_{2}": BLUE  # Busca exactamente esto y lo pinta de azul
         #     }
         # )
-        matriz_k_1 = MathTex(r'\left[k\right]_{1}=')
-        vector_fuerzas = Matrix(
-            [["f^{(1)}_{1y}"], ["m^{(1)}_{1}"], ["f^{(1)}_{2y}"], ["m^{(1)}_{2}"]],
-            left_bracket=r"\{",  # Llave izquierda
-            right_bracket=r"\}"  # Llave derecha
-        )
+        # matriz_k_1 = MathTex(r'\left[k\right]_{1}=')
+        # vector_fuerzas = Matrix(
+        #     [["f^{(1)}_{1y}"], ["m^{(1)}_{1}"], ["f^{(1)}_{2y}"], ["m^{(1)}_{2}"]],
+        #     left_bracket=r"\{",  # Llave izquierda
+        #     right_bracket=r"\}"  # Llave derecha
+        # )
+        matriz_k_1 = ecuacion_vector_fuerza_viga()
         signo_igual = MathTex('=')
         factor_matrix_rigidez = MathTex(r'\dfrac{EI}{L^{3}}')
         factor_matrix_rigidez_1_1 = MathTex(r'\dfrac{EI}{1000}')
@@ -195,13 +203,15 @@ class EjemploVigasAnimacion(Scene):
              ['0.06', '0.4', '-0.06', '0.2'],
              ['-0.012', '-0.06', '0.012', '-0.06'],
              ['0.06', '0.2', '-0.060', '0.4']],
-            h_buff = 1.8
+            h_buff=1.8
         )
+
         vector_desplazamientos = Matrix(
             [["v_{1}"], [r"\phi_{1}"], ["v_{2}"], [r"\phi_{2}"]],
             left_bracket=r"\{",  # Llave izquierda
             right_bracket=r"\}",  # Llave derecha
         )
+        vector_desplazamientos = ecuacion_vector_desplazamiento_viga()
         vector_desplazamientos_modificado = Matrix(
             [["v_{1}=0"], [r"\phi_{1}=0"], ["v_{2}=0"], [r"\phi_{2}"]],
             left_bracket=r"\{",  # Llave izquierda
@@ -226,13 +236,16 @@ class EjemploVigasAnimacion(Scene):
         #                                                                                                           buff=0.2)
         # mr_elemento_1.to_edge(DOWN).scale(0.4)
         # vector_desplazamientos_modificado.scale(0.4).move_to(mr_elemento_1[4])
-        mr_elemento_1 = VGroup(matriz_k_1.copy(),factor_matrix_rigidez, matrix_rigidez).arrange(RIGHT, buff=0.2)
-        mr_elemento_1.to_edge(DOWN).scale(0.6)
-        mr_elemento_1_1 = VGroup(matriz_k_1.copy(), factor_matrix_rigidez_1_1, matrix_rigidez_1_1).arrange(RIGHT, buff=0.2)
-        mr_elemento_1_1.to_edge(DOWN).scale(0.6)
-        mr_elemento_1_2 = VGroup(matriz_k_1.copy(), factor_matrix_rigidez_1_2, matrix_rigidez_1_2).arrange(RIGHT,
-                                                                                                           buff=0.2)
-        mr_elemento_1_2.to_edge(DOWN).scale(0.6)
+        mr_elemento_1 = VGroup(matriz_k_1.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez, matrix_rigidez,
+                               vector_desplazamientos.copy()).arrange(RIGHT, buff=0.2)
+        mr_elemento_1.to_edge(DOWN).scale(0.5)
+        mr_elemento_1_1 = VGroup(matriz_k_1.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_1_1,
+                                 matrix_rigidez_1_1, vector_desplazamientos.copy()).arrange(RIGHT, buff=0.2)
+        mr_elemento_1_1.to_edge(DOWN).scale(0.5)
+        mr_elemento_1_2 = VGroup(matriz_k_1.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_1_2,
+                                 matrix_rigidez_1_2, vector_desplazamientos_modificado).arrange(RIGHT,
+                                                                                                buff=0.2)
+        mr_elemento_1_2.to_edge(DOWN).scale(0.5)
         self.play(FadeIn(escena_inicial), run_time=2)
         self.wait(5)
         self.play(FadeOut(enunciado), run_time=2)
@@ -254,17 +267,29 @@ class EjemploVigasAnimacion(Scene):
         self.play(FadeOut(escena), run_time=2)
         self.play(FadeIn(escena_elemento_1), run_time=2)
         self.play(FadeOut(soportes[0:2]), run_time=2)
-        self.play(FadeIn(gdl_y_1), FadeIn(gdl_eje_z_1), FadeIn(gdl_y_2), FadeIn(gdl_eje_z_2), run_time=2)
-        self.play(Write(label_y_1), Write(label_eje_z_1), Write(label_y_2), Write(label_eje_z_2), run_time=2)
+        self.play(FadeIn(grados_el_1), run_time=2)
+        self.play(Write(label_etiquetas_grados_el_1), run_time=2)
+        #self.play(VGroup(escena_elemento_1[0:5], grados_el_1, label_etiquetas_grados_el_1).animate.scale(0.8).to_edge(UP),
+        #          run_time=2)
         self.play(Write(mr_elemento_1), run_time=2)
         self.wait(2)
         self.play(ReplacementTransform(mr_elemento_1, mr_elemento_1_1), run_time=2)
         self.wait(1)
-        self.play(ReplacementTransform(mr_elemento_1_1, mr_elemento_1_2), run_time=2)
+        self.play(ReplacementTransform(mr_elemento_1_1[4].get_brackets(), mr_elemento_1_2[4].get_brackets()),
+                  FadeOut(mr_elemento_1_1[4].get_entries()),
+                  ReplacementTransform(label_y_1, vector_desplazamientos_modificado.get_entries()[0]),
+                  ReplacementTransform(label_eje_z_1, vector_desplazamientos_modificado.get_entries()[1]),
+                  ReplacementTransform(label_y_2, vector_desplazamientos_modificado.get_entries()[2]),
+                  ReplacementTransform(label_eje_z_2, vector_desplazamientos_modificado.get_entries()[3]),
+                  Unwrite(gdl_y_1), Unwrite(gdl_eje_z_1), Unwrite(gdl_y_2), Unwrite(gdl_eje_z_2), run_time=2)
         self.wait(1)
-        self.play(FadeOut(mr_elemento_1_2), run_time=2)
+        self.play(ReplacementTransform(mr_elemento_1_1[0:4], mr_elemento_1_2[0:4]), run_time=2)
         self.wait(1)
-        self.play(FadeIn(mr_elemento_1_2), run_time=2)
+        self.play(Write(f_1_0), Write(label_f_1_0), run_time=2)
+        self.wait(1)
+        # self.play(FadeOut(mr_elemento_1_2), run_time=2)
+        # self.wait(1)
+        # self.play(FadeIn(mr_elemento_1_2), run_time=2)
         # self.play(
         #     ReplacementTransform(vector_desplazamientos.get_brackets(),
         #                          vector_desplazamientos_modificado.get_brackets()),
