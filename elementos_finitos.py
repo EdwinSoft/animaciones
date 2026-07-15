@@ -194,7 +194,8 @@ class EjemploVigasAnimacion(Scene):
             [['0.012', '0.06', '-0.012', '0.06'],
              ['0.06', '0.4', '-0.06', '0.2'],
              ['-0.012', '-0.06', '0.012', '-0.06'],
-             ['0.06', '0.2', '-0.060', '0.4']]
+             ['0.06', '0.2', '-0.060', '0.4']],
+            h_buff = 1.8
         )
         vector_desplazamientos = Matrix(
             [["v_{1}"], [r"\phi_{1}"], ["v_{2}"], [r"\phi_{2}"]],
@@ -261,7 +262,9 @@ class EjemploVigasAnimacion(Scene):
         self.wait(1)
         self.play(ReplacementTransform(mr_elemento_1_1, mr_elemento_1_2), run_time=2)
         self.wait(1)
-
+        self.play(FadeOut(mr_elemento_1_2), run_time=2)
+        self.wait(1)
+        self.play(FadeIn(mr_elemento_1_2), run_time=2)
         # self.play(
         #     ReplacementTransform(vector_desplazamientos.get_brackets(),
         #                          vector_desplazamientos_modificado.get_brackets()),

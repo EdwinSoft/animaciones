@@ -375,21 +375,24 @@ def ecuacion_matriz_rigidez_viga() -> VMobject:
 
 def ecuacion_vector_fuerza_viga(id_elemento: int | str = '1', id_nodo_inicial: int | str = '1',
                                 id_nodo_final: int | str = '2') -> VMobject:
-    if type(id_elemento) != str:
-        id_elemento = str(id_elemento)
-    if type(id_nodo_inicial) != str:
-        id_nodo_inicial = str(id_nodo_inicial)
-    if type(id_nodo_final) != str:
-        id_nodo_final = str(id_nodo_final)
+    str_elemento = str(id_elemento)
+    str_nodo_ini = str(id_nodo_inicial)
+    str_nodo_fin = str(id_nodo_final)
     vector_fuerzas = Matrix(
-        [["f^{(" + id_elemento + ")}_{" + id_nodo_inicial + "y}"],
-         ["m^{(" + id_elemento + ")}_{" + id_nodo_inicial + "}"],
-         ["f^{(" + id_elemento + ")}_{" + id_nodo_final + "y}"], ["m^{(" + id_elemento + ")}_{" + id_nodo_final + "}"]],
+        [["f^{(" + str_elemento + ")}_{" + str_nodo_ini + "y}"],
+         ["m^{(" + str_elemento + ")}_{" + str_nodo_ini + "}"],
+         ["f^{(" + str_elemento + ")}_{" + str_nodo_fin + "y}"], ["m^{(" + str_elemento + ")}_{" + str_nodo_fin + "}"]],
         left_bracket=r"\{",  # Llave izquierda
         right_bracket=r"\}"  # Llave derecha
     )
     return vector_fuerzas
 
+def ecuacion_array_a_matriz(arr: np.ndarray) -> VMobject:
+    if arr.ndim == 1:
+        data = [[f"{x:g}"] for x in arr]
+        return Matrix(data, left_bracket=r"\{", right_bracket=r"\}")
+    data = [[f"{x:g}" for x in row] for row in arr]
+    return Matrix(data)
 
 def main():
     class demo(Scene):
@@ -421,8 +424,10 @@ def main():
             sop = elemento_soporte((1, 1), ejes, 0, 45)
             sop_2 = elemento_soporte((5, 2), ejes, 2, 0)
             sop_3 = elemento_soporte((6, 2), ejes, 3, 180)
+            test = np.array([1,2,3])
+            self.play(FadeIn(ecuacion_array_a_matriz(test)), run_time=2)
             self.play(FadeIn(ejes), run_time=2)
-            self.play(FadeIn(viga[1], viga[2]), run_time=2)
+            #self.play(FadeIn(viga[1], viga[2]), run_time=2)
             self.play(FadeIn(viga[0]), run_time=2)
             self.play(FadeIn(armadura), run_time=2)
             self.play(FadeIn(carga_d2), run_time=2)
