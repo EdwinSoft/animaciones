@@ -403,6 +403,17 @@ def ecuacion_vector_desplazamiento_viga(id_nodo_inicial: int | str = '1', id_nod
     )
     return vector_deformacion
 
+def ecuacion_vector_fuerza_nodal_equivalente_viga(id_nodo_inicial: int | str = '1',id_nodo_final: int | str = '2') -> VMobject:
+    str_nodo_ini = str(id_nodo_inicial)
+    str_nodo_fin = str(id_nodo_final)
+    vector_fuerzas_nodal = Matrix(
+        [["f_{" + str_nodo_ini + "y_{0}}"],
+         ["m_{" + str_nodo_ini + "_{0}}"],
+         ["f_{" + str_nodo_fin + "y_{0}}"], ["m_{" + str_nodo_fin + "_{0}}"]],
+        left_bracket=r"\{",  # Llave izquierda
+        right_bracket=r"\}"  # Llave derecha
+    )
+    return vector_fuerzas_nodal
 
 def ecuacion_array_a_matriz(arr: np.ndarray, **kwargs) -> VMobject:
     if arr.ndim == 1:
@@ -416,6 +427,10 @@ def ecuacion_array_a_matriz(arr: np.ndarray, **kwargs) -> VMobject:
 
 def ecuacion_signo_igual():
     return MathTex('=')
+def ecuacion_signo_menos():
+    return MathTex('-')
+def ecuacion_signo_mas():
+    return MathTex('+')
 
 
 def main():
