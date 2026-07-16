@@ -64,7 +64,8 @@ class EjemploVigasAnimacion(Scene):
         for n in mg._lista_nodos:
             nodos.add(Dot(ejes.c2p(n.punto), color=BLUE_A))
             label_nodos.add(
-                LabeledDot(MathTex(n.nombre, color=WHITE), color=GREEN,stroke_color=GREEN,  stroke_width=1, fill_opacity=0.8).next_to(ejes.c2p(n.punto), DR, buff=-0.1).scale(
+                LabeledDot(MathTex(n.nombre, color=WHITE), color=GREEN, stroke_color=GREEN, stroke_width=1,
+                           fill_opacity=0.8).next_to(ejes.c2p(n.punto), DR, buff=-0.1).scale(
                     0.5))
             tipo_sop = n.get_soporte()
             if len(tipo_sop) == 2:
@@ -154,9 +155,21 @@ class EjemploVigasAnimacion(Scene):
         label_eje_z_2 = MathTex(r'\phi_{2}', color=GREEN).next_to(gdl_eje_z_2, UR, buff=-0.25).scale(0.5)
         # Elemento 1
         f_1_0 = elemento_carga(n_1.punto, ejes, longitud=1, saliente=False, ang=90)
-        label_f_1_0 = MathTex(str(abs(mg._lista_cargas_distribuidas[0][0][0])) + r"\,kN").next_to(f_1_0, UL, buff=0.0).scale(0.5).shift(
-                RIGHT * 0.7)
-
+        label_f_1_0 = MathTex(str(abs(e_1._fuerzas_i[0, 0])) + r"\,kN").next_to(f_1_0, UP, buff=0.0).scale(0.5).shift(
+            RIGHT * 0.0)
+        m_1_0 = elemento_momento(n_1.punto, ejes, positivo=False)
+        label_m_1_0 = MathTex(str(abs(e_1._fuerzas_i[1, 0])) + r"\,kN\cdot m").next_to(m_1_0, UP, buff=0.0).scale(
+            0.5).shift(
+            RIGHT * 0.7)
+        f_2_0 = elemento_carga(n_2.punto, ejes, longitud=1, saliente=False, ang=90)
+        label_f_2_0 = MathTex(str(abs(e_1._fuerzas_j[0, 0])) + r"\,kN").next_to(f_2_0, UP, buff=0.0).scale(0.5).shift(
+            RIGHT * 0.0)
+        m_2_0 = elemento_momento(n_2.punto, ejes, positivo=True, ang=0)
+        label_m_2_0 = MathTex(str(abs(e_1._fuerzas_j[1, 0])) + r"\,kN\cdot m").next_to(m_2_0, UP, buff=0.0).scale(
+            0.5).shift(
+            LEFT * 0.7)
+        cargas_eq_1 = VGroup(f_1_0, m_1_0, f_2_0, m_2_0)
+        label_cargas_eq_1 = VGroup(label_f_1_0, label_m_1_0, label_f_2_0, label_m_2_0)
         self.play(Write(enunciado), run_time=5)
         grados_el_1 = VGroup(gdl_y_1, gdl_eje_z_1, gdl_y_2, gdl_eje_z_2)
         label_etiquetas_grados_el_1 = VGroup(label_y_1, label_eje_z_1, label_y_2, label_eje_z_2)
@@ -269,7 +282,7 @@ class EjemploVigasAnimacion(Scene):
         self.play(FadeOut(soportes[0:2]), run_time=2)
         self.play(FadeIn(grados_el_1), run_time=2)
         self.play(Write(label_etiquetas_grados_el_1), run_time=2)
-        #self.play(VGroup(escena_elemento_1[0:5], grados_el_1, label_etiquetas_grados_el_1).animate.scale(0.8).to_edge(UP),
+        # self.play(VGroup(escena_elemento_1[0:5], grados_el_1, label_etiquetas_grados_el_1).animate.scale(0.8).to_edge(UP),
         #          run_time=2)
         self.play(Write(mr_elemento_1), run_time=2)
         self.wait(2)
@@ -285,7 +298,9 @@ class EjemploVigasAnimacion(Scene):
         self.wait(1)
         self.play(ReplacementTransform(mr_elemento_1_1[0:4], mr_elemento_1_2[0:4]), run_time=2)
         self.wait(1)
-        self.play(Write(f_1_0), Write(label_f_1_0), run_time=2)
+        self.play(ReplacementTransform(cargas[0:2], VGroup( cargas_eq_1, label_cargas_eq_1)), run_time=2)
+        # self.play(Write(f_1_0), Write(label_f_1_0), Write(m_1_0), Write(label_m_1_0), Write(f_2_0), Write(label_f_2_0),
+        #           Write(m_2_0), Write(label_m_2_0), run_time=2)
         self.wait(1)
         # self.play(FadeOut(mr_elemento_1_2), run_time=2)
         # self.wait(1)

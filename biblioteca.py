@@ -241,6 +241,7 @@ def elemento_momento(nodo: tuple[float | int, float | int], ejes: Axes, radio: f
         [[radio], [0.0], [0.0]])).flatten()
     if positivo:
         inicio, final = final, inicio
+        ang_i, ang_f = ang_f, ang_i
     momento = CurvedArrow(
         start_point=inicio,
         end_point=final,
