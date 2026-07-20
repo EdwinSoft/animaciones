@@ -1,6 +1,9 @@
 from manim import *
 import numpy as np
 
+# config.tex_template = TexTemplate()
+# config.tex_template.add_to_preamble(r"\usepackage{cancel}")
+# config.tex_template.add_to_preamble(r"\usepackage{xcolor}")
 
 def elemento_viga(x_i: float, x_f: float, h: float | int, ejes: Axes) -> VMobject:
     coord_i = ejes.c2p((x_i, 0))
@@ -139,7 +142,7 @@ def elemento_carga(nodo: tuple[float | int, float | int], ejes: Axes, longitud: 
         start=inicio,
         end=final,
         buff=0,  # ¡Fundamental para que toque los puntos exactamente!
-        color=RED,
+        color=BLUE,
         stroke_width=4,  # Grosor de la línea
         tip_shape=StealthTip,  # Aquí cambias la forma
         max_tip_length_to_length_ratio=0.15 / longitud  # Controla el tamaño de la punta
@@ -177,7 +180,7 @@ def elemento_carga_distribuida(nodo_i: tuple[float | int, float | int], nodo_j: 
             start=inicio,
             end=final,
             buff=0,  # ¡Fundamental para que toque los puntos exactamente!
-            color=RED,
+            color=BLUE_D,
             stroke_width=4,  # Grosor de la línea
             tip_shape=StealthTip,  # Aquí cambias la forma
             max_tip_length_to_length_ratio=0.15 / longitud  # Controla el tamaño de la punta
@@ -218,7 +221,7 @@ def elemento_carga_trapezoidal(nodo_i: tuple[float | int, float | int], nodo_j: 
                 start=inicio,
                 end=final,
                 buff=0,  # ¡Fundamental para que toque los puntos exactamente!
-                color=RED,
+                color=BLUE_D,
                 stroke_width=4,  # Grosor de la línea
                 tip_shape=StealthTip,  # Aquí cambias la forma
                 max_tip_length_to_length_ratio=0.15 / longitud  # Controla el tamaño de la punta
@@ -465,6 +468,22 @@ def main():
             sop_3 = elemento_soporte((6, 2), ejes, 3, 180)
             test = np.array([1, 2, 3])
             self.play(FadeIn(ecuacion_array_a_matriz(test, left_bracket=r"[", right_bracket=r"]")), run_time=2)
+            mi_plantilla = TexTemplate()
+            mi_plantilla.add_to_preamble(r"\usepackage{cancel}")
+
+            # 2. Tu arreglo (nota el uso de r"" en \cancel para evitar errores de Python)
+            test = np.array(['F_{1y}', 'M_{1}', 'F_{2y}', 'M_{2}', 'F_{3y}', r'\cancel{M_{3}}', 'F_{4y}', 'M_{4}']).reshape((-1,1))
+
+            # 3. Crear la matriz pasando la plantilla a los elementos internos
+            matriz = Matrix(
+                test,
+                left_bracket=r"[",
+                right_bracket=r"]",
+                # Esto le dice a Manim que use tu plantilla para compilar cada entrada
+                element_to_mobject_config={"tex_template": mi_plantilla}
+            )
+
+            self.play(FadeIn(matriz), run_time=2)
             self.play(FadeIn(ejes), run_time=2)
             # self.play(FadeIn(viga[1], viga[2]), run_time=2)
             self.play(FadeIn(viga[0]), run_time=2)

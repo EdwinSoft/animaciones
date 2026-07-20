@@ -6,6 +6,9 @@ from mnspy import Nodo, Viga, Ensamble
 
 class EjemploVigasAnimacion(Scene):
     def construct(self):
+        mi_plantilla = TexTemplate()
+        mi_plantilla.add_to_preamble(r"\usepackage{cancel}")
+        mi_plantilla.add_to_preamble(r"\usepackage{xcolor}")
         n_1 = Nodo('1', 0, grados_libertad={'y': False, 'eje_z': False})
         n_2 = Nodo('2', 10, grados_libertad={'y': False, 'eje_z': True})
         n_3 = Nodo('3', 20, grados_libertad={'y': False, 'eje_z': True})
@@ -16,6 +19,28 @@ class EjemploVigasAnimacion(Scene):
         e_1.agregar_carga_puntual(-80, 6.0)
         e_2.agregar_carga_distribuida(-24)
         mg = Ensamble([e_1, e_2, e_3])
+        etiquetas = []
+        for item in mg._lista_nodos:
+            for n, gl in item.grados_libertad.items():
+                if not gl.valor:
+                    continue
+                if mg._union._k.grados is not None:
+                    if n not in mg._union._k.grados:
+                        continue
+                if item.rotado:
+                    etiquetas.append(gl.label_desplazamiento_rotado + '_{' + item.nombre + '}')
+                else:
+                    etiquetas.append(gl.label_desplazamiento + '_{' + item.nombre + '}')
+        #        vec_r = Matrix(np.array(['F_{1y}' ,'M_{1}' ,r'\color{blue}{F_{2y}}' ,'\\cancel{M_{2}}', 'F_{3y}' ,'\\cancel{M_{3}}',
+        # 'F_{4y}' ,'M_{4}']).reshape(-1,1),element_to_mobject_config={"tex_template": mi_plantilla})
+        vec_r = Matrix(np.array(mg._union._k.obtener_etiquetas_reacciones(False)).reshape(-1,1),
+                       element_to_mobject_config={"tex_template": mi_plantilla})
+
+        vec_f = ecuacion_array_a_matriz(np.array(mg._union._k.obtener_fuerzas(False)))
+        vec_k = ecuacion_array_a_matriz(np.array(mg._union._k.obtener_matriz(False)), h_buff=1.8)
+        # vec_d = ecuacion_array_a_matriz(np.char.replace(np.array(mg._union._k.obtener_etiquetas_desplazamientos(False)), r'\color{blue}', ''))
+        matriz_global_reducida = VGroup(vec_r, ecuacion_signo_igual(), vec_k, ecuacion_signo_menos(), vec_f).scale(
+            0.5).arrange(RIGHT)
         mg.solucionar_por_gauss_y_calcular_reacciones()
         ############
         ejes_coordenados = Axes(
@@ -198,7 +223,8 @@ class EjemploVigasAnimacion(Scene):
         label_cargas_eq_1 = VGroup(label_f_1_0.copy(), label_m_1_0.copy(), label_f_2_0.copy(), label_m_2_0.copy())
         ### Grados de libertad en elemento 1
         grados_el_1 = VGroup(gdl_y_1.copy(), gdl_eje_z_1.copy(), gdl_y_2.copy(), gdl_eje_z_2.copy())
-        label_etiquetas_grados_el_1 = VGroup(label_y_1.copy(), label_eje_z_1.copy(), label_y_2.copy(), label_eje_z_2.copy())
+        label_etiquetas_grados_el_1 = VGroup(label_y_1.copy(), label_eje_z_1.copy(), label_y_2.copy(),
+                                             label_eje_z_2.copy())
         ### Escena elemento 1
         escena_elemento_1 = VGroup(elementos[0], nodos[0:2], soportes[0:2], label_elementos[0], label_nodos[0:2],
                                    cargas[0:2])
@@ -286,7 +312,8 @@ class EjemploVigasAnimacion(Scene):
         label_cargas_eq_2 = VGroup(label_f_2_0.copy(), label_m_2_0.copy(), label_f_3_0.copy(), label_m_3_0.copy())
         ### Grados de libertad en elemento 2
         grados_el_2 = VGroup(gdl_y_2.copy(), gdl_eje_z_2.copy(), gdl_y_3.copy(), gdl_eje_z_3.copy())
-        label_etiquetas_grados_el_2 = VGroup(label_y_2.copy(), label_eje_z_2.copy(), label_y_3.copy(), label_eje_z_3.copy())
+        label_etiquetas_grados_el_2 = VGroup(label_y_2.copy(), label_eje_z_2.copy(), label_y_3.copy(),
+                                             label_eje_z_3.copy())
         ### Escena elemento 2
         escena_elemento_2 = VGroup(elementos[1], nodos[1:3], soportes[1:3], label_elementos[1], label_nodos[1:3],
                                    cargas[2:5])
@@ -468,11 +495,11 @@ class EjemploVigasAnimacion(Scene):
                   ReplacementTransform(mr_elemento_1_2[0:4], mr_elemento_1_3[0:4]),
                   ReplacementTransform(mr_elemento_1_2[5:7], mr_elemento_1_3[5:7]),
                   FadeOut(mr_elemento_1_2[4].get_entries()),
-                  ReplacementTransform(label_y_1, mr_elemento_1_3[4].get_entries()[0]),
-                  ReplacementTransform(label_eje_z_1, mr_elemento_1_3[4].get_entries()[1]),
-                  ReplacementTransform(label_y_2, mr_elemento_1_3[4].get_entries()[2]),
-                  ReplacementTransform(label_eje_z_2, mr_elemento_1_3[4].get_entries()[3]),
-                  Unwrite(grados_el_1),Unwrite(label_etiquetas_grados_el_1), run_time=2)
+                  ReplacementTransform(label_etiquetas_grados_el_1[0], mr_elemento_1_3[4].get_entries()[0]),
+                  ReplacementTransform(label_etiquetas_grados_el_1[1], mr_elemento_1_3[4].get_entries()[1]),
+                  ReplacementTransform(label_etiquetas_grados_el_1[2], mr_elemento_1_3[4].get_entries()[2]),
+                  ReplacementTransform(label_etiquetas_grados_el_1[3], mr_elemento_1_3[4].get_entries()[3]),
+                  Unwrite(grados_el_1), run_time=2)
         self.wait(1)
         self.play(ReplacementTransform(cargas[0:2], VGroup(cargas_eq_1, label_cargas_eq_1)), run_time=2)
         self.wait(1)
@@ -503,11 +530,11 @@ class EjemploVigasAnimacion(Scene):
                   ReplacementTransform(mr_elemento_2_2[0:4], mr_elemento_2_3[0:4]),
                   ReplacementTransform(mr_elemento_2_2[5:7], mr_elemento_2_3[5:7]),
                   FadeOut(mr_elemento_2_2[4].get_entries()),
-                  ReplacementTransform(label_y_2, mr_elemento_2_3[4].get_entries()[0]),
-                  ReplacementTransform(label_eje_z_2, mr_elemento_2_3[4].get_entries()[1]),
-                  ReplacementTransform(label_y_3, mr_elemento_2_3[4].get_entries()[2]),
-                  ReplacementTransform(label_eje_z_3, mr_elemento_2_3[4].get_entries()[3]),
-                  Unwrite(grados_el_2),Unwrite(label_etiquetas_grados_el_2), run_time=2)
+                  ReplacementTransform(label_etiquetas_grados_el_2[0], mr_elemento_2_3[4].get_entries()[0]),
+                  ReplacementTransform(label_etiquetas_grados_el_2[1], mr_elemento_2_3[4].get_entries()[1]),
+                  ReplacementTransform(label_etiquetas_grados_el_2[2], mr_elemento_2_3[4].get_entries()[2]),
+                  ReplacementTransform(label_etiquetas_grados_el_2[3], mr_elemento_2_3[4].get_entries()[3]),
+                  Unwrite(grados_el_2), run_time=2)
         self.wait(1)
         self.play(ReplacementTransform(cargas[2:5], VGroup(cargas_eq_2, label_cargas_eq_2)), run_time=2)
         self.wait(1)
@@ -538,13 +565,13 @@ class EjemploVigasAnimacion(Scene):
                   ReplacementTransform(mr_elemento_3_2[0:4], mr_elemento_3_3[0:4]),
                   ReplacementTransform(mr_elemento_3_2[5:7], mr_elemento_3_3[5:7]),
                   FadeOut(mr_elemento_3_2[4].get_entries()),
-                  ReplacementTransform(label_y_3, mr_elemento_3_3[4].get_entries()[0]),
-                  ReplacementTransform(label_eje_z_3, mr_elemento_3_3[4].get_entries()[1]),
-                  ReplacementTransform(label_y_4, mr_elemento_3_3[4].get_entries()[2]),
-                  ReplacementTransform(label_eje_z_4, mr_elemento_3_3[4].get_entries()[3]),
-                  Unwrite(grados_el_3), Unwrite(label_etiquetas_grados_el_3), run_time=2)
+                  ReplacementTransform(label_etiquetas_grados_el_3[0], mr_elemento_3_3[4].get_entries()[0]),
+                  ReplacementTransform(label_etiquetas_grados_el_3[1], mr_elemento_3_3[4].get_entries()[1]),
+                  ReplacementTransform(label_etiquetas_grados_el_3[2], mr_elemento_3_3[4].get_entries()[2]),
+                  ReplacementTransform(label_etiquetas_grados_el_3[3], mr_elemento_3_3[4].get_entries()[3]),
+                  Unwrite(grados_el_3), run_time=2)
         self.wait(1)
-        f_0_0= MathTex('0').move_to(mr_elemento_3_4[6].get_entries()[0]).scale(0.5)
+        f_0_0 = MathTex('0').move_to(mr_elemento_3_4[6].get_entries()[0]).scale(0.5)
         f_0_1 = MathTex('0').move_to(mr_elemento_3_4[6].get_entries()[1]).scale(0.5)
         f_0_2 = MathTex('0').move_to(mr_elemento_3_4[6].get_entries()[2]).scale(0.5)
         f_0_3 = MathTex('0').move_to(mr_elemento_3_4[6].get_entries()[3]).scale(0.5)
@@ -554,6 +581,9 @@ class EjemploVigasAnimacion(Scene):
                   ReplacementTransform(f_0_0, mr_elemento_3_4[6].get_entries()[0]),
                   ReplacementTransform(f_0_1, mr_elemento_3_4[6].get_entries()[1]),
                   ReplacementTransform(f_0_2, mr_elemento_3_4[6].get_entries()[2]),
-                  ReplacementTransform(f_0_3, mr_elemento_3_4[6].get_entries()[3]),run_time=2)
+                  ReplacementTransform(f_0_3, mr_elemento_3_4[6].get_entries()[3]), run_time=2)
         self.wait(5)
         self.play(FadeOut(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]), FadeOut(mr_elemento_3_4))
+        self.wait(5)
+        self.play(FadeIn(matriz_global_reducida))
+        self.wait(5)
