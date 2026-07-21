@@ -418,13 +418,16 @@ def ecuacion_vector_fuerza_nodal_equivalente_viga(id_nodo_inicial: int | str = '
     )
     return vector_fuerzas_nodal
 
-def ecuacion_array_a_matriz(arr: np.ndarray, **kwargs) -> VMobject:
+
+def ecuacion_array_a_matriz(arr: np.ndarray, formato_num: str = "{x:g}", **kwargs) -> VMobject:
     if arr.ndim == 1:
         kwargs.setdefault("left_bracket", r"\{")
         kwargs.setdefault("right_bracket", r"\}")
-        data = [[f"{x:g}"] for x in arr]
+        # Usamos .format(x=x) para inyectar el valor en la plantilla
+        data = [[formato_num.format(x=x)] for x in arr]
         return Matrix(data, **kwargs)
-    data = [[f"{x:g}" for x in row] for row in arr]
+
+    data = [[formato_num.format(x=x) for x in row] for row in arr]
     return Matrix(data, **kwargs)
 
 
@@ -434,6 +437,10 @@ def ecuacion_signo_menos():
     return MathTex('-')
 def ecuacion_signo_mas():
     return MathTex('+')
+def ecuacion_EI():
+    return MathTex('EI')
+def ecuacion_EI_inv():
+    return MathTex(r'\dfrac{1}{EI}')
 
 
 def main():
