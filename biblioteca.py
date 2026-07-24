@@ -441,7 +441,8 @@ def ecuacion_EI():
     return MathTex('EI')
 def ecuacion_EI_inv():
     return MathTex(r'\dfrac{1}{EI}')
-
+def ecuacion_vector_deformaciones(reducida: bool = False):
+    return MathTex(r'\dfrac{1}{EI}')
 
 def main():
     class demo(Scene):

@@ -3,6 +3,62 @@ import numpy as np
 from biblioteca import *
 from mnspy import Nodo, Viga, Ensamble
 
+def ecuacion_vector_etiquetas_desplazamientos(ens: Ensamble, color: ManimColor = BLUE, reducida: bool = False)-> Matrix:
+    etiquetas = []
+    etiquetas_reducidas = []
+    for item in ens._lista_nodos:
+        for n, gl in item.grados_libertad.items():
+            if reducida and not gl.valor:
+                continue
+            if ens._union._k.grados is not None:
+                if n not in ens._union._k.grados:
+                    continue
+            if item.rotado:
+                label = gl.label_desplazamiento_rotado + '_{' + item.nombre + '}'
+            else:
+                label = gl.label_desplazamiento + '_{' + item.nombre + '}'
+            etiquetas.append(label)
+            if gl.valor:
+                etiquetas_reducidas.append(label)
+    return Matrix(np.array(etiquetas).reshape(-1, 1),element_to_mobject_config = {
+                "tex_to_color_map": {
+                    item: color for item in etiquetas_reducidas
+                }
+            }, left_bracket=r"\{", right_bracket=r"\}")
+
+def ecuacion_vector_etiquetas_reacciones(ens: Ensamble, color: ManimColor = BLUE, reducida: bool = False)-> Matrix:
+    mi_plantilla = TexTemplate()
+    mi_plantilla.add_to_preamble(r"\usepackage{cancel}")
+    etiquetas = []
+    etiquetas_reducidas = []
+    for item in ens._lista_nodos:
+        for n, gl in item.grados_libertad.items():
+            if reducida and not gl.valor:
+                continue
+            if ens._union._k.grados is not None:
+                if n not in ens._union._k.grados:
+                    continue
+            sub = gl.gl if 'eje' not in gl.gl else ''
+            if item.rotado:
+                label = gl.label_reaccion_rotado
+            else:
+                label = gl.label_reaccion
+            label += '_{' + item.nombre + sub + '}'
+            if gl.valor:
+                etiquetas.append(r'\cancel{' + label + '}')
+            else:
+                if item.rotado:
+                    label = label if gl.reaccion_rotado is None else label + '=' + str(gl.reaccion_rotado)
+                else:
+                    label = label if gl.reaccion is None else label + '=' + str(gl.reaccion)
+                    etiquetas.append(label)
+                    etiquetas_reducidas.append(label)
+    return Matrix(np.array(etiquetas).reshape(-1, 1),element_to_mobject_config = {
+                "tex_to_color_map": {
+                    item: color for item in etiquetas_reducidas
+                },"tex_template": mi_plantilla,
+            }, left_bracket=r"\{", right_bracket=r"\}")
+
 
 class EjemploVigasAnimacion(Scene):
     def construct(self):
@@ -19,10 +75,12 @@ class EjemploVigasAnimacion(Scene):
         e_1.agregar_carga_puntual(-80, 6.0)
         e_2.agregar_carga_distribuida(-24)
         mg = Ensamble([e_1, e_2, e_3])
+        lista_des = ecuacion_vector_etiquetas_desplazamientos(mg, color=BLUE,reducida=True)
+        lista_rea = ecuacion_vector_etiquetas_reacciones(mg, color=BLUE, reducida=False)
         # etiquetas = []
         # for item in mg._lista_nodos:
         #     for n, gl in item.grados_libertad.items():
-        #         if not gl.valor:
+        #         if False and not gl.valor:
         #             continue
         #         if mg._union._k.grados is not None:
         #             if n not in mg._union._k.grados:
@@ -31,6 +89,7 @@ class EjemploVigasAnimacion(Scene):
         #             etiquetas.append(gl.label_desplazamiento_rotado + '_{' + item.nombre + '}')
         #         else:
         #             etiquetas.append(gl.label_desplazamiento + '_{' + item.nombre + '}')
+        # print(etiquetas)
         #        vec_r = Matrix(np.array(['F_{1y}' ,'M_{1}' ,r'\color{blue}{F_{2y}}' ,'\\cancel{M_{2}}', 'F_{3y}' ,'\\cancel{M_{3}}',
         # 'F_{4y}' ,'M_{4}']).reshape(-1,1),element_to_mobject_config={"tex_template": mi_plantilla})
         vec_r_global = Matrix(np.array(mg._union._k.obtener_etiquetas_reacciones(False)).reshape(-1, 1),
@@ -511,6 +570,13 @@ class EjemploVigasAnimacion(Scene):
 
         # Animaciones
         ## Enunciado
+        self.play(FadeIn(lista_des), run_time=2)
+        self.wait(5)
+        self.play(FadeOut(lista_des), run_time=2)
+        self.wait(5)
+        self.play(FadeIn(lista_rea), run_time=2)
+        self.wait(5)
+        self.play(FadeOut(lista_rea), run_time=2)
         self.play(Write(enunciado), run_time=5)
         ## Diagrama de la viga
         self.play(FadeIn(escena_inicial), run_time=2)
