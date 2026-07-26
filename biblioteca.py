@@ -1,9 +1,97 @@
 from manim import *
 import numpy as np
+from mnspy import *
+
+mi_plantilla = TexTemplate()
+mi_plantilla.add_to_preamble(r"\usepackage{cancel}")
+mi_plantilla.add_to_preamble(r"\usepackage{xcolor}")
+
 
 # config.tex_template = TexTemplate()
 # config.tex_template.add_to_preamble(r"\usepackage{cancel}")
 # config.tex_template.add_to_preamble(r"\usepackage{xcolor}")
+
+class EnsambleAnimacion(Ensamble):
+    def __init__(self, lista_elementos: list[Elemento]):
+        super().__init__(lista_elementos)
+
+    def ecuacion_vector_etiquetas_desplazamientos(self, color_incognitas: ManimColor = BLUE,
+                                                  reducida: bool = False) -> Matrix:
+        etiquetas = []
+        etiquetas_reducidas = []
+        for item in self._lista_nodos:
+            for n, gl in item.grados_libertad.items():
+                if reducida and not gl.valor:
+                    continue
+                if self._union._k.grados is not None:
+                    if n not in self._union._k.grados:
+                        continue
+                if item.rotado:
+                    label = gl.label_desplazamiento_rotado + '_{' + item.nombre + '}'
+                else:
+                    label = gl.label_desplazamiento + '_{' + item.nombre + '}'
+                etiquetas.append(label)
+                if gl.valor:
+                    etiquetas_reducidas.append(label)
+        return Matrix(np.array(etiquetas).reshape(-1, 1), element_to_mobject_config={
+            "tex_to_color_map": {
+                item: color_incognitas for item in etiquetas_reducidas
+            }
+        }, left_bracket=r"\{", right_bracket=r"\}")
+
+    def ecuacion_vector_etiquetas_reacciones(self, color_incognitas: ManimColor = BLUE,
+                                             reducida: bool = False) -> Matrix:
+        mi_plantilla = TexTemplate()
+        mi_plantilla.add_to_preamble(r"\usepackage{cancel}")
+        etiquetas = []
+        etiquetas_reducidas = []
+        for item in self._lista_nodos:
+            for n, gl in item.grados_libertad.items():
+                if reducida and not gl.valor:
+                    continue
+                if self._union._k.grados is not None:
+                    if n not in self._union._k.grados:
+                        continue
+                sub = gl.gl if 'eje' not in gl.gl else ''
+                if item.rotado:
+                    label = gl.label_reaccion_rotado
+                else:
+                    label = gl.label_reaccion
+                label += '_{' + item.nombre + sub + '}'
+                if gl.valor:
+                    etiquetas.append(r'\cancel{' + label + '}')
+                else:
+                    if item.rotado:
+                        label = label if gl.reaccion_rotado is None else label + '=' + str(gl.reaccion_rotado)
+                    else:
+                        label = label if gl.reaccion is None else label + '=' + str(gl.reaccion)
+                        etiquetas.append(label)
+                        etiquetas_reducidas.append(label)
+        return Matrix(np.array(etiquetas).reshape(-1, 1), element_to_mobject_config={
+            "tex_to_color_map": {
+                item: color_incognitas for item in etiquetas_reducidas
+            }, "tex_template": mi_plantilla,
+        }, left_bracket=r"\{", right_bracket=r"\}")
+
+    def ecuacion_vector_fuerzas_nodales(self, reducida: bool = False, **kwargs) -> VMobject:
+        return ecuacion_array_a_matriz(np.array(self._union._k.obtener_fuerzas(reducida)), left_bracket=r"\{", right_bracket=r"\}", **kwargs)
+
+    def ecuacion_matriz_rigidez_global(self, reducida: bool = False, **kwargs) -> VMobject:
+        return ecuacion_array_a_matriz(np.array(self._union._k.obtener_matriz(reducida)), **kwargs)
+
+    def sistema_ecuaciones_matriz_rigidez_global(self, EI_cte: bool = False, reducida: bool = False,
+                                                 h_buff_k: float | int = 1.8) -> VMobject:
+        vec_r_global = self.ecuacion_vector_etiquetas_reacciones(reducida=reducida)
+        vec_f_global = self.ecuacion_vector_fuerzas_nodales(reducida=reducida)
+        vec_k_global = self.ecuacion_matriz_rigidez_global(reducida=reducida, h_buff=h_buff_k)
+        vec_d_global = self.ecuacion_vector_etiquetas_desplazamientos(reducida=reducida)
+        if EI_cte:
+            return VGroup(vec_r_global, ecuacion_signo_igual(), ecuacion_EI(), vec_k_global, vec_d_global,
+                          ecuacion_signo_menos(), vec_f_global)
+        else:
+            return VGroup(vec_r_global, ecuacion_signo_igual(), vec_k_global, vec_d_global, ecuacion_signo_menos(),
+                          vec_f_global)
+
 
 def elemento_viga(x_i: float, x_f: float, h: float | int, ejes: Axes) -> VMobject:
     coord_i = ejes.c2p((x_i, 0))
@@ -406,7 +494,9 @@ def ecuacion_vector_desplazamiento_viga(id_nodo_inicial: int | str = '1', id_nod
     )
     return vector_deformacion
 
-def ecuacion_vector_fuerza_nodal_equivalente_viga(id_nodo_inicial: int | str = '1',id_nodo_final: int | str = '2') -> VMobject:
+
+def ecuacion_vector_fuerza_nodal_equivalente_viga(id_nodo_inicial: int | str = '1',
+                                                  id_nodo_final: int | str = '2') -> VMobject:
     str_nodo_ini = str(id_nodo_inicial)
     str_nodo_fin = str(id_nodo_final)
     vector_fuerzas_nodal = Matrix(
@@ -433,16 +523,27 @@ def ecuacion_array_a_matriz(arr: np.ndarray, formato_num: str = "{x:g}", **kwarg
 
 def ecuacion_signo_igual():
     return MathTex('=')
+
+
 def ecuacion_signo_menos():
     return MathTex('-')
+
+
 def ecuacion_signo_mas():
     return MathTex('+')
+
+
 def ecuacion_EI():
     return MathTex('EI')
+
+
 def ecuacion_EI_inv():
     return MathTex(r'\dfrac{1}{EI}')
+
+
 def ecuacion_vector_deformaciones(reducida: bool = False):
     return MathTex(r'\dfrac{1}{EI}')
+
 
 def main():
     class demo(Scene):
@@ -480,7 +581,8 @@ def main():
             mi_plantilla.add_to_preamble(r"\usepackage{cancel}")
 
             # 2. Tu arreglo (nota el uso de r"" en \cancel para evitar errores de Python)
-            test = np.array(['F_{1y}', 'M_{1}', 'F_{2y}', 'M_{2}', 'F_{3y}', r'\cancel{M_{3}}', 'F_{4y}', 'M_{4}']).reshape((-1,1))
+            test = np.array(
+                ['F_{1y}', 'M_{1}', 'F_{2y}', 'M_{2}', 'F_{3y}', r'\cancel{M_{3}}', 'F_{4y}', 'M_{4}']).reshape((-1, 1))
 
             # 3. Crear la matriz pasando la plantilla a los elementos internos
             matriz = Matrix(
