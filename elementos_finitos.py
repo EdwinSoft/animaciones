@@ -3,6 +3,7 @@ import numpy as np
 from biblioteca import *
 from mnspy import Nodo, Viga
 
+
 class EjemploVigasAnimacion(Scene):
     def construct(self):
         n_1 = Nodo('1', 0, grados_libertad={'y': False, 'eje_z': False})
@@ -15,56 +16,32 @@ class EjemploVigasAnimacion(Scene):
         e_1.agregar_carga_puntual(-80, 6.0)
         e_2.agregar_carga_distribuida(-24)
         mg = EnsambleAnimacion([e_1, e_2, e_3])
-        # vec_r_global = Matrix(np.array(mg._union._k.obtener_etiquetas_reacciones(False)).reshape(-1, 1),
-        #                       element_to_mobject_config={"tex_template": mi_plantilla})
-        #
-        # vec_f_global = ecuacion_array_a_matriz(np.array(mg._union._k.obtener_fuerzas(False)))
-        # vec_k_global = ecuacion_array_a_matriz(np.array(mg._union._k.obtener_matriz(False)), h_buff=1.8)
-        # vec_d_global = Matrix(np.array(mg._union._k.obtener_etiquetas_desplazamientos(False)).reshape(-1, 1),
-        #                       element_to_mobject_config={"tex_template": mi_plantilla})
-        # matriz_global = VGroup(vec_r_global.copy(), ecuacion_signo_igual(), ecuacion_EI(), vec_k_global.copy(),
-        #                        vec_d_global.copy(), ecuacion_signo_menos(),
-        #                        vec_f_global.copy()).scale(
-        #     0.5).arrange(RIGHT)
-        # vec_r_global = mg.ecuacion_vector_etiquetas_reacciones(reducida=False)
-        # vec_f_global = mg.ecuacion_vector_fuerzas_nodales(reducida=False)
-        # vec_k_global = mg.ecuacion_matriz_rigidez_global(reducida=False, h_buff=1.8)
-        # vec_d_global = mg.ecuacion_vector_etiquetas_desplazamientos(reducida=False)
-        # matriz_global = VGroup(vec_r_global.copy(), ecuacion_signo_igual(), ecuacion_EI(), vec_k_global.copy(),
-        #                        vec_d_global.copy(), ecuacion_signo_menos(),
-        #                        vec_f_global.copy()).scale(0.5).arrange(RIGHT)
-        matriz_global= mg.sistema_ecuaciones_matriz_rigidez_global(EI_cte=True, reducida=False).scale(0.5).arrange(RIGHT)
-        # vec_r = Matrix(np.array(mg._union._k.obtener_etiquetas_reacciones(True)).reshape(-1, 1),
-        #                element_to_mobject_config={"tex_template": mi_plantilla})
-        #
-        # vec_f = ecuacion_array_a_matriz(np.array(mg._union._k.obtener_fuerzas(True)))
-        # vec_k = ecuacion_array_a_matriz(np.array(mg._union._k.obtener_matriz(True)), h_buff=1.8)
-        # vec_d = Matrix(np.array(mg._union._k.obtener_etiquetas_desplazamientos(True)).reshape(-1, 1),
-        #                element_to_mobject_config={"tex_template": mi_plantilla})
-        vec_r = mg.ecuacion_vector_etiquetas_reacciones(reducida=True)
-        vec_f = mg.ecuacion_vector_fuerzas_nodales(reducida=True)
-        vec_k = mg.ecuacion_matriz_rigidez_global(reducida=True, h_buff=1.8)
-        vec_d = mg.ecuacion_vector_etiquetas_desplazamientos(reducida=True)
-        matriz_global_reducida = VGroup(vec_r.copy(), ecuacion_signo_igual(), ecuacion_EI(), vec_k.copy(), vec_d.copy(),
-                                        ecuacion_signo_menos(), vec_f.copy()).scale(0.5).arrange(RIGHT)
-        matriz_global_reducida_final = VGroup(vec_f.copy(), ecuacion_signo_igual(), ecuacion_EI(), vec_k.copy(),
-                                              vec_d.copy()).scale(0.5).arrange(RIGHT)
-        matriz = vec_k.copy()
+        matriz_global_base = mg.sistema_ecuaciones_matriz_rigidez_global(EI_cte=True, reducida=False)
+        matriz_global = matriz_global_base.copy().scale(0.5).arrange(
+            RIGHT)
+        matriz_global_reducida_inicial = mg.sistema_ecuaciones_matriz_rigidez_global(EI_cte=True, reducida=True)
+        matriz_global_reducida = matriz_global_reducida_inicial.copy().scale(0.5).arrange(RIGHT)
+        matriz_global_reducida_final = VGroup(matriz_global_reducida_inicial[6].copy(), ecuacion_signo_igual(),
+                                              ecuacion_EI(), matriz_global_reducida_inicial[3].copy(),
+                                              matriz_global_reducida_inicial[4].copy()).scale(0.5).arrange(RIGHT)
+        matriz = matriz_global_reducida_inicial[3].copy()
         vec_k_reduc_inverso = ecuacion_array_a_matriz(np.linalg.inv(np.array(mg._union._k.obtener_matriz(True))),
                                                       h_buff=2.8)
         sol = np.linalg.inv(np.array(mg._union._k.obtener_matriz(True))) @ np.array(mg._union._k.obtener_fuerzas(True))
-        solucion_reducida = ecuacion_array_a_matriz(sol, formato_num='{x:.8f}')
+        solucion_reducida = ecuacion_array_a_matriz(sol, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
         superindice = MathTex("-1").next_to(matriz, RIGHT, aligned_edge=UP, buff=0.1)
-        matriz_global_reducida_final_2 = VGroup(ecuacion_EI_inv(), VGroup(vec_k.copy(), superindice), vec_f.copy(),
-                                                ecuacion_signo_igual(),
-                                                vec_d.copy()).scale(
+        matriz_global_reducida_final_2 = VGroup(ecuacion_EI_inv(),
+                                                VGroup(matriz_global_reducida_inicial[3].copy(), superindice),
+                                                matriz_global_reducida_inicial[6].copy(),
+                                                ecuacion_signo_igual(), matriz_global_reducida_inicial[4].copy()).scale(
             0.5).arrange(RIGHT)
-        matriz_global_reducida_final_3 = VGroup(ecuacion_EI_inv(), vec_k_reduc_inverso, vec_f.copy(),
+        matriz_global_reducida_final_3 = VGroup(ecuacion_EI_inv(), vec_k_reduc_inverso,
+                                                matriz_global_reducida_inicial[6].copy(),
                                                 ecuacion_signo_igual(),
-                                                vec_d.copy()).scale(
+                                                matriz_global_reducida_inicial[4].copy()).scale(
             0.5).arrange(RIGHT)
         matriz_global_reducida_final_4 = VGroup(ecuacion_EI_inv(), solucion_reducida.copy(), ecuacion_signo_igual(),
-                                                vec_d.copy()).scale(
+                                                matriz_global_reducida_inicial[4].copy()).scale(
             0.5).arrange(RIGHT)
         sol_1 = VGroup(MathTex(r'{\phi_2}').set_color(BLUE), ecuacion_signo_igual(),
                        MathTex(r'\dfrac{' + f'{sol[0][0]:.8f}' + '}{EI}')).scale(0.5).arrange(RIGHT)
@@ -73,9 +50,29 @@ class EjemploVigasAnimacion(Scene):
                                                                                                              DOWN)
 
         mg.solucionar_por_gauss_y_calcular_reacciones()
-        matriz_global_final = mg.sistema_ecuaciones_matriz_rigidez_global(EI_cte=True, reducida=False).scale(0.35).arrange(
-            RIGHT)
-        #vec_d_global_sol = mg.ecuacion_vector_etiquetas_desplazamientos(reducida=True)
+        sol_final = np.array(mg._union._k.obtener_matriz(False)) @ np.array(mg._union._k.obtener_desplazamientos(False))
+        sol_final_resta = sol_final - mg._union._k.obtener_fuerzas(False)
+        solucion = ecuacion_array_a_matriz(sol_final, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
+
+        matriz_global_final_base = mg.sistema_ecuaciones_matriz_rigidez_global(EI_cte=True, reducida=False)
+        matriz_global_final = matriz_global_final_base.copy().scale(0.35).arrange(RIGHT)
+        matriz_global_final_2 = matriz_global_final_base.copy()
+        matriz_global_final_2[0] = matriz_global_base.copy()[0]
+        matriz_global_final_2.scale(0.35).arrange(RIGHT)
+        matriz_global_final_3 = matriz_global_final_base.copy()
+        matriz_global_final_3[0] = matriz_global_base.copy()[0]
+        matriz_global_final_3.submobjects.pop(2)
+        matriz_global_final_3.submobjects.pop(2)
+        matriz_global_final_3[2] = solucion
+        matriz_global_final_4 = matriz_global_final_3.copy()
+        matriz_global_final_3.scale(0.35).arrange(RIGHT)
+        matriz_global_final_4.submobjects.pop(2)
+        matriz_global_final_4.submobjects.pop(2)
+        matriz_global_final_4[2] = ecuacion_array_a_matriz(sol_final_resta, formato_num='{x:.8f}', left_bracket=r"\{",
+                                                           right_bracket=r"\}")
+
+        matriz_global_final_4.scale(0.35).arrange(RIGHT)
+        # vec_d_global_sol = mg.ecuacion_vector_etiquetas_desplazamientos(reducida=True)
 
         # matriz_global_final = VGroup(vec_r_global.copy(), ecuacion_signo_igual(), ecuacion_EI(), vec_k_global.copy(),
         #                              vec_d_global_sol,
@@ -721,7 +718,27 @@ class EjemploVigasAnimacion(Scene):
         self.wait(2)
         self.play(FadeOut(sol_1), FadeOut(sol_2))
         self.wait(2)
-        # matriz_global_final[4].get_entries()[3]=sol_1.move_to(matriz_global_final[4].get_entries()[3])
-        # matriz_global_final[4].get_entries()[5] = sol_2.move_to(matriz_global_final[4].get_entries()[5])
+        self.play(FadeIn(matriz_global_final_2))
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(matriz_global_final_2[0:2]), VGroup(matriz_global_final_3[0:2])),
+                  ReplacementTransform(VGroup(matriz_global_final_2[2:5]), VGroup(matriz_global_final_3[2])),
+                  ReplacementTransform(VGroup(matriz_global_final_2[5:7]), VGroup(matriz_global_final_3[3:5])),
+                  # FadeOut(matriz_global_final_2),
+                  run_time=4)
+        self.wait(2)
+        # self.play(ReplacementTransform(VGroup(matriz_global_final_3[0:2]), VGroup(matriz_global_final_4[0:2])),
+        #           ReplacementTransform(VGroup(matriz_global_final_3[2:5]), VGroup(matriz_global_final_4[2])),
+        #           run_time=4)
+        self.play(ReplacementTransform(VGroup(matriz_global_final_3[0:2]), VGroup(matriz_global_final_4[0:2])),
+                  ReplacementTransform(matriz_global_final_3[2].get_brackets()[0], matriz_global_final_4[2].get_brackets()[0]),
+                  ReplacementTransform(matriz_global_final_3[4].get_brackets()[1],
+                                       matriz_global_final_4[2].get_brackets()[1]),
+                  ReplacementTransform(VGroup(matriz_global_final_3[2].get_entries(), matriz_global_final_3[4].get_entries()), VGroup(matriz_global_final_4[2].get_entries())),
+                  FadeOut(matriz_global_final_3[3]),
+                  FadeOut(matriz_global_final_3[2].get_brackets()[1]),
+                  FadeOut(matriz_global_final_3[4].get_brackets()[0]),
+                  run_time=4)
+        self.wait(2)
+        self.play(FadeOut(matriz_global_final_4))
         self.play(FadeIn(matriz_global_final))
         self.wait(5)

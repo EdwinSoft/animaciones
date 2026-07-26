@@ -1,6 +1,7 @@
 from manim import *
 import numpy as np
 from mnspy import *
+from mnspy.utilidades import _formato_float_latex
 
 mi_plantilla = TexTemplate()
 mi_plantilla.add_to_preamble(r"\usepackage{cancel}")
@@ -15,8 +16,9 @@ class EnsambleAnimacion(Ensamble):
     def __init__(self, lista_elementos: list[Elemento]):
         super().__init__(lista_elementos)
 
-    def ecuacion_vector_etiquetas_desplazamientos(self, color_incognitas: ManimColor = BLUE,
-                                                  reducida: bool = False) -> Matrix:
+    def ecuacion_vector_etiquetas_desplazamientos(self, EI_cte: bool = False, color_incognitas: ManimColor = BLUE,
+                                                  reducida: bool = False, tol_cero: float = 1E-10,
+                                                  formato: str = '{:.10g}') -> VMobject:
         etiquetas = []
         etiquetas_reducidas = []
         for item in self._lista_nodos:
@@ -30,9 +32,24 @@ class EnsambleAnimacion(Ensamble):
                     label = gl.label_desplazamiento_rotado + '_{' + item.nombre + '}'
                 else:
                     label = gl.label_desplazamiento + '_{' + item.nombre + '}'
-                etiquetas.append(label)
+                if EI_cte and gl.valor:
+                    if item.rotado:
+                        label = label if gl.desplazamiento_rotado is None else label + '=' +_formato_float_latex(
+                            gl.desplazamiento_rotado,tol_cero, formato)+'/EI'
+                    else:
+                        label = label if gl.desplazamiento is None else label + '=' +_formato_float_latex(
+                            gl.desplazamiento,tol_cero, formato)+'/EI'
+                else:
+                    if item.rotado:
+                        label = label if gl.desplazamiento_rotado is None else label + '=' + _formato_float_latex(
+                            gl.desplazamiento_rotado, tol_cero, formato)
+                    else:
+                        label = label if gl.desplazamiento is None else label + '=' + _formato_float_latex(
+                            gl.desplazamiento, tol_cero, formato)
+
                 if gl.valor:
                     etiquetas_reducidas.append(label)
+                etiquetas.append(label)
         return Matrix(np.array(etiquetas).reshape(-1, 1), element_to_mobject_config={
             "tex_to_color_map": {
                 item: color_incognitas for item in etiquetas_reducidas
@@ -40,7 +57,8 @@ class EnsambleAnimacion(Ensamble):
         }, left_bracket=r"\{", right_bracket=r"\}")
 
     def ecuacion_vector_etiquetas_reacciones(self, color_incognitas: ManimColor = BLUE,
-                                             reducida: bool = False) -> Matrix:
+                                             reducida: bool = False, tol_cero: float = 1E-10,
+                                             formato: str = '{:.10g}') -> VMobject:
         mi_plantilla = TexTemplate()
         mi_plantilla.add_to_preamble(r"\usepackage{cancel}")
         etiquetas = []
@@ -62,11 +80,14 @@ class EnsambleAnimacion(Ensamble):
                     etiquetas.append(r'\cancel{' + label + '}')
                 else:
                     if item.rotado:
-                        label = label if gl.reaccion_rotado is None else label + '=' + str(gl.reaccion_rotado)
+                        label = label if gl.reaccion_rotado is None else label + '=' + _formato_float_latex(
+                            gl.reaccion_rotado, tol_cero, formato)
                     else:
-                        label = label if gl.reaccion is None else label + '=' + str(gl.reaccion)
-                        etiquetas.append(label)
-                        etiquetas_reducidas.append(label)
+                        label = label if gl.reaccion is None else label + '=' + _formato_float_latex(gl.reaccion,
+                                                                                                     tol_cero, formato)
+                    etiquetas.append(label)
+                    etiquetas_reducidas.append(label)
+                    _formato_float_latex(10)
         return Matrix(np.array(etiquetas).reshape(-1, 1), element_to_mobject_config={
             "tex_to_color_map": {
                 item: color_incognitas for item in etiquetas_reducidas
@@ -74,7 +95,8 @@ class EnsambleAnimacion(Ensamble):
         }, left_bracket=r"\{", right_bracket=r"\}")
 
     def ecuacion_vector_fuerzas_nodales(self, reducida: bool = False, **kwargs) -> VMobject:
-        return ecuacion_array_a_matriz(np.array(self._union._k.obtener_fuerzas(reducida)), left_bracket=r"\{", right_bracket=r"\}", **kwargs)
+        return ecuacion_array_a_matriz(np.array(self._union._k.obtener_fuerzas(reducida)), left_bracket=r"\{",
+                                       right_bracket=r"\}", **kwargs)
 
     def ecuacion_matriz_rigidez_global(self, reducida: bool = False, **kwargs) -> VMobject:
         return ecuacion_array_a_matriz(np.array(self._union._k.obtener_matriz(reducida)), **kwargs)
@@ -84,7 +106,7 @@ class EnsambleAnimacion(Ensamble):
         vec_r_global = self.ecuacion_vector_etiquetas_reacciones(reducida=reducida)
         vec_f_global = self.ecuacion_vector_fuerzas_nodales(reducida=reducida)
         vec_k_global = self.ecuacion_matriz_rigidez_global(reducida=reducida, h_buff=h_buff_k)
-        vec_d_global = self.ecuacion_vector_etiquetas_desplazamientos(reducida=reducida)
+        vec_d_global = self.ecuacion_vector_etiquetas_desplazamientos(EI_cte=EI_cte,reducida=reducida)
         if EI_cte:
             return VGroup(vec_r_global, ecuacion_signo_igual(), ecuacion_EI(), vec_k_global, vec_d_global,
                           ecuacion_signo_menos(), vec_f_global)
