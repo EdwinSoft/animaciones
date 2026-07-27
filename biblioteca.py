@@ -13,8 +13,30 @@ mi_plantilla.add_to_preamble(r"\usepackage{xcolor}")
 # config.tex_template.add_to_preamble(r"\usepackage{xcolor}")
 
 class EnsambleAnimacion(Ensamble):
-    def __init__(self, lista_elementos: list[Elemento]):
+    def __init__(self, lista_elementos: list[Elemento], escala: float | int | None = None):
         super().__init__(lista_elementos)
+        min_x, max_x = self._graf['lim_x'][0], self._graf['lim_x'][1]
+        min_y, max_y = self._graf['lim_y'][0], self._graf['lim_y'][1]
+        centro = ((min_x + max_x) / 2, (min_y + max_y) / 2)
+        if 16.0 * (max_y - min_y) > 9.0 * (max_x - min_x):
+            rango_y = [min_y, max_y, 1]
+            rango_x = [centro[0] - 0.5 * (max_y - min_y) * 16 / 9, centro[0] + 0.5 * (max_y - min_y) * 16 / 9, 1]
+        else:
+            rango_x = [min_x, max_x, 1]
+            rango_y = [centro[1] - 0.5 * (max_x - min_x) * 9 / 16, centro[1] + 0.5 * (max_x - min_x) * 9 / 16, 1]
+        if escala is None:
+            f_escala = 0.9 * 8.0 / (rango_y[1] - rango_y[0])
+        else:
+            f_escala = escala
+        ejes_planos = NumberPlane(
+            x_range=rango_x,
+            y_range=rango_y,
+            axis_config={
+                "stroke_width": 0,  # Ejes más gruesos para resaltarlos
+            },
+            background_line_style={"stroke_opacity": 0.2}
+        ).scale(f_escala)
+        self.ejes = ejes_planos
 
     def ecuacion_vector_etiquetas_desplazamientos(self, EI_cte: bool = False, color_incognitas: ManimColor = BLUE,
                                                   reducida: bool = False, tol_cero: float = 1E-10,
@@ -34,11 +56,11 @@ class EnsambleAnimacion(Ensamble):
                     label = gl.label_desplazamiento + '_{' + item.nombre + '}'
                 if EI_cte and gl.valor:
                     if item.rotado:
-                        label = label if gl.desplazamiento_rotado is None else label + '=' +_formato_float_latex(
-                            gl.desplazamiento_rotado,tol_cero, formato)+'/EI'
+                        label = label if gl.desplazamiento_rotado is None else label + '=' + _formato_float_latex(
+                            gl.desplazamiento_rotado, tol_cero, formato) + '/EI'
                     else:
-                        label = label if gl.desplazamiento is None else label + '=' +_formato_float_latex(
-                            gl.desplazamiento,tol_cero, formato)+'/EI'
+                        label = label if gl.desplazamiento is None else label + '=' + _formato_float_latex(
+                            gl.desplazamiento, tol_cero, formato) + '/EI'
                 else:
                     if item.rotado:
                         label = label if gl.desplazamiento_rotado is None else label + '=' + _formato_float_latex(
@@ -87,7 +109,7 @@ class EnsambleAnimacion(Ensamble):
                                                                                                      tol_cero, formato)
                     etiquetas.append(label)
                     etiquetas_reducidas.append(label)
-                    _formato_float_latex(10)
+                    # _formato_float_latex(10)
         return Matrix(np.array(etiquetas).reshape(-1, 1), element_to_mobject_config={
             "tex_to_color_map": {
                 item: color_incognitas for item in etiquetas_reducidas
@@ -106,13 +128,359 @@ class EnsambleAnimacion(Ensamble):
         vec_r_global = self.ecuacion_vector_etiquetas_reacciones(reducida=reducida)
         vec_f_global = self.ecuacion_vector_fuerzas_nodales(reducida=reducida)
         vec_k_global = self.ecuacion_matriz_rigidez_global(reducida=reducida, h_buff=h_buff_k)
-        vec_d_global = self.ecuacion_vector_etiquetas_desplazamientos(EI_cte=EI_cte,reducida=reducida)
+        vec_d_global = self.ecuacion_vector_etiquetas_desplazamientos(EI_cte=EI_cte, reducida=reducida)
         if EI_cte:
             return VGroup(vec_r_global, ecuacion_signo_igual(), ecuacion_EI(), vec_k_global, vec_d_global,
                           ecuacion_signo_menos(), vec_f_global)
         else:
             return VGroup(vec_r_global, ecuacion_signo_igual(), vec_k_global, vec_d_global, ecuacion_signo_menos(),
                           vec_f_global)
+
+    def get_cargas_puntuales(self, longitud: float | int = 2.0) -> VGroup:
+        cargas = VGroup()
+        for carga_puntual in self._lista_cargas_puntuales:
+            p_1 = np.array(carga_puntual[1][0])
+            p_2 = np.array(carga_puntual[1][1])
+            p = p_1 + carga_puntual[2] * (p_2 - p_1) / np.linalg.norm(p_2 - p_1)
+            cp = elemento_carga(p, self.ejes, longitud, ang=90, saliente=False, h=0.25 / 2)
+            valor = MathTex(str(abs(carga_puntual[0])) + r"\,kN").next_to(cp, UP, buff=0.1).scale(0.5)
+            cargas.add(cp)
+            cargas.add(valor)
+        return cargas
+
+    def get_cargas_distribuidas(self, longitud: float | int = 2.0) -> VGroup:
+        cargas = VGroup()
+        for carga_distribuida in self._lista_cargas_distribuidas:
+            cp = elemento_carga_distribuida(carga_distribuida[1][0], carga_distribuida[1][1], self.ejes, 0.25 / 2,
+                                            saliente=False, longitud=longitud, n_cargas=20)
+            valor_1 = MathTex(str(abs(carga_distribuida[0][0])) + r"\,kN/m").next_to(cp, UL, buff=0.0).scale(0.5).shift(
+                RIGHT * 0.7)
+            valor_2 = MathTex(str(abs(carga_distribuida[0][1])) + r"\,kN/m").next_to(cp, UR, buff=0.0).scale(0.5).shift(
+                LEFT * 0.7)
+            cargas.add(cp)
+            cargas.add(valor_1)
+            cargas.add(valor_2)
+        return cargas
+
+    def get_nodos_y_soportes(self) -> list[VGroup]:
+        # Determinación de tipo de soporte
+        # [Tipo Apoyo, Estilo]
+        # Tipo Apoyo: 0 Pivotado, 1 empotrado
+        # Estilo:
+        #       Tipo Apoyo: 0 Pivotado
+        #           0: inferior Móvil
+        #           1: inferior Fijo
+        #           2: superior Móvil
+        #           3: superior Fijo
+        #           4: izquierda Móvil
+        #           5: izquierda Fijo
+        #           6: derecha Móvil
+        #           7: derecha Fijo
+        #       Tipo Apoyo: 1 empotrado
+        #           0: fijo izquierdo
+        #           1: fijo derecha
+        #           2: fijo inferior
+        #           3: fijo superior
+        #           4: fijo izquierdo con deslizadera
+        #           5: fijo derecha con deslizadera
+        #           6: fijo inferior con deslizadera
+        #           7: fijo superior con deslizadera
+        for n in self._lista_nodos:
+            if 'x' in n.grados_libertad.keys():
+                if n.grados_libertad['x'].valor:
+                    if 'y' in n.grados_libertad.keys():
+                        if n.grados_libertad['y'].valor:
+                            if 'eje_z' in n.grados_libertad.keys():
+                                if n.grados_libertad['eje_z'].valor:
+                                    pass
+                                    # Libre en los 3 grados
+                                else:
+                                    # Se mueve en x, y, y fijo en eje z
+                                    # No válido o no implementado
+                                    pass
+                            else:
+                                # Se mueve en x, y
+                                pass
+                        elif 'eje_z' in n.grados_libertad.keys():
+                            if n.grados_libertad['eje_z'].valor:
+                                # Se mueve en x y eje z, fijo en y
+                                if n.punto[1] == self._graf['lim_y'][0]:
+                                    i = 0
+                                elif n.punto[1] == self._graf['lim_y'][1]:
+                                    i = 2
+                                else:
+                                    i = 0
+                                if len(n.get_soporte()) == 0:
+                                    n.set_soporte([0, i])
+                                # lista_soportes.append([n.punto[0:2], [0, i]])
+                            else:
+                                # Se mueve en x, y fijo en y, y eje z
+                                # No válido o no implementado
+                                pass
+                        else:
+                            # Se mueve en x, fijo en y
+                            if n.punto[1] == self._graf['lim_y'][0]:
+                                i = 0
+                            elif n.punto[1] == self._graf['lim_y'][1]:
+                                i = 2
+                            else:
+                                i = 0
+                            if len(n.get_soporte()) == 0:
+                                n.set_soporte([0, i])
+                    elif 'eje_z' in n.grados_libertad.keys():
+                        if n.grados_libertad['eje_z'].valor:
+                            # Se mueve solo en x, y eje z
+                            # Sería una viga vertical, no aplica
+                            pass
+                        else:
+                            # Se mueve en x, y fijo en eje z
+                            # No aplica
+                            pass
+                    else:
+                        # Se mueve solo en x
+                        pass
+                elif 'y' in n.grados_libertad.keys():
+                    if n.grados_libertad['y'].valor:
+                        if 'eje_z' in n.grados_libertad.keys():
+                            if n.grados_libertad['eje_z'].valor:
+                                if n.punto[0] == self._graf['lim_x'][0]:
+                                    i = 4
+                                elif n.punto[0] == self._graf['lim_x'][1]:
+                                    i = 6
+                                else:
+                                    i = 4
+                                if len(n.get_soporte()) == 0:
+                                    n.set_soporte([0, i])
+                            else:
+                                # Se mueve en x, y, y fijo en z
+                                # No válido o no implementado
+                                pass
+                        else:
+                            # Se mueve en y, fijo en x
+                            if n.punto[0] == self._graf['lim_x'][0]:
+                                i = 4
+                            elif n.punto[0] == self._graf['lim_x'][1]:
+                                i = 6
+                            else:
+                                i = 6
+                            if len(n.get_soporte()) == 0:
+                                n.set_soporte([0, i])
+                    else:
+                        if 'eje_z' in n.grados_libertad.keys():
+                            if n.grados_libertad['eje_z'].valor:
+                                # Fijo en x, y, y libre en eje z
+                                if n.punto[1] == self._graf['lim_y'][0]:
+                                    i = 1
+                                elif n.punto[1] == self._graf['lim_y'][1]:
+                                    i = 3
+                                elif n.punto[0] == self._graf['lim_x'][0]:
+                                    i = 5
+                                elif n.punto[0] == self._graf['lim_x'][1]:
+                                    i = 7
+                                else:
+                                    i = 1
+                                if len(n.get_soporte()) == 0:
+                                    n.set_soporte([0, i])
+                            else:
+                                # Fijo en x, y, y eje z aplica para marcos
+                                if n.punto[1] == self._graf['lim_y'][0]:
+                                    i = 2
+                                elif n.punto[1] == self._graf['lim_y'][1]:
+                                    i = 3
+                                elif n.punto[0] == self._graf['lim_x'][0]:
+                                    i = 0
+                                elif n.punto[0] == self._graf['lim_x'][1]:
+                                    i = 1
+                                else:
+                                    i = 0
+                                if len(n.get_soporte()) == 0:
+                                    n.set_soporte([1, i])
+                                # lista_soportes.append([n.punto[0:2], [0, i]])
+                        else:  # Solo grados x, y fijos
+                            if n.punto[1] == self._graf['lim_y'][0]:
+                                i = 1
+                            elif n.punto[1] == self._graf['lim_y'][1]:
+                                i = 3
+                            elif n.punto[0] == self._graf['lim_x'][0]:
+                                i = 5
+                            elif n.punto[0] == self._graf['lim_x'][1]:
+                                i = 7
+                            else:
+                                i = 1
+                            if len(n.get_soporte()) == 0:
+                                n.set_soporte([0, i])
+                elif 'eje_z' in n.grados_libertad.keys():
+                    if n.grados_libertad['eje_z'].valor:
+                        # Se mueve solo en eje z, fijo en x
+                        # No aplica
+                        pass
+                        # self._graf['ax'].plot(n.punto[0], n.punto[1], c='navy', marker='.')
+                    else:
+                        # Fijo en x, y eje z
+                        # No aplica, sería viga vertical
+                        pass
+                else:
+                    # Fijo en x
+                    if n.punto[0] == self._graf['lim_x'][0]:
+                        i = 0
+                    elif n.punto[0] == self._graf['lim_x'][1]:
+                        i = 1
+                    else:
+                        i = 0
+                    if len(n.get_soporte()) == 0:
+                        n.set_soporte([1, i])
+                    # lista_soportes.append([n.punto[0:2], [1, i]])
+            elif 'y' in n.grados_libertad.keys():
+                if n.grados_libertad['y'].valor:
+                    if 'eje_z' in n.grados_libertad.keys():
+                        if n.grados_libertad['eje_z'].valor:
+                            # Se mueve en y, y eje z
+                            pass
+                        else:
+                            # Se mueve en y, y fijo en z
+                            if n.punto[0] == self._graf['lim_x'][0]:
+                                i = 4
+                            elif n.punto[0] == self._graf['lim_x'][1]:
+                                i = 5
+                            else:
+                                i = 4
+                            if len(n.get_soporte()) == 0:
+                                n.set_soporte([1, i])
+                            pass
+                    else:
+                        # Se mueve en y
+                        pass
+                elif 'eje_z' in n.grados_libertad.keys():
+                    if n.grados_libertad['eje_z'].valor:
+                        # Fijo en y, y móvil en el eje z
+                        if n.punto[1] == self._graf['lim_y'][0]:
+                            i = 0
+                        elif n.punto[1] == self._graf['lim_y'][1]:
+                            i = 2
+                        else:
+                            i = 0
+                        if len(n.get_soporte()) == 0:
+                            n.set_soporte([0, i])
+                        # lista_soportes.append([n.punto[0:2], [0, i]])
+                    else:
+                        # Fijo en y, y en el eje z
+                        if n.punto[0] == self._graf['lim_x'][0]:
+                            i = 0
+                        elif n.punto[0] == self._graf['lim_x'][1]:
+                            i = 1
+                        else:
+                            i = 0
+                        if len(n.get_soporte()) == 0:
+                            n.set_soporte([1, i])
+                        # lista_soportes.append([n.punto[0:2], [1, i]])
+                else:
+                    # Fijo en y
+                    if n.punto[1] == self._graf['lim_y'][0]:
+                        i = 2
+                    elif n.punto[1] == self._graf['lim_y'][1]:
+                        i = 3
+                    else:
+                        i = 2
+                    if len(n.get_soporte()) == 0:
+                        n.set_soporte([1, i])
+            else:
+                # No valido ni grado x, ni y
+                pass
+        nodos = VGroup()
+        label_nodos = VGroup().set_z_index(1.5)
+        soportes = VGroup().set_z_index(1)
+        for n in self._lista_nodos:
+            nodos.add(Dot(self.ejes.c2p(n.punto), color=BLUE_A))
+            label_nodos.add(
+                LabeledDot(MathTex(n.nombre, color=WHITE), color=GREEN, stroke_color=GREEN, stroke_width=1,
+                           fill_opacity=0.8).next_to(self.ejes.c2p(n.punto), DR, buff=-0.1).scale(0.5))
+            tipo_sop = n.get_soporte()
+            if len(tipo_sop) == 2:
+                tipo, estilo = tipo_sop
+                if tipo == 0:  # pivotado
+                    if estilo == 0:  # móvil
+                        soportes.add(elemento_soporte(n.punto, self.ejes, 0, ang=0))
+                    elif estilo == 1:  # fijo
+                        soportes.add(elemento_soporte(n.punto, self.ejes, 1, ang=0))
+                    elif estilo == 2:  # móvil
+                        soportes.add(elemento_soporte(n.punto, self.ejes, 0, ang=180))
+                    elif estilo == 3:  # fijo
+                        soportes.add(elemento_soporte(n.punto, self.ejes, 1, ang=180))
+                    elif estilo == 4:  # móvil
+                        soportes.add(elemento_soporte(n.punto, self.ejes, 0, ang=270))
+                    elif estilo == 5:  # fijo
+                        soportes.add(elemento_soporte(n.punto, self.ejes, 1, ang=270))
+                    elif estilo == 6:  # móvil
+                        soportes.add(elemento_soporte(n.punto, self.ejes, 0, ang=90))
+                    elif estilo == 7:  # fijo
+                        soportes.add(elemento_soporte(n.punto, self.ejes, 1, ang=90))
+                elif tipo == 1:  # empotrado
+                    if estilo == 0:  # izquierda
+                        soportes.add(elemento_soporte(n.punto, self.ejes, 2, ang=0))
+                    elif estilo == 1:  # derecha
+                        soportes.add(elemento_soporte(n.punto, self.ejes, 2, ang=180))
+                    elif estilo == 2:  # abajo
+                        soportes.add(elemento_soporte(n.punto, self.ejes, 2, ang=90))
+                    elif estilo == 3:  # arriba
+                        soportes.add(elemento_soporte(n.punto, self.ejes, 2, ang=270))
+                    elif estilo == 4:  # izquierda con deslizadera
+                        soportes.add(elemento_soporte(n.punto, self.ejes, 3, ang=0))
+                    elif estilo == 5:  # derecha con deslizadera
+                        soportes.add(elemento_soporte(n.punto, self.ejes, 3, ang=180))
+                    elif estilo == 6:  # abajo con deslizadera
+                        soportes.add(elemento_soporte(n.punto, self.ejes, 3, ang=90))
+                    elif estilo == 7:  # arriba con deslizadera
+                        soportes.add(elemento_soporte(n.punto, self.ejes, 3, ang=270))
+        return [nodos, label_nodos, soportes]
+
+    def get_elementos(self) -> list[VGroup]:
+        elementos = VGroup()
+        label_elementos = VGroup().set_z_index(1.5)
+        for el in self._lista_elementos:
+            elementos.add(elemento_viga(el.get_nodo_inicial().punto[0], el.get_nodo_final().punto[0], 0.25, self.ejes))
+            punto_medio = self.ejes.c2p(
+                (np.array(el.get_nodo_inicial().punto) + np.array(el.get_nodo_final().punto)) / 2)
+            # 1. Crear solo el texto
+            texto = MathTex(el.nombre, color=WHITE)
+
+            # 2. Crear el fondo que envuelve automáticamente al texto
+            fondo = SurroundingRectangle(
+                texto,
+                color=RED,  # Color del fondo
+                fill_opacity=0.8,  # Opacidad
+                stroke_width=1,  # Sin línea de borde
+                buff=0.1  # Padding
+            )
+            # 3. Agrupar, escalar y posicionar
+            etiqueta_completa = VGroup(fondo, texto).scale(0.5)
+            etiqueta_completa.move_to(punto_medio).shift(DOWN * 0.4)
+            # 4. Añadir a la colección
+            label_elementos.add(etiqueta_completa)
+        return [elementos, label_elementos]
+
+    def get_grados_libertad(self, n: Nodo, cfg_grados_libertad: dict[str, list]) -> list[VGroup]:
+        lista_grados = list()
+        for k, v in cfg_grados_libertad.items():
+            if n.rotado:
+                label = n.grados_libertad[k].gl.label_desplazamiento_rotado
+            else:
+                label = n.grados_libertad[k].label_desplazamiento
+            label += '_{' + n.nombre + '}'
+            if n.rotado:
+                label = label if n.grados_libertad[
+                                     k].gl.desplazamiento_rotado is None else label + '=' + _formato_float_latex(
+                    n.grados_libertad[k].gl.desplazamiento_rotado)
+            else:
+                label = label if n.grados_libertad[k].gl.desplazamiento is None else label + '=' + _formato_float_latex(
+                    n.grados_libertad[k].gl.desplazamiento)
+            if n.grados_libertad[k].gl.valor:
+                color = BLUE
+            else:
+                color = RED
+            gl = elemento_grado_libertad(n.punto, self.ejes, gdl=k, libre=n.grados_libertad[k].valor, **v[0])
+            label_gl = MathTex(label, color=color).next_to(gl, **v[1]).scale(0.5)
+            lista_grados.append(VGroup(gl, label_gl))
+        return lista_grados
 
 
 def elemento_viga(x_i: float, x_f: float, h: float | int, ejes: Axes) -> VMobject:

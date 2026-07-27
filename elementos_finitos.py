@@ -17,8 +17,7 @@ class EjemploVigasAnimacion(Scene):
         e_2.agregar_carga_distribuida(-24)
         mg = EnsambleAnimacion([e_1, e_2, e_3])
         matriz_global_base = mg.sistema_ecuaciones_matriz_rigidez_global(EI_cte=True, reducida=False)
-        matriz_global = matriz_global_base.copy().scale(0.5).arrange(
-            RIGHT)
+        matriz_global = matriz_global_base.copy().scale(0.5).arrange(RIGHT)
         matriz_global_reducida_inicial = mg.sistema_ecuaciones_matriz_rigidez_global(EI_cte=True, reducida=True)
         matriz_global_reducida = matriz_global_reducida_inicial.copy().scale(0.5).arrange(RIGHT)
         matriz_global_reducida_final = VGroup(matriz_global_reducida_inicial[6].copy(), ecuacion_signo_igual(),
@@ -72,120 +71,120 @@ class EjemploVigasAnimacion(Scene):
                                                            right_bracket=r"\}")
 
         matriz_global_final_4.scale(0.35).arrange(RIGHT)
-        # vec_d_global_sol = mg.ecuacion_vector_etiquetas_desplazamientos(reducida=True)
 
-        # matriz_global_final = VGroup(vec_r_global.copy(), ecuacion_signo_igual(), ecuacion_EI(), vec_k_global.copy(),
-        #                              vec_d_global_sol,
-        #                              ecuacion_signo_menos(),
-        #                              vec_f_global.copy()).scale(
-        #     0.5).arrange(RIGHT)
         ############
-        ejes_coordenados = Axes(
-            x_range=[0, 25, 1],
-            y_range=[-6, 6, 1],
-            x_length=25,
-            y_length=12,
-            axis_config={"include_tip": False, "stroke_width": 0}
-        ).scale(0.5)
-        ejes_planos = NumberPlane(
-            x_range=[0, 25, 1],
-            y_range=[-6, 6, 1],
-            axis_config={
-                "stroke_width": 0,  # Ejes más gruesos para resaltarlos
-            },
-            background_line_style={"stroke_opacity": 0.2
-                                   # Puedes atenuar las líneas de la cuadrícula si no las quieres ver
-                                   }
-        ).scale(0.5)
-        ejes = ejes_planos
-        cargas = VGroup()
-        for carga_puntual in mg._lista_cargas_puntuales:
-            cp = elemento_carga((carga_puntual[1][0][0] + carga_puntual[2], 0.0, 0.0), ejes, 2, ang=90, saliente=False,
-                                h=0.25 / 2)
-            valor = MathTex(str(abs(carga_puntual[0])) + r"\,kN").next_to(cp, UP, buff=0.1).scale(0.5)
-            cargas.add(cp)
-            cargas.add(valor)
-        for carga_distribuida in mg._lista_cargas_distribuidas:
-            cp = elemento_carga_distribuida((carga_distribuida[1][0][0], 0.0, 0.0),
-                                            (carga_distribuida[1][1][0], 0.0, 0.0), ejes, 0.25 / 2,
-                                            saliente=False, longitud=1, n_cargas=20)
-            valor_1 = MathTex(str(abs(carga_distribuida[0][0])) + r"\,kN/m").next_to(cp, UL, buff=0.0).scale(0.5).shift(
-                RIGHT * 0.7)
-            valor_2 = MathTex(str(abs(carga_distribuida[0][1])) + r"\,kN/m").next_to(cp, UR, buff=0.0).scale(0.5).shift(
-                LEFT * 0.7)
-            cargas.add(cp)
-            cargas.add(valor_1)
-            cargas.add(valor_2)
+        # ejes_coordenados = Axes(
+        #     x_range=[0, 25, 1],
+        #     y_range=[-6, 6, 1],
+        #     x_length=25,
+        #     y_length=12,
+        #     axis_config={"include_tip": False, "stroke_width": 0}
+        # ).scale(0.5)
+        # ejes_planos = NumberPlane(
+        #     x_range=[0, 25, 1],
+        #     y_range=[-6, 6, 1],
+        #     axis_config={
+        #         "stroke_width": 0,  # Ejes más gruesos para resaltarlos
+        #     },
+        #     background_line_style={"stroke_opacity": 0.2
+        #                            # Puedes atenuar las líneas de la cuadrícula si no las quieres ver
+        #                            }
+        # ).scale(0.5)
+        # ejes = ejes_planos
+        ejes = mg.ejes
+        cargas_puntuales = mg.get_cargas_puntuales(longitud=2.0)
+        cargas_distribuidas = mg.get_cargas_distribuidas(longitud=1.0)
+        cargas = cargas_puntuales + cargas_distribuidas
+        # cargas = VGroup()
+        # for carga_puntual in mg._lista_cargas_puntuales:
+        #     cp = elemento_carga((carga_puntual[1][0][0] + carga_puntual[2], 0.0, 0.0), ejes, 2, ang=90, saliente=False,
+        #                         h=0.25 / 2)
+        #     valor = MathTex(str(abs(carga_puntual[0])) + r"\,kN").next_to(cp, UP, buff=0.1).scale(0.5)
+        #     cargas.add(cp)
+        #     cargas.add(valor)
+        # for carga_distribuida in mg._lista_cargas_distribuidas:
+        #     cp = elemento_carga_distribuida((carga_distribuida[1][0][0], 0.0, 0.0),
+        #                                     (carga_distribuida[1][1][0], 0.0, 0.0), ejes, 0.25 / 2,
+        #                                     saliente=False, longitud=1, n_cargas=20)
+        #     valor_1 = MathTex(str(abs(carga_distribuida[0][0])) + r"\,kN/m").next_to(cp, UL, buff=0.0).scale(0.5).shift(
+        #         RIGHT * 0.7)
+        #     valor_2 = MathTex(str(abs(carga_distribuida[0][1])) + r"\,kN/m").next_to(cp, UR, buff=0.0).scale(0.5).shift(
+        #         LEFT * 0.7)
+        #     cargas.add(cp)
+        #     cargas.add(valor_1)
+        #     cargas.add(valor_2)
+
         # mg.solucion()
-        mg.diagrama_cargas()
-
-        nodos = VGroup()
-        label_nodos = VGroup().set_z_index(1.5)
-        soportes = VGroup().set_z_index(1)
-        for n in mg._lista_nodos:
-            nodos.add(Dot(ejes.c2p(n.punto), color=BLUE_A))
-            label_nodos.add(
-                LabeledDot(MathTex(n.nombre, color=WHITE), color=GREEN, stroke_color=GREEN, stroke_width=1,
-                           fill_opacity=0.8).next_to(ejes.c2p(n.punto), DR, buff=-0.1).scale(
-                    0.5))
-            tipo_sop = n.get_soporte()
-            if len(tipo_sop) == 2:
-                tipo, estilo = tipo_sop
-                if tipo == 0:  # pivotado
-                    if estilo == 0:  # móvil
-                        soportes.add(elemento_soporte(n.punto, ejes, 0, ang=0))
-                    elif estilo == 1:  # fijo
-                        soportes.add(elemento_soporte(n.punto, ejes, 1, ang=0))
-                    elif estilo == 2:  # móvil
-                        soportes.add(elemento_soporte(n.punto, ejes, 0, ang=180))
-                    elif estilo == 3:  # fijo
-                        soportes.add(elemento_soporte(n.punto, ejes, 1, ang=180))
-                    elif estilo == 4:  # móvil
-                        soportes.add(elemento_soporte(n.punto, ejes, 0, ang=270))
-                    elif estilo == 5:  # fijo
-                        soportes.add(elemento_soporte(n.punto, ejes, 1, ang=270))
-                    elif estilo == 6:  # móvil
-                        soportes.add(elemento_soporte(n.punto, ejes, 0, ang=90))
-                    elif estilo == 7:  # fijo
-                        soportes.add(elemento_soporte(n.punto, ejes, 1, ang=90))
-                elif tipo == 1:  # empotrado
-                    if estilo == 0:  # izquierda
-                        soportes.add(elemento_soporte(n.punto, ejes, 2, ang=0))
-                    elif estilo == 1:  # derecha
-                        soportes.add(elemento_soporte(n.punto, ejes, 2, ang=180))
-                    elif estilo == 2:  # abajo
-                        soportes.add(elemento_soporte(n.punto, ejes, 2, ang=90))
-                    elif estilo == 3:  # arriba
-                        soportes.add(elemento_soporte(n.punto, ejes, 2, ang=270))
-                    elif estilo == 4:  # izquierda con deslizadera
-                        soportes.add(elemento_soporte(n.punto, ejes, 3, ang=0))
-                    elif estilo == 5:  # derecha con deslizadera
-                        soportes.add(elemento_soporte(n.punto, ejes, 3, ang=180))
-                    elif estilo == 6:  # abajo con deslizadera
-                        soportes.add(elemento_soporte(n.punto, ejes, 3, ang=90))
-                    elif estilo == 7:  # arriba con deslizadera
-                        soportes.add(elemento_soporte(n.punto, ejes, 3, ang=270))
-        elementos = VGroup()
-        label_elementos = VGroup().set_z_index(1.5)
-        for el in mg._lista_elementos:
-            elementos.add(elemento_viga(el.get_nodo_inicial().punto[0], el.get_nodo_final().punto[0], 0.25, ejes))
-            punto_medio = ejes.c2p((np.array(el.get_nodo_inicial().punto) + np.array(el.get_nodo_final().punto)) / 2)
-            # 1. Crear solo el texto
-            texto = MathTex(el.nombre, color=WHITE)
-
-            # 2. Crear el fondo que envuelve automáticamente al texto
-            fondo = SurroundingRectangle(
-                texto,
-                color=RED,  # Color del fondo
-                fill_opacity=0.8,  # Opacidad
-                stroke_width=1,  # Sin línea de borde
-                buff=0.1  # Padding
-            )
-            # 3. Agrupar, escalar y posicionar
-            etiqueta_completa = VGroup(fondo, texto).scale(0.5)
-            etiqueta_completa.move_to(punto_medio).shift(DOWN * 0.4)
-            # 4. Añadir a la colección
-            label_elementos.add(etiqueta_completa)
+        # mg.diagrama_cargas()
+        nodos, label_nodos, soportes = mg.get_nodos_y_soportes()
+        # nodos = VGroup()
+        # label_nodos = VGroup().set_z_index(1.5)
+        # soportes = VGroup().set_z_index(1)
+        # for n in mg._lista_nodos:
+        #     nodos.add(Dot(ejes.c2p(n.punto), color=BLUE_A))
+        #     label_nodos.add(
+        #         LabeledDot(MathTex(n.nombre, color=WHITE), color=GREEN, stroke_color=GREEN, stroke_width=1,
+        #                    fill_opacity=0.8).next_to(ejes.c2p(n.punto), DR, buff=-0.1).scale(
+        #             0.5))
+        #     tipo_sop = n.get_soporte()
+        #     if len(tipo_sop) == 2:
+        #         tipo, estilo = tipo_sop
+        #         if tipo == 0:  # pivotado
+        #             if estilo == 0:  # móvil
+        #                 soportes.add(elemento_soporte(n.punto, ejes, 0, ang=0))
+        #             elif estilo == 1:  # fijo
+        #                 soportes.add(elemento_soporte(n.punto, ejes, 1, ang=0))
+        #             elif estilo == 2:  # móvil
+        #                 soportes.add(elemento_soporte(n.punto, ejes, 0, ang=180))
+        #             elif estilo == 3:  # fijo
+        #                 soportes.add(elemento_soporte(n.punto, ejes, 1, ang=180))
+        #             elif estilo == 4:  # móvil
+        #                 soportes.add(elemento_soporte(n.punto, ejes, 0, ang=270))
+        #             elif estilo == 5:  # fijo
+        #                 soportes.add(elemento_soporte(n.punto, ejes, 1, ang=270))
+        #             elif estilo == 6:  # móvil
+        #                 soportes.add(elemento_soporte(n.punto, ejes, 0, ang=90))
+        #             elif estilo == 7:  # fijo
+        #                 soportes.add(elemento_soporte(n.punto, ejes, 1, ang=90))
+        #         elif tipo == 1:  # empotrado
+        #             if estilo == 0:  # izquierda
+        #                 soportes.add(elemento_soporte(n.punto, ejes, 2, ang=0))
+        #             elif estilo == 1:  # derecha
+        #                 soportes.add(elemento_soporte(n.punto, ejes, 2, ang=180))
+        #             elif estilo == 2:  # abajo
+        #                 soportes.add(elemento_soporte(n.punto, ejes, 2, ang=90))
+        #             elif estilo == 3:  # arriba
+        #                 soportes.add(elemento_soporte(n.punto, ejes, 2, ang=270))
+        #             elif estilo == 4:  # izquierda con deslizadera
+        #                 soportes.add(elemento_soporte(n.punto, ejes, 3, ang=0))
+        #             elif estilo == 5:  # derecha con deslizadera
+        #                 soportes.add(elemento_soporte(n.punto, ejes, 3, ang=180))
+        #             elif estilo == 6:  # abajo con deslizadera
+        #                 soportes.add(elemento_soporte(n.punto, ejes, 3, ang=90))
+        #             elif estilo == 7:  # arriba con deslizadera
+        #                 soportes.add(elemento_soporte(n.punto, ejes, 3, ang=270))
+        # elementos = VGroup()
+        # label_elementos = VGroup().set_z_index(1.5)
+        # for el in mg._lista_elementos:
+        #     elementos.add(elemento_viga(el.get_nodo_inicial().punto[0], el.get_nodo_final().punto[0], 0.25, ejes))
+        #     punto_medio = ejes.c2p((np.array(el.get_nodo_inicial().punto) + np.array(el.get_nodo_final().punto)) / 2)
+        #     # 1. Crear solo el texto
+        #     texto = MathTex(el.nombre, color=WHITE)
+        #
+        #     # 2. Crear el fondo que envuelve automáticamente al texto
+        #     fondo = SurroundingRectangle(
+        #         texto,
+        #         color=RED,  # Color del fondo
+        #         fill_opacity=0.8,  # Opacidad
+        #         stroke_width=1,  # Sin línea de borde
+        #         buff=0.1  # Padding
+        #     )
+        #     # 3. Agrupar, escalar y posicionar
+        #     etiqueta_completa = VGroup(fondo, texto).scale(0.5)
+        #     etiqueta_completa.move_to(punto_medio).shift(DOWN * 0.4)
+        #     # 4. Añadir a la colección
+        #     label_elementos.add(etiqueta_completa)
+        elementos, label_elementos = mg.get_elementos()
         cotas = VGroup()
         p_1 = ejes.c2p([0.0, 0.0, 0.0]) + DOWN
         p_2 = ejes.c2p([6.0, 0.0, 0.0]) + DOWN
@@ -206,6 +205,10 @@ class EjemploVigasAnimacion(Scene):
         viga = elemento_viga(0.0, 25.0, 0.25, ejes)
         viga.set_color(GRAY_D)
         ### Grado libertad nodos
+        # gdl_y_1, label_y_1, gdl_eje_z_1, label_eje_z_1 = (
+        #     mg.get_grados_libertad(n_1,{'y': [{'offset': 0.0, 'longitud': 0.8}],
+        #                                                                          'eje_z': {'offset': 90,
+        #                                                                                    'longitud': 1.0}}, ))
         gdl_y_1 = elemento_grado_libertad(n_1.punto, ejes, gdl='y', libre=False, offset=0.0, longitud=0.8)
         gdl_eje_z_1 = elemento_grado_libertad(n_1.punto, ejes, gdl='eje_z', libre=False, longitud=1, offset=90)
         gdl_y_2 = elemento_grado_libertad(n_2.punto, ejes, gdl='y', libre=False, offset=0.0, longitud=0.8)
@@ -730,10 +733,13 @@ class EjemploVigasAnimacion(Scene):
         #           ReplacementTransform(VGroup(matriz_global_final_3[2:5]), VGroup(matriz_global_final_4[2])),
         #           run_time=4)
         self.play(ReplacementTransform(VGroup(matriz_global_final_3[0:2]), VGroup(matriz_global_final_4[0:2])),
-                  ReplacementTransform(matriz_global_final_3[2].get_brackets()[0], matriz_global_final_4[2].get_brackets()[0]),
+                  ReplacementTransform(matriz_global_final_3[2].get_brackets()[0],
+                                       matriz_global_final_4[2].get_brackets()[0]),
                   ReplacementTransform(matriz_global_final_3[4].get_brackets()[1],
                                        matriz_global_final_4[2].get_brackets()[1]),
-                  ReplacementTransform(VGroup(matriz_global_final_3[2].get_entries(), matriz_global_final_3[4].get_entries()), VGroup(matriz_global_final_4[2].get_entries())),
+                  ReplacementTransform(
+                      VGroup(matriz_global_final_3[2].get_entries(), matriz_global_final_3[4].get_entries()),
+                      VGroup(matriz_global_final_4[2].get_entries())),
                   FadeOut(matriz_global_final_3[3]),
                   FadeOut(matriz_global_final_3[2].get_brackets()[1]),
                   FadeOut(matriz_global_final_3[4].get_brackets()[0]),
