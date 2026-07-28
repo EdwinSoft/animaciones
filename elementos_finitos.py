@@ -82,29 +82,11 @@ class EjemploVigasAnimacion(Scene):
         matriz_global_final_4.submobjects.pop(2)
         matriz_global_final_4[2] = ecuacion_array_a_matriz(sol_final_resta, formato_num='{x:.8f}', left_bracket=r"\{",
                                                            right_bracket=r"\}")
-
         matriz_global_final_4.scale(0.35).arrange(RIGHT)
 
         ############
-        # ejes_coordenados = Axes(
-        #     x_range=[0, 25, 1],
-        #     y_range=[-6, 6, 1],
-        #     x_length=25,
-        #     y_length=12,
-        #     axis_config={"include_tip": False, "stroke_width": 0}
-        # ).scale(0.5)
-        # ejes_planos = NumberPlane(
-        #     x_range=[0, 25, 1],
-        #     y_range=[-6, 6, 1],
-        #     axis_config={
-        #         "stroke_width": 0,  # Ejes más gruesos para resaltarlos
-        #     },
-        #     background_line_style={"stroke_opacity": 0.2
-        #                            # Puedes atenuar las líneas de la cuadrícula si no las quieres ver
-        #                            }
-        # ).scale(0.5)
-        # ejes = ejes_planos
-        ejes = mg.ejes
+
+        # ejes = mg.ejes
         cargas_puntuales = mg.get_cargas_puntuales(longitud=2.0)
         cargas_distribuidas = mg.get_cargas_distribuidas(longitud=1.0)
         cargas = cargas_puntuales + cargas_distribuidas
@@ -199,14 +181,14 @@ class EjemploVigasAnimacion(Scene):
         #     label_elementos.add(etiqueta_completa)
         elementos, label_elementos = mg.get_elementos()
         cotas = VGroup()
-        p_1 = ejes.c2p([0.0, 0.0, 0.0]) + DOWN
-        p_2 = ejes.c2p([6.0, 0.0, 0.0]) + DOWN
+        p_1 = mg.c2p([0.0, 0.0, 0.0]) + DOWN
+        p_2 = mg.c2p([6.0, 0.0, 0.0]) + DOWN
         cotas.add(crear_cota(p_1, p_2, r'6\,m', GRAY))
-        p_3 = ejes.c2p([10.0, 0.0, 0.0]) + DOWN
+        p_3 = mg.c2p([10.0, 0.0, 0.0]) + DOWN
         cotas.add(crear_cota(p_2, p_3, r'4\,m', GRAY))
-        p_4 = ejes.c2p([20.0, 0.0, 0.0]) + DOWN
+        p_4 = mg.c2p([20.0, 0.0, 0.0]) + DOWN
         cotas.add(crear_cota(p_3, p_4, r'10\,m', GRAY))
-        p_5 = ejes.c2p([25.0, 0.0, 0.0]) + DOWN
+        p_5 = mg.c2p([25.0, 0.0, 0.0]) + DOWN
         cotas.add(crear_cota(p_4, p_5, r'5\,m', GRAY))
         enunciado = Tex(
             r"Determine las reacciones y las fuerzas en los extremos\\",
@@ -215,7 +197,7 @@ class EjemploVigasAnimacion(Scene):
             tex_environment="flushleft",  # Esto alinea el texto a la izquierda
             font_size=36
         ).to_edge(UP + LEFT)
-        viga = elemento_viga(0.0, 25.0, 0.25, ejes)
+        viga = elemento_viga(0.0, 25.0, 0.25, mg.ejes)
         viga.set_color(GRAY_D)
         ### Grado libertad nodos
         # gdl_y_1, label_y_1, gdl_eje_z_1, label_eje_z_1 = (
@@ -257,17 +239,17 @@ class EjemploVigasAnimacion(Scene):
         ecuacion_local_viga_1 = ecuacion_local_viga.copy()
         matriz_k_1 = ecuacion_vector_fuerza_viga()
         ### Cargas nodales equivalentes
-        f_1_0 = elemento_carga(n_1.punto, ejes, longitud=1, saliente=False, ang=90)
+        f_1_0 = elemento_carga(n_1.punto, mg.ejes, longitud=1, saliente=False, ang=90)
         label_f_1_0 = MathTex(str(abs(e_1._fuerzas_i[0, 0])) + r"\,kN").next_to(f_1_0, UP, buff=0.0).scale(0.5).shift(
             RIGHT * 0.0)
-        m_1_0 = elemento_momento(n_1.punto, ejes, positivo=False)
+        m_1_0 = elemento_momento(n_1.punto, mg.ejes, positivo=False)
         label_m_1_0 = MathTex(str(abs(e_1._fuerzas_i[1, 0])) + r"\,kN\cdot m").next_to(m_1_0, UP, buff=0.0).scale(
             0.5).shift(
             RIGHT * 0.7)
-        f_2_0 = elemento_carga(n_2.punto, ejes, longitud=1, saliente=False, ang=90)
+        f_2_0 = elemento_carga(n_2.punto, mg.ejes, longitud=1, saliente=False, ang=90)
         label_f_2_0 = MathTex(str(abs(e_1._fuerzas_j[0, 0])) + r"\,kN").next_to(f_2_0, UP, buff=0.0).scale(0.5).shift(
             RIGHT * 0.0)
-        m_2_0 = elemento_momento(n_2.punto, ejes, positivo=True, ang=0)
+        m_2_0 = elemento_momento(n_2.punto, mg.ejes, positivo=True, ang=0)
         label_m_2_0 = MathTex(str(abs(e_1._fuerzas_j[1, 0])) + r"\,kN\cdot m").next_to(m_2_0, UP, buff=0.0).scale(
             0.5).shift(
             LEFT * 0.7)
@@ -352,17 +334,17 @@ class EjemploVigasAnimacion(Scene):
         ecuacion_local_viga_2 = ecuacion_local_viga.copy()
         matriz_k_2 = ecuacion_vector_fuerza_viga(2, 2, 3)
         ### Cargas nodales equivalentes
-        f_2_0 = elemento_carga(n_2.punto, ejes, longitud=1, saliente=False, ang=90)
+        f_2_0 = elemento_carga(n_2.punto, mg.ejes, longitud=1, saliente=False, ang=90)
         label_f_2_0 = MathTex(str(abs(e_2._fuerzas_i[0, 0])) + r"\,kN").next_to(f_2_0, UP, buff=0.0).scale(0.5).shift(
             RIGHT * 0.0)
-        m_2_0 = elemento_momento(n_2.punto, ejes, positivo=True, ang=0)
+        m_2_0 = elemento_momento(n_2.punto, mg.ejes, positivo=True, ang=0)
         label_m_2_0 = MathTex(str(abs(e_2._fuerzas_i[1, 0])) + r"\,kN\cdot m").next_to(m_2_0, UP, buff=0.0).scale(
             0.5).shift(
             LEFT * 0.7)
-        f_3_0 = elemento_carga(n_3.punto, ejes, longitud=1, saliente=False, ang=90)
+        f_3_0 = elemento_carga(n_3.punto, mg.ejes, longitud=1, saliente=False, ang=90)
         label_f_3_0 = MathTex(str(abs(e_2._fuerzas_j[0, 0])) + r"\,kN").next_to(f_3_0, UP, buff=0.0).scale(0.5).shift(
             RIGHT * 0.0)
-        m_3_0 = elemento_momento(n_3.punto, ejes, positivo=True, ang=0)
+        m_3_0 = elemento_momento(n_3.punto, mg.ejes, positivo=True, ang=0)
         label_m_3_0 = MathTex(str(abs(e_2._fuerzas_j[1, 0])) + r"\,kN\cdot m").next_to(m_3_0, UP, buff=0.0).scale(
             0.5).shift(
             LEFT * 0.7)
@@ -544,7 +526,7 @@ class EjemploVigasAnimacion(Scene):
         self.play(Restore(escena_inicial), run_time=2)
         self.wait(5)
         ## Discretización de la viga
-        self.play(Create(ejes), run_time=2)
+        self.play(Create(mg.ejes), run_time=2)
         self.play(FadeOut(viga), run_time=2)
         self.play(DrawBorderThenFill(nodos), DrawBorderThenFill(elementos), run_time=2)
         self.play(Write(label_nodos), Write(label_elementos), run_time=2)
@@ -658,7 +640,7 @@ class EjemploVigasAnimacion(Scene):
                   ReplacementTransform(f_0_3, mr_elemento_3_4[6].get_entries()[3]), run_time=2)
         self.wait(5)
         self.play(FadeOut(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]), FadeOut(mr_elemento_3_4),
-                  FadeOut(ejes))
+                  FadeOut(mg.ejes))
         self.wait(5)
         self.play(FadeIn(matriz_global))
         self.wait(5)

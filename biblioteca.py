@@ -38,6 +38,9 @@ class EnsambleAnimacion(Ensamble):
         ).scale(f_escala)
         self.ejes = ejes_planos
 
+    def c2p(self, coor:list[float | int] | ndarray):
+        return self.ejes.c2p(coor)
+
     def ecuacion_vector_etiquetas_desplazamientos(self, EI_cte: bool = False, color_incognitas: ManimColor = BLUE,
                                                   reducida: bool = False, tol_cero: float = 1E-10,
                                                   formato: str = '{:.10g}') -> VMobject:
