@@ -641,7 +641,13 @@ class EjemploVigasAnimacion(Scene):
         self.wait(5)
         self.play(FadeOut(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]), FadeOut(mr_elemento_3_4),
                   FadeOut(mg.ejes))
-        self.wait(5)
+        self.wait(2)
+        self.play(FadeIn(mr_elemento_1_4.to_edge(UP)),FadeIn(mr_elemento_2_4.move_to(ORIGIN)),FadeIn(mr_elemento_3_4.to_edge(DOWN)))
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_1_4[:2]),FadeOut(mr_elemento_2_4[:2]),FadeOut(mr_elemento_3_4[:2]))
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_1_4[2:]), FadeOut(mr_elemento_2_4[2:]), FadeOut(mr_elemento_3_4[2:]))
+        self.wait(2)
         self.play(FadeIn(matriz_global))
         self.wait(5)
         items_reducida = [3, 5]
