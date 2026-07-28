@@ -458,29 +458,32 @@ class EnsambleAnimacion(Ensamble):
             label_elementos.add(etiqueta_completa)
         return [elementos, label_elementos]
 
-    def get_grados_libertad(self, n: Nodo, cfg_grados_libertad: dict[str, list]) -> list[VGroup]:
-        lista_grados = list()
-        for k, v in cfg_grados_libertad.items():
+    def label_grados_libertad(self, n: Nodo, **kwargs) -> VGroup:
+        label_grados = VGroup()
+        for k, v in n.grados_libertad.items():
             if n.rotado:
-                label = n.grados_libertad[k].gl.label_desplazamiento_rotado
+                label = n.grados_libertad[k].label_desplazamiento_rotado
             else:
                 label = n.grados_libertad[k].label_desplazamiento
             label += '_{' + n.nombre + '}'
             if n.rotado:
                 label = label if n.grados_libertad[
-                                     k].gl.desplazamiento_rotado is None else label + '=' + _formato_float_latex(
-                    n.grados_libertad[k].gl.desplazamiento_rotado)
+                                     k].desplazamiento_rotado is None else label + '=' + _formato_float_latex(
+                    n.grados_libertad[k].desplazamiento_rotado)
             else:
-                label = label if n.grados_libertad[k].gl.desplazamiento is None else label + '=' + _formato_float_latex(
-                    n.grados_libertad[k].gl.desplazamiento)
-            if n.grados_libertad[k].gl.valor:
+                label = label if n.grados_libertad[k].desplazamiento is None else label + '=' + _formato_float_latex(
+                    n.grados_libertad[k].desplazamiento)
+            if n.grados_libertad[k].valor:
                 color = BLUE
             else:
                 color = RED
-            gl = elemento_grado_libertad(n.punto, self.ejes, gdl=k, libre=n.grados_libertad[k].valor, **v[0])
-            label_gl = MathTex(label, color=color).next_to(gl, **v[1]).scale(0.5)
-            lista_grados.append(VGroup(gl, label_gl))
-        return lista_grados
+            label_gl = MathTex(label, color=color, **kwargs)
+            label_grados.add(label_gl)
+        return label_grados
+
+    def get_grados_libertad(self, n: Nodo, gl:str ,**kwargs) -> VMobject:
+        grados = elemento_grado_libertad(n.punto, self.ejes, gdl=gl, libre=n.grados_libertad[gl].valor, **kwargs)
+        return grados
 
 
 def elemento_viga(x_i: float, x_f: float, h: float | int, ejes: Axes) -> VMobject:
@@ -800,6 +803,7 @@ def elemento_grado_libertad(nodo: tuple[float | int, float | int], ejes: Axes, l
             color=color
         ).move_arc_center_to(centro).rotate(ang, about_point=centro)
     return grado_libertad
+
 
 
 def crear_cota(p1, p2, texto, color=WHITE, tamano_remate=0.15):
