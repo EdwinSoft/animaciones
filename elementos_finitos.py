@@ -47,7 +47,20 @@ class EjemploVigasAnimacion(Scene):
         sol_2 = VGroup(MathTex(r'{\phi_3}').set_color(BLUE), ecuacion_signo_igual(),
                        MathTex(r'\dfrac{' + f'{sol[1][0]:.8f}' + '}{EI}')).scale(0.5).arrange(RIGHT).next_to(sol_1,
                                                                                                              DOWN)
-
+        # Grados de libertad
+        n_1_gdl = VGroup(mg.get_grados_libertad(n_1, 'y', offset=0.0, longitud=0.8),
+                         mg.get_grados_libertad(n_1, 'eje_z', longitud=1, offset=90))
+        n_1_labels_gdl = mg.label_grados_libertad(n_1)
+        n_2_gdl = VGroup(mg.get_grados_libertad(n_2, 'y', offset=0.0, longitud=0.8),
+                         mg.get_grados_libertad(n_2, 'eje_z', longitud=1, offset=-90))
+        n_2_labels_gdl = mg.label_grados_libertad(n_2)
+        n_3_gdl = VGroup(mg.get_grados_libertad(n_3, 'y', offset=0.0, longitud=0.8),
+                         mg.get_grados_libertad(n_3, 'eje_z', longitud=1, offset=-90))
+        n_3_labels_gdl = mg.label_grados_libertad(n_3)
+        n_4_gdl = VGroup(mg.get_grados_libertad(n_4, 'y', offset=0.0, longitud=0.8),
+                         mg.get_grados_libertad(n_4, 'eje_z', longitud=1, offset=90))
+        n_4_labels_gdl = mg.label_grados_libertad(n_4)
+        #######
         mg.solucionar_por_gauss_y_calcular_reacciones()
         sol_final = np.array(mg._union._k.obtener_matriz(False)) @ np.array(mg._union._k.obtener_desplazamientos(False))
         sol_final_resta = sol_final - mg._union._k.obtener_fuerzas(False)
@@ -209,26 +222,22 @@ class EjemploVigasAnimacion(Scene):
         #     mg.get_grados_libertad(n_1,{'y': [{'offset': 0.0, 'longitud': 0.8}],
         #                                                                          'eje_z': {'offset': 90,
         #                                                                                    'longitud': 1.0}}, ))
-        gdl_y_1 = mg.get_grados_libertad(n_1,'y', offset=0.0, longitud=0.8)
-        #gdl_y_1 = elemento_grado_libertad(n_1.punto, ejes, gdl='y', libre=False, offset=0.0, longitud=0.8)
-        gdl_eje_z_1 = mg.get_grados_libertad(n_1,'eje_z', longitud=1, offset=90)
-        #gdl_eje_z_1 = elemento_grado_libertad(n_1.punto, ejes, gdl='eje_z', libre=False, longitud=1, offset=90)
-        gdl_y_2 = elemento_grado_libertad(n_2.punto, ejes, gdl='y', libre=False, offset=0.0, longitud=0.8)
-        gdl_eje_z_2 = elemento_grado_libertad(n_2.punto, ejes, gdl='eje_z', libre=True, longitud=1, offset=-90)
-        gdl_y_3 = elemento_grado_libertad(n_3.punto, ejes, gdl='y', libre=False, offset=0.0, longitud=0.8)
-        gdl_eje_z_3 = elemento_grado_libertad(n_3.punto, ejes, gdl='eje_z', libre=True, longitud=1, offset=-90)
-        gdl_y_4 = elemento_grado_libertad(n_4.punto, ejes, gdl='y', libre=False, offset=0.0, longitud=0.8)
-        gdl_eje_z_4 = elemento_grado_libertad(n_4.punto, ejes, gdl='eje_z', libre=False, longitud=1, offset=90)
-        label_y_1 = mg.label_grados_libertad(n_1)[0].next_to(gdl_y_1, UP, buff=0.02).scale(0.5)
+        # gdl_y_1 = elemento_grado_libertad(n_1.punto, ejes, gdl='y', libre=False, offset=0.0, longitud=0.8)
+        # gdl_eje_z_1 = elemento_grado_libertad(n_1.punto, ejes, gdl='eje_z', libre=False, longitud=1, offset=90)
+        # gdl_y_2 = elemento_grado_libertad(n_2.punto, ejes, gdl='y', libre=False, offset=0.0, longitud=0.8)
+        # gdl_eje_z_2 = elemento_grado_libertad(n_2.punto, ejes, gdl='eje_z', libre=True, longitud=1, offset=-90)
+        # gdl_y_3 = elemento_grado_libertad(n_3.punto, ejes, gdl='y', libre=False, offset=0.0, longitud=0.8)
+        # gdl_eje_z_3 = elemento_grado_libertad(n_3.punto, ejes, gdl='eje_z', libre=True, longitud=1, offset=-90)
+        # gdl_y_4 = elemento_grado_libertad(n_4.punto, ejes, gdl='y', libre=False, offset=0.0, longitud=0.8)
+        # gdl_eje_z_4 = elemento_grado_libertad(n_4.punto, ejes, gdl='eje_z', libre=False, longitud=1, offset=90)
         # label_y_1 = MathTex(r'v_{1}=0', color=RED).next_to(gdl_y_1, UP, buff=0.02).scale(0.5)
-        label_eje_z_1 = MathTex(r'\phi_{1}=0', color=RED).next_to(gdl_eje_z_1, DR, buff=-0.4).scale(0.5)
-        label_y_2 = MathTex(r'v_{2}=0', color=RED).next_to(gdl_y_2, DOWN, buff=0.02).scale(0.5)
-        #label_eje_z_2= mg.label_grados_libertad(n_2)[1].next_to(gdl_eje_z_2, UR, buff=-0.25).scale(0.5)
-        label_eje_z_2 = MathTex(r'\phi_{2}', color=GREEN).next_to(gdl_eje_z_2, UR, buff=-0.25).scale(0.5)
-        label_y_3 = MathTex(r'v_{3}=0', color=RED).next_to(gdl_y_3, DOWN, buff=0.02).scale(0.5)
-        label_eje_z_3 = MathTex(r'\phi_{3}', color=GREEN).next_to(gdl_eje_z_3, UR, buff=-0.25).scale(0.5)
-        label_y_4 = MathTex(r'v_{4}=0', color=RED).next_to(gdl_y_4, UP, buff=0.02).scale(0.5)
-        label_eje_z_4 = MathTex(r'\phi_{4}=0', color=RED).next_to(gdl_eje_z_4, DOWN, buff=0.0).scale(0.5)
+        # label_eje_z_1 = MathTex(r'\phi_{1}=0', color=RED).next_to(gdl_eje_z_1, DR, buff=-0.4).scale(0.5)
+        # label_y_2 = MathTex(r'v_{2}=0', color=RED).next_to(gdl_y_2, DOWN, buff=0.02).scale(0.5)
+        # label_eje_z_2 = MathTex(r'\phi_{2}', color=GREEN).next_to(gdl_eje_z_2, UR, buff=-0.25).scale(0.5)
+        # label_y_3 = MathTex(r'v_{3}=0', color=RED).next_to(gdl_y_3, DOWN, buff=0.02).scale(0.5)
+        # label_eje_z_3 = MathTex(r'\phi_{3}', color=GREEN).next_to(gdl_eje_z_3, UR, buff=-0.25).scale(0.5)
+        # label_y_4 = MathTex(r'v_{4}=0', color=RED).next_to(gdl_y_4, UP, buff=0.02).scale(0.5)
+        # label_eje_z_4 = MathTex(r'\phi_{4}=0', color=RED).next_to(gdl_eje_z_4, DOWN, buff=0.0).scale(0.5)
         # Ecuaciones generales de la viga
         ecuacion_local_viga = VGroup(Matrix([['f']], left_bracket=r"\{", right_bracket=r"\}"),
                                      ecuacion_signo_igual().copy(),
@@ -266,9 +275,15 @@ class EjemploVigasAnimacion(Scene):
         cargas_eq_1 = VGroup(f_1_0.copy(), m_1_0.copy(), f_2_0.copy(), m_2_0.copy())
         label_cargas_eq_1 = VGroup(label_f_1_0.copy(), label_m_1_0.copy(), label_f_2_0.copy(), label_m_2_0.copy())
         ### Grados de libertad en elemento 1
-        grados_el_1 = VGroup(gdl_y_1.copy(), gdl_eje_z_1.copy(), gdl_y_2.copy(), gdl_eje_z_2.copy())
-        label_etiquetas_grados_el_1 = VGroup(label_y_1.copy(), label_eje_z_1.copy(), label_y_2.copy(),
-                                             label_eje_z_2.copy())
+        grados_el_1 = VGroup(*n_1_gdl.copy(), *n_2_gdl.copy())
+        label_etiquetas_grados_el_1 = VGroup(*n_1_labels_gdl.copy(), *n_2_labels_gdl.copy())
+        label_etiquetas_grados_el_1[0].next_to(grados_el_1[0], UP, buff=0.02).scale(0.5)
+        label_etiquetas_grados_el_1[1].next_to(grados_el_1[1], DR, buff=-0.4).scale(0.5)
+        label_etiquetas_grados_el_1[2].next_to(grados_el_1[2], DOWN, buff=0.02).scale(0.5)
+        label_etiquetas_grados_el_1[3].next_to(grados_el_1[3], UR, buff=-0.25).scale(0.5)
+        # grados_el_1 = VGroup(gdl_y_1.copy(), gdl_eje_z_1.copy(), gdl_y_2.copy(), gdl_eje_z_2.copy())
+        # label_etiquetas_grados_el_1 = VGroup(label_y_1.copy(), label_eje_z_1.copy(), label_y_2.copy(),
+        #                                      label_eje_z_2.copy())
         ### Escena elemento 1
         escena_elemento_1 = VGroup(elementos[0], nodos[0:2], soportes[0:2], label_elementos[0], label_nodos[0:2],
                                    cargas[0:2])
@@ -355,11 +370,17 @@ class EjemploVigasAnimacion(Scene):
         cargas_eq_2 = VGroup(f_2_0.copy(), m_2_0.copy(), f_3_0.copy(), m_3_0.copy())
         label_cargas_eq_2 = VGroup(label_f_2_0.copy(), label_m_2_0.copy(), label_f_3_0.copy(), label_m_3_0.copy())
         ### Grados de libertad en elemento 2
-        grados_el_2 = VGroup(gdl_y_2.copy(), gdl_eje_z_2.copy(), gdl_y_3.copy(), gdl_eje_z_3.copy())
-        label_etiquetas_grados_el_2 = VGroup(label_y_2.copy(),
-                                             label_eje_z_2.copy().next_to(gdl_eje_z_2, UL, buff=-0.15),
-                                             label_y_3.copy(),
-                                             label_eje_z_3.copy())
+        grados_el_2 = VGroup(*n_2_gdl.copy(), *n_3_gdl.copy())
+        label_etiquetas_grados_el_2 = VGroup(*n_2_labels_gdl.copy(), *n_3_labels_gdl.copy())
+        label_etiquetas_grados_el_2[0].next_to(grados_el_2[0], DOWN, buff=0.02).scale(0.5)
+        label_etiquetas_grados_el_2[1].next_to(grados_el_2[1], UL, buff=-0.15).scale(0.5)
+        label_etiquetas_grados_el_2[2].next_to(grados_el_2[2], DOWN, buff=0.02).scale(0.5)
+        label_etiquetas_grados_el_2[3].next_to(grados_el_2[3], UR, buff=-0.25).scale(0.5)
+        # grados_el_2 = VGroup(gdl_y_2.copy(), gdl_eje_z_2.copy(), gdl_y_3.copy(), gdl_eje_z_3.copy())
+        # label_etiquetas_grados_el_2 = VGroup(label_y_2.copy(),
+        #                                      label_eje_z_2.copy().next_to(gdl_eje_z_2, UL, buff=-0.15),
+        #                                      label_y_3.copy(),
+        #                                      label_eje_z_3.copy())
         ### Escena elemento 2
         escena_elemento_2 = VGroup(elementos[1], nodos[1:3], soportes[1:3], label_elementos[1], label_nodos[1:3],
                                    cargas[2:5])
@@ -433,9 +454,16 @@ class EjemploVigasAnimacion(Scene):
         ### Cargas en elemento 3
         # Ninguna
         ### Grados de libertad en elemento 3
-        grados_el_3 = VGroup(gdl_y_3.copy(), gdl_eje_z_3.copy(), gdl_y_4.copy(), gdl_eje_z_4.copy())
-        label_etiquetas_grados_el_3 = VGroup(label_y_3.copy(), label_eje_z_3.copy(), label_y_4.copy(),
-                                             label_eje_z_4.copy())
+        grados_el_3 = VGroup(*n_3_gdl.copy(), *n_4_gdl.copy())
+        label_etiquetas_grados_el_3 = VGroup(*n_3_labels_gdl.copy(), *n_4_labels_gdl.copy())
+        label_etiquetas_grados_el_3[0].next_to(grados_el_3[0], DOWN, buff=0.02).scale(0.5)
+        label_etiquetas_grados_el_3[1].next_to(grados_el_3[1], UR, buff=-0.25).scale(0.5)
+        label_etiquetas_grados_el_3[2].next_to(grados_el_3[2], UP, buff=0.02).scale(0.5)
+        label_etiquetas_grados_el_3[3].next_to(grados_el_3[3], DOWN, buff=0.0).scale(0.5)
+
+        # grados_el_3 = VGroup(gdl_y_3.copy(), gdl_eje_z_3.copy(), gdl_y_4.copy(), gdl_eje_z_4.copy())
+        # label_etiquetas_grados_el_3 = VGroup(label_y_3.copy(), label_eje_z_3.copy(), label_y_4.copy(),
+        #                                      label_eje_z_4.copy())
         ### Escena elemento 3
         escena_elemento_3 = VGroup(elementos[2], nodos[2:4], soportes[2:4], label_elementos[2], label_nodos[2:4])
         factor_matrix_rigidez_3_1 = MathTex(r'\dfrac{EI}{125}')
