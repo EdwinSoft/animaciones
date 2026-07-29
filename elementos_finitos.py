@@ -509,7 +509,9 @@ class EjemploVigasAnimacion(Scene):
                                  vector_fuerza_nodal_equivalente_viga_3).arrange(RIGHT,
                                                                                  buff=0.2)
         mr_elemento_3_4.to_edge(DOWN).scale(0.5)
-
+        ## Elementos intermedios
+        # sum_1 = e_1+e_2+e_3
+        # matrix_rigidez_sum_1 = ecuacion_array_a_matriz(sum_1.get_matriz_rigidez(), h_buff=1.8).scale(0.5)
         ## Diagrama viga inicial
         escena_inicial = VGroup(viga, soportes, cargas, cotas)
         escena_inicial.save_state()
@@ -642,13 +644,100 @@ class EjemploVigasAnimacion(Scene):
         self.play(FadeOut(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]), FadeOut(mr_elemento_3_4),
                   FadeOut(mg.ejes))
         self.wait(2)
-        self.play(FadeIn(mr_elemento_1_4.to_edge(UP)),FadeIn(mr_elemento_2_4.move_to(ORIGIN)),FadeIn(mr_elemento_3_4.to_edge(DOWN)))
+        m_1 = mr_elemento_1_4.copy()
+        m_2 = mr_elemento_2_4.copy()
+        m_3 = mr_elemento_3_4.copy()
+        self.play(FadeIn(m_1.to_edge(UP)), FadeIn(m_2.move_to(ORIGIN)), FadeIn(m_3.to_edge(DOWN)))
         self.wait(2)
-        self.play(FadeOut(mr_elemento_1_4[:2]),FadeOut(mr_elemento_2_4[:2]),FadeOut(mr_elemento_3_4[:2]))
-        self.wait(2)
-        self.play(FadeOut(mr_elemento_1_4[2:]), FadeOut(mr_elemento_2_4[2:]), FadeOut(mr_elemento_3_4[2:]))
-        self.wait(2)
-        self.play(FadeIn(matriz_global))
+        self.play(
+            ReplacementTransform(VGroup(m_1[0].get_brackets()[0], m_2[0].get_brackets()[0], m_3[0].get_brackets()[0]),
+                                 matriz_global[0].get_brackets()[0]),
+            ReplacementTransform(VGroup(m_1[0].get_brackets()[1], m_2[0].get_brackets()[1], m_3[0].get_brackets()[1]),
+                                 matriz_global[0].get_brackets()[1]),
+            runtime=4)
+        self.play(
+            ReplacementTransform(m_1[0].get_entries()[:2], matriz_global[0].get_entries()[:2]),
+            ReplacementTransform(VGroup(m_1[0].get_entries()[2:], m_2[0].get_entries()[:2]),
+                                 matriz_global[0].get_entries()[2:4]),
+            ReplacementTransform(VGroup(m_2[0].get_entries()[2:], m_3[0].get_entries()[:2]),
+                                 matriz_global[0].get_entries()[4:6]),
+            ReplacementTransform(m_3[0].get_entries()[2:], matriz_global[0].get_entries()[6:]),
+            runtime=4)
+        self.play(
+            ReplacementTransform(VGroup(m_1[1], m_2[1], m_3[1]), matriz_global[1]),
+            ReplacementTransform(VGroup(m_1[2], m_2[2], m_3[2]), matriz_global[2]),
+            runtime=4)
+        self.play(
+            ReplacementTransform(VGroup(m_1[3].get_brackets()[0], m_2[3].get_brackets()[0], m_3[3].get_brackets()[0]),
+                                 matriz_global[3].get_brackets()[0]),
+            ReplacementTransform(VGroup(m_1[3].get_brackets()[1], m_2[3].get_brackets()[1], m_3[3].get_brackets()[1]),
+                                 matriz_global[3].get_brackets()[1]),
+            m_1[4:].animate.next_to(matriz_global[3], RIGHT, buff=0.5).align_to(m_1[4:], UP),
+            m_2[4:].animate.next_to(matriz_global[3], RIGHT, buff=0.5).align_to(m_2[4:], UP),
+            m_3[4:].animate.next_to(matriz_global[3], RIGHT, buff=0.5).align_to(m_3[4:], UP),
+            runtime=4)
+        self.play(
+            ReplacementTransform(m_1[3].get_entries()[0:4], matriz_global[3].get_entries()[0:4]),
+            ReplacementTransform(m_1[3].get_entries()[4:8], matriz_global[3].get_entries()[8:12]),
+            ReplacementTransform(m_1[3].get_entries()[8:10], matriz_global[3].get_entries()[16:18]),
+            ReplacementTransform(m_1[3].get_entries()[12:14], matriz_global[3].get_entries()[24:26]),
+            ReplacementTransform(
+                VGroup(m_1[3].get_entries()[10:12], m_1[3].get_entries()[14:16], m_2[3].get_entries()[:2],
+                       m_2[3].get_entries()[4:6]),
+                VGroup(matriz_global[3].get_entries()[18:20], matriz_global[3].get_entries()[26:28])),
+            ReplacementTransform(m_2[3].get_entries()[2:4], matriz_global[3].get_entries()[20:22]),
+            ReplacementTransform(m_2[3].get_entries()[6:8], matriz_global[3].get_entries()[28:30]),
+            ReplacementTransform(m_2[3].get_entries()[8:10], matriz_global[3].get_entries()[34:36]),
+            ReplacementTransform(m_2[3].get_entries()[12:14], matriz_global[3].get_entries()[42:44]),
+            ReplacementTransform(
+                VGroup(m_2[3].get_entries()[10:12], m_2[3].get_entries()[14:16], m_3[3].get_entries()[:2],
+                       m_3[3].get_entries()[4:6]),
+                VGroup(matriz_global[3].get_entries()[36:38], matriz_global[3].get_entries()[44:46])),
+            ReplacementTransform(m_3[3].get_entries()[2:4], matriz_global[3].get_entries()[38:40]),
+            ReplacementTransform(m_3[3].get_entries()[6:8], matriz_global[3].get_entries()[46:48]),
+            ReplacementTransform(m_3[3].get_entries()[8:12], matriz_global[3].get_entries()[52:56]),
+            ReplacementTransform(m_3[3].get_entries()[12:16], matriz_global[3].get_entries()[60:64]),
+            runtime=4)
+        self.play(
+            FadeIn(matriz_global[3].get_entries()[4:8]),
+            FadeIn(matriz_global[3].get_entries()[12:16]),
+            FadeIn(matriz_global[3].get_entries()[22:24]),
+            FadeIn(matriz_global[3].get_entries()[30:32]),
+            FadeIn(matriz_global[3].get_entries()[32:34]),
+            FadeIn(matriz_global[3].get_entries()[40:42]),
+            FadeIn(matriz_global[3].get_entries()[48:52]),
+            FadeIn(matriz_global[3].get_entries()[56:60]),
+            runtime=4)
+        self.play(
+            ReplacementTransform(VGroup(m_1[4].get_brackets()[0], m_2[4].get_brackets()[0], m_3[4].get_brackets()[0]),
+                                 matriz_global[4].get_brackets()[0]),
+            ReplacementTransform(VGroup(m_1[4].get_brackets()[1], m_2[4].get_brackets()[1], m_3[4].get_brackets()[1]),
+                                 matriz_global[4].get_brackets()[1]),
+            ReplacementTransform(m_1[4].get_entries()[:2], matriz_global[4].get_entries()[:2]),
+            ReplacementTransform(VGroup(m_1[4].get_entries()[2:], m_2[4].get_entries()[:2]),
+                                 matriz_global[4].get_entries()[2:4]),
+            ReplacementTransform(VGroup(m_2[4].get_entries()[2:], m_3[4].get_entries()[:2]),
+                                 matriz_global[4].get_entries()[4:6]),
+            ReplacementTransform(m_3[4].get_entries()[2:], matriz_global[4].get_entries()[6:]),
+            runtime=4)
+        self.play(
+            ReplacementTransform(VGroup(m_1[6].get_brackets()[0], m_2[6].get_brackets()[0], m_3[6].get_brackets()[0]),
+                                 matriz_global[6].get_brackets()[0]),
+            ReplacementTransform(VGroup(m_1[6].get_brackets()[1], m_2[6].get_brackets()[1], m_3[6].get_brackets()[1]),
+                                 matriz_global[6].get_brackets()[1]),
+            ReplacementTransform(m_1[6].get_entries()[:2], matriz_global[6].get_entries()[:2]),
+            ReplacementTransform(VGroup(m_1[6].get_entries()[2:], m_2[6].get_entries()[:2]),
+                                 matriz_global[6].get_entries()[2:4]),
+            ReplacementTransform(VGroup(m_2[6].get_entries()[2:], m_3[6].get_entries()[:2]),
+                                 matriz_global[6].get_entries()[4:6]),
+            ReplacementTransform(m_3[6].get_entries()[2:], matriz_global[6].get_entries()[6:]),
+            ReplacementTransform(VGroup(m_1[5], m_2[5], m_3[5]), matriz_global[5]),
+            runtime=4)
+        # self.play(FadeOut(mr_elemento_1_4[:2]),FadeOut(mr_elemento_2_4[:2]),FadeOut(mr_elemento_3_4[:2]))
+        # self.wait(2)
+        # self.play(FadeOut(mr_elemento_1_4[2:]), FadeOut(mr_elemento_2_4[2:]), FadeOut(mr_elemento_3_4[2:]))
+        # self.wait(2)
+        # self.play(FadeIn(matriz_global))
         self.wait(5)
         items_reducida = [3, 5]
         elementos_reducida = list()
