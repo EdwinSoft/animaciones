@@ -81,6 +81,46 @@ class EnsambleAnimacion(Ensamble):
             }
         }, left_bracket=r"\{", right_bracket=r"\}")
 
+    def ecuacion_vector_etiquetas_desplazamientos_elemento(self, elemento: Elemento, EI_cte: bool = False, color_incognitas: ManimColor = BLUE,
+                                                  reducida: bool = False, tol_cero: float = 1E-10,
+                                                  formato: str = '{:.10g}') -> VMobject:
+        etiquetas = []
+        etiquetas_reducidas = []
+        for item in elemento.get_lista_nodos():
+            for n, gl in item.grados_libertad.items():
+                if reducida and not gl.valor:
+                    continue
+                if elemento._k.grados is not None:
+                    if n not in elemento._k.grados:
+                        continue
+                if item.rotado:
+                    label = gl.label_desplazamiento_rotado + '_{' + item.nombre + '}'
+                else:
+                    label = gl.label_desplazamiento + '_{' + item.nombre + '}'
+                if EI_cte and gl.valor:
+                    if item.rotado:
+                        label = label if gl.desplazamiento_rotado is None else label + '=' + _formato_float_latex(
+                            gl.desplazamiento_rotado, tol_cero, formato) + '/EI'
+                    else:
+                        label = label if gl.desplazamiento is None else label + '=' + _formato_float_latex(
+                            gl.desplazamiento, tol_cero, formato) + '/EI'
+                else:
+                    if item.rotado:
+                        label = label if gl.desplazamiento_rotado is None else label + '=' + _formato_float_latex(
+                            gl.desplazamiento_rotado, tol_cero, formato)
+                    else:
+                        label = label if gl.desplazamiento is None else label + '=' + _formato_float_latex(
+                            gl.desplazamiento, tol_cero, formato)
+
+                if gl.valor:
+                    etiquetas_reducidas.append(label)
+                etiquetas.append(label)
+        return Matrix(np.array(etiquetas).reshape(-1, 1), element_to_mobject_config={
+            "tex_to_color_map": {
+                item: color_incognitas for item in etiquetas_reducidas
+            }
+        }, left_bracket=r"\{", right_bracket=r"\}")
+
     def ecuacion_vector_etiquetas_reacciones(self, color_incognitas: ManimColor = BLUE,
                                              reducida: bool = False, tol_cero: float = 1E-10,
                                              formato: str = '{:.10g}') -> VMobject:

@@ -60,7 +60,13 @@ class EjemploVigasAnimacion(Scene):
         n_4_gdl = VGroup(mg.get_grados_libertad(n_4, 'y', offset=0.0, longitud=0.8),
                          mg.get_grados_libertad(n_4, 'eje_z', longitud=1, offset=90))
         n_4_labels_gdl = mg.label_grados_libertad(n_4)
-        #######
+        vector_desplazamientos_el_1_modificado = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_1, EI_cte=True,
+                                                                                                       reducida=False)
+        vector_desplazamientos_el_2_modificado = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_2, EI_cte=True,
+                                                                                                       reducida=False)
+        vector_desplazamientos_el_3_modificado = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_3, EI_cte=True,
+                                                                                                       reducida=False)
+        ##########################################################################################
         mg.solucionar_por_gauss_y_calcular_reacciones()
         sol_final = np.array(mg._union._k.obtener_matriz(False)) @ np.array(mg._union._k.obtener_desplazamientos(False))
         sol_final_resta = sol_final - mg._union._k.obtener_fuerzas(False)
@@ -290,16 +296,16 @@ class EjemploVigasAnimacion(Scene):
         matrix_rigidez_1_3 = matrix_rigidez_1_2.copy()
         matrix_rigidez_1_4 = matrix_rigidez_1_2.copy()
         vector_desplazamientos_el_1 = ecuacion_vector_desplazamiento_viga()
-        vector_desplazamientos_el_1_modificado = Matrix(
-            [["v_{1}=0"], [r"\phi_{1}=0"], ["v_{2}=0"], [r"\phi_{2}"]],
-            left_bracket=r"\{",  # Llave izquierda
-            right_bracket=r"\}",  # Llave derecha
-            element_to_mobject_config={
-                "tex_to_color_map": {
-                    r"\phi_{2}": BLUE
-                }
-            }
-        )
+        # vector_desplazamientos_el_1_modificado = Matrix(
+        #     [["v_{1}=0"], [r"\phi_{1}=0"], ["v_{2}=0"], [r"\phi_{2}"]],
+        #     left_bracket=r"\{",  # Llave izquierda
+        #     right_bracket=r"\}",  # Llave derecha
+        #     element_to_mobject_config={
+        #         "tex_to_color_map": {
+        #             r"\phi_{2}": BLUE
+        #         }
+        #     }
+        # )
         vector_desplazamientos_modificado_1_3 = vector_desplazamientos_el_1_modificado.copy()
         vector_desplazamientos_modificado_1_4 = vector_desplazamientos_el_1_modificado.copy()
         vector_fuerza_nodal_equivalente_viga_1 = ecuacion_array_a_matriz(e_1._obtener_fuerzas(), left_bracket=r"\{",
@@ -387,17 +393,17 @@ class EjemploVigasAnimacion(Scene):
         matrix_rigidez_2_3 = matrix_rigidez_2_2.copy()
         matrix_rigidez_2_4 = matrix_rigidez_2_2.copy()
         vector_desplazamientos_el_2 = ecuacion_vector_desplazamiento_viga(2, 3)
-        vector_desplazamientos_el_2_modificado = Matrix(
-            [["v_{2}=0"], [r"\phi_{2}"], ["v_{3}=0"], [r"\phi_{3}"]],
-            left_bracket=r"\{",  # Llave izquierda
-            right_bracket=r"\}",  # Llave derecha
-            element_to_mobject_config={
-                "tex_to_color_map": {
-                    r"\phi_{2}": BLUE,
-                    r"\phi_{3}": BLUE
-                }
-            }
-        )
+        # vector_desplazamientos_el_2_modificado = Matrix(
+        #     [["v_{2}=0"], [r"\phi_{2}"], ["v_{3}=0"], [r"\phi_{3}"]],
+        #     left_bracket=r"\{",  # Llave izquierda
+        #     right_bracket=r"\}",  # Llave derecha
+        #     element_to_mobject_config={
+        #         "tex_to_color_map": {
+        #             r"\phi_{2}": BLUE,
+        #             r"\phi_{3}": BLUE
+        #         }
+        #     }
+        # )
         vector_desplazamientos_modificado_2_3 = vector_desplazamientos_el_2_modificado.copy()
         vector_desplazamientos_modificado_2_4 = vector_desplazamientos_el_2_modificado.copy()
         vector_fuerza_nodal_equivalente_viga_2 = ecuacion_array_a_matriz(e_2._obtener_fuerzas(), left_bracket=r"\{",
@@ -469,16 +475,16 @@ class EjemploVigasAnimacion(Scene):
         matrix_rigidez_3_3 = matrix_rigidez_3_2.copy()
         matrix_rigidez_3_4 = matrix_rigidez_3_2.copy()
         vector_desplazamientos_el_3 = ecuacion_vector_desplazamiento_viga(3, 4)
-        vector_desplazamientos_el_3_modificado = Matrix(
-            [["v_{3}=0"], [r"\phi_{3}"], ["v_{4}=0"], [r"\phi_{4}=0"]],
-            left_bracket=r"\{",  # Llave izquierda
-            right_bracket=r"\}",  # Llave derecha
-            element_to_mobject_config={
-                "tex_to_color_map": {
-                    r"\phi_{3}": BLUE
-                }
-            }
-        )
+        # vector_desplazamientos_el_3_modificado = Matrix(
+        #     [["v_{3}=0"], [r"\phi_{3}"], ["v_{4}=0"], [r"\phi_{4}=0"]],
+        #     left_bracket=r"\{",  # Llave izquierda
+        #     right_bracket=r"\}",  # Llave derecha
+        #     element_to_mobject_config={
+        #         "tex_to_color_map": {
+        #             r"\phi_{3}": BLUE
+        #         }
+        #     }
+        # )
         vector_desplazamientos_modificado_3_3 = vector_desplazamientos_el_3_modificado.copy()
         vector_desplazamientos_modificado_3_4 = vector_desplazamientos_el_3_modificado.copy()
         vector_fuerza_nodal_equivalente_viga_3 = ecuacion_array_a_matriz(e_3._obtener_fuerzas(), left_bracket=r"\{",
@@ -798,6 +804,7 @@ class EjemploVigasAnimacion(Scene):
                   ReplacementTransform(matriz_global_reducida_final_2[2], matriz_global_reducida_final_3[2]),
                   ReplacementTransform(matriz_global_reducida_final_2[3], matriz_global_reducida_final_3[3]),
                   ReplacementTransform(matriz_global_reducida_final_2[4], matriz_global_reducida_final_3[4]),
+
                   FadeOut(matriz_global_reducida_final_2[1][1]), run_time=4)
         self.wait(2)
         # self.play(ReplacementTransform(matriz_global_reducida_final_3[1].get_brackets(),
@@ -809,8 +816,15 @@ class EjemploVigasAnimacion(Scene):
         #           ReplacementTransform(matriz_global_reducida_final_3[4], matriz_global_reducida_final_4[3]),
         #           FadeOut(matriz_global_reducida_final_3[2]),
         #           run_time=4)
-        self.play(ReplacementTransform(VGroup(matriz_global_reducida_final_3[1], matriz_global_reducida_final_3[2]),
-                                       matriz_global_reducida_final_4[1]),
+        self.play(ReplacementTransform(VGroup(matriz_global_reducida_final_3[1].get_entries(), matriz_global_reducida_final_3[2].get_entries()),
+                                       matriz_global_reducida_final_4[1].get_entries()),
+                  ReplacementTransform(matriz_global_reducida_final_3[1].get_brackets()[0],
+                                       matriz_global_reducida_final_4[1].get_brackets()[0]),
+                  ReplacementTransform(matriz_global_reducida_final_3[2].get_brackets()[1],
+                                       matriz_global_reducida_final_4[1].get_brackets()[1]),
+                  FadeOut(matriz_global_reducida_final_3[1].get_brackets()[1]),
+                  FadeOut(matriz_global_reducida_final_3[2].get_brackets()[0]),
+
                   ReplacementTransform(matriz_global_reducida_final_3[0], matriz_global_reducida_final_4[0]),
                   ReplacementTransform(matriz_global_reducida_final_3[3], matriz_global_reducida_final_4[2]),
                   ReplacementTransform(matriz_global_reducida_final_3[4], matriz_global_reducida_final_4[3]),
@@ -833,7 +847,17 @@ class EjemploVigasAnimacion(Scene):
         self.play(FadeIn(matriz_global_final_2))
         self.wait(2)
         self.play(ReplacementTransform(VGroup(matriz_global_final_2[0:2]), VGroup(matriz_global_final_3[0:2])),
-                  ReplacementTransform(VGroup(matriz_global_final_2[2:5]), VGroup(matriz_global_final_3[2])),
+                  ReplacementTransform(
+                      VGroup(matriz_global_final_2[3].get_entries(), matriz_global_final_2[4].get_entries()),
+                      VGroup(matriz_global_final_3[2].get_entries())),
+                  # ReplacementTransform(VGroup(matriz_global_final_2[2:5]), VGroup(matriz_global_final_3[2])),
+                  ReplacementTransform(matriz_global_final_2[3].get_brackets()[0],
+                                       matriz_global_final_3[2].get_brackets()[0]),
+                  ReplacementTransform(matriz_global_final_2[4].get_brackets()[1],
+                                       matriz_global_final_3[2].get_brackets()[1]),
+                  FadeOut(matriz_global_final_2[3].get_brackets()[1]),
+                  FadeOut(matriz_global_final_2[4].get_brackets()[0]),
+                  FadeOut(matriz_global_final_2[2]),
                   ReplacementTransform(VGroup(matriz_global_final_2[5:7]), VGroup(matriz_global_final_3[3:5])),
                   # FadeOut(matriz_global_final_2),
                   run_time=4)
@@ -846,6 +870,7 @@ class EjemploVigasAnimacion(Scene):
                                        matriz_global_final_4[2].get_brackets()[0]),
                   ReplacementTransform(matriz_global_final_3[4].get_brackets()[1],
                                        matriz_global_final_4[2].get_brackets()[1]),
+
                   ReplacementTransform(
                       VGroup(matriz_global_final_3[2].get_entries(), matriz_global_final_3[4].get_entries()),
                       VGroup(matriz_global_final_4[2].get_entries())),
