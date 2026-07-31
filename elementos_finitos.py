@@ -889,3 +889,114 @@ class EjemploVigasAnimacion(Scene):
         self.play(FadeOut(matriz_global_final_4))
         self.play(FadeIn(matriz_global_final))
         self.wait(5)
+        self.play(FadeOut(matriz_global_final))
+        self.wait(5)
+        import sympy as sp
+        # 1. Definir la función en SymPy
+        x = sp.Symbol('x')
+        # f(x) = x**2 para x < 1, y f(x) = 3 - x para x >= 1
+        expr_1 = e_1.ecuacion_de_cortante().rhs.args[0].args[0]
+        expr_2 = e_1.ecuacion_de_cortante().rhs.args[1].args[0]
+        expr_3 = e_2.ecuacion_de_cortante().rhs.args[0].args[0]
+        expr_4 = e_3.ecuacion_de_cortante().rhs.args[0].args[0]
+
+        # 2. Convertir a función de NumPy (Esencial para Manim)
+        f_num_1 = sp.lambdify(x, expr_1, 'numpy')
+        f_num_2 = sp.lambdify(x, expr_2, 'numpy')
+        f_num_3 = sp.lambdify(x, expr_3, 'numpy')
+        f_num_4 = sp.lambdify(x, expr_4, 'numpy')
+
+        # 3. Crear los Ejes
+        axes = Axes(
+            x_range=[0, 25, 10],
+            y_range=[-120, 125, 25],
+            axis_config={"include_numbers": True, "tip_shape": StealthTip,"font_size": 18,}
+        )
+        curva_1 = axes.plot(f_num_1, x_range=[0, 6], color=BLUE_E)
+        curva_2 = axes.plot(f_num_2, x_range=[6, 10], color=BLUE_E)
+        curva_3 = axes.plot(f_num_3, x_range=[10, 20], color=BLUE_E)
+        curva_4 = axes.plot(f_num_4, x_range=[20, 25], color=BLUE_E)
+        label_1_1 = MathTex(f'{f_num_1(0):.3g}', color=ORANGE).next_to(axes.c2p(0,f_num_1(0), 0), UP, buff=0.0).shift(RIGHT*0.2).scale(0.35)
+        label_1_2 = MathTex(f'{f_num_1(6):.3g}', color=ORANGE).next_to(axes.c2p(6, f_num_1(6), 0), UP, buff=0.0).scale(0.35)
+        label_2_1 = MathTex(f'{f_num_2(6):.3g}', color=ORANGE).next_to(axes.c2p(6, f_num_2(6), 0), DOWN, buff=0.0).scale(0.35)
+        label_2_2 = MathTex(f'{f_num_2(10):.3g}', color=ORANGE).next_to(axes.c2p(10, f_num_2(10), 0), DOWN, buff=0.0).scale(0.35)
+        label_3_1 = MathTex(f'{f_num_3(10):.3g}', color=ORANGE).next_to(axes.c2p(10, f_num_3(10), 0), UP,
+                                                                        buff=0.0).scale(0.35)
+        label_3_2 = MathTex(f'{f_num_3(20):.3g}', color=ORANGE).next_to(axes.c2p(20, f_num_3(20), 0), DOWN,
+                                                                        buff=0.0).scale(0.35)
+        label_4_1 = MathTex(f'{f_num_4(20):.3g}', color=ORANGE).next_to(axes.c2p(20, f_num_4(20), 0), UP,
+                                                                        buff=0.0).scale(0.35)
+        label_4_2 = MathTex(f'{f_num_4(25):.3g}', color=ORANGE).next_to(axes.c2p(25, f_num_4(25), 0), UP,
+                                                                        buff=0.0).scale(0.35)
+        self.play(Create(axes))
+        # area_1 = axes.get_area(
+        #     curva_1,
+        #     x_range=(0, 6),  # Rellena estrictamente en este rango
+        #     color=BLUE,
+        #     opacity=0.3
+        # )
+        # area_2 = axes.get_area(
+        #     curva_2,
+        #     x_range=(6, 10),  # Rellena estrictamente en este rango
+        #     color=BLUE,
+        #     opacity=0.3
+        # )
+        t_tracker = ValueTracker(0)
+
+        def update_area_1():
+            t = t_tracker.get_value()
+
+            # Si el tracker acaba de empezar, devolvemos un grupo vacío para evitar error de ancho=0
+            if t <= 0:
+                return VGroup()
+            return axes.get_area(curva_1, x_range=(0, min(t, 6)), color=BLUE, opacity=0.3)
+
+        area_1_dinamica = always_redraw(update_area_1)
+        def update_area_2():
+            t = t_tracker.get_value()
+
+            # Si el tracker acaba de empezar, devolvemos un grupo vacío para evitar error de ancho=0
+            if t <= 6:
+                return VGroup()
+
+            return axes.get_area(curva_2, x_range=(6, min(t, 10)), color=BLUE, opacity=0.3)
+
+        area_2_dinamica = always_redraw(update_area_2)
+        def update_area_3():
+            t = t_tracker.get_value()
+
+            # Si el tracker acaba de empezar, devolvemos un grupo vacío para evitar error de ancho=0
+            if t <= 10:
+                return VGroup()
+
+            return axes.get_area(curva_3, x_range=(10, min(t, 20)), color=BLUE, opacity=0.3)
+
+        area_3_dinamica = always_redraw(update_area_3)
+        def update_area_4():
+            t = t_tracker.get_value()
+
+            # Si el tracker acaba de empezar, devolvemos un grupo vacío para evitar error de ancho=0
+            if t <= 20:
+                return VGroup()
+
+            return axes.get_area(curva_4, x_range=(20, min(t, 25)), color=BLUE, opacity=0.3)
+
+        area_4_dinamica = always_redraw(update_area_4)
+        self.add(area_1_dinamica, area_2_dinamica, area_3_dinamica, area_4_dinamica)
+        self.play(Write(label_1_1))
+        self.play(t_tracker.animate.set_value(6),run_time=4, rate_func=linear)
+        self.play(Write(label_1_2))
+        self.wait(0.5)
+        self.play(Write(label_2_1))
+        self.play(t_tracker.animate.set_value(10), run_time=4, rate_func=linear)
+        self.play(Write(label_2_2))
+        self.wait(0.5)
+        self.play(Write(label_3_1))
+        self.play(t_tracker.animate.set_value(20), run_time=4, rate_func=linear)
+        self.play(Write(label_3_2))
+        self.wait(0.5)
+        self.play(Write(label_4_1))
+        self.play(t_tracker.animate.set_value(25), run_time=4, rate_func=linear)
+        self.play(Write(label_4_2))
+        self.wait(2)
+
