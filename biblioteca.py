@@ -12,6 +12,7 @@ mi_plantilla.add_to_preamble(r"\usepackage{xcolor}")
 # config.tex_template.add_to_preamble(r"\usepackage{cancel}")
 # config.tex_template.add_to_preamble(r"\usepackage{xcolor}")
 
+
 class EnsambleAnimacion(Ensamble):
     def __init__(self, lista_elementos: list[Elemento], escala: float | int | None = None):
         super().__init__(lista_elementos)
@@ -38,7 +39,7 @@ class EnsambleAnimacion(Ensamble):
         ).scale(f_escala)
         self.ejes = ejes_planos
 
-    def c2p(self, coor:list[float | int] | ndarray):
+    def c2p(self, coor: list[float | int] | ndarray):
         return self.ejes.c2p(coor)
 
     def ecuacion_vector_etiquetas_desplazamientos(self, EI_cte: bool = False, color_incognitas: ManimColor = BLUE,
@@ -81,9 +82,10 @@ class EnsambleAnimacion(Ensamble):
             }
         }, left_bracket=r"\{", right_bracket=r"\}")
 
-    def ecuacion_vector_etiquetas_desplazamientos_elemento(self, elemento: Elemento, EI_cte: bool = False, color_incognitas: ManimColor = BLUE,
-                                                  reducida: bool = False, tol_cero: float = 1E-10,
-                                                  formato: str = '{:.10g}') -> VMobject:
+    def ecuacion_vector_etiquetas_desplazamientos_elemento(self, elemento: Elemento, EI_cte: bool = False,
+                                                           color_incognitas: ManimColor = BLUE,
+                                                           reducida: bool = False, tol_cero: float = 1E-10,
+                                                           formato: str = '{:.10g}') -> VMobject:
         etiquetas = []
         etiquetas_reducidas = []
         for item in elemento.get_lista_nodos():
@@ -501,30 +503,36 @@ class EnsambleAnimacion(Ensamble):
             label_elementos.add(etiqueta_completa)
         return [elementos, label_elementos]
 
-    def label_grados_libertad(self, n: Nodo, **kwargs) -> VGroup:
-        label_grados = VGroup()
-        for k, v in n.grados_libertad.items():
-            if n.rotado:
-                label = n.grados_libertad[k].label_desplazamiento_rotado
-            else:
-                label = n.grados_libertad[k].label_desplazamiento
-            label += '_{' + n.nombre + '}'
-            if n.rotado:
-                label = label if n.grados_libertad[
-                                     k].desplazamiento_rotado is None else label + '=' + _formato_float_latex(
-                    n.grados_libertad[k].desplazamiento_rotado)
-            else:
-                label = label if n.grados_libertad[k].desplazamiento is None else label + '=' + _formato_float_latex(
-                    n.grados_libertad[k].desplazamiento)
-            if n.grados_libertad[k].valor:
-                color = BLUE
-            else:
-                color = RED
-            label_gl = MathTex(label, color=color, **kwargs)
-            label_grados.add(label_gl)
-        return label_grados
+    def elemento_fuerza_interna_viga(self, ele: Viga, unidades: list[str] | None = None, mostrar_valores: bool = False) -> VMobject:
+        if unidades is None:
+            unidades = [r"\,kN", r"\,kN\cdot m"]
+        n_1 = ele.get_nodo_inicial()
+        n_2 = ele.get_nodo_final()
+        etiquetas_fuerzas = ele._obtener_etiquetas_fuerzas()
+        sentido_fuerzas = np.array([True, True, True, True])
+        if mostrar_valores:
+            etiquetas_fuerzas = (np.matmul(ele._k.k,
+                                         ele._obtener_desplazamientos()) - ele._obtener_fuerzas() - ele._obtener_fuerzas_por_rotula()).reshape(1, -1).flatten()
+            sentido_fuerzas = (etiquetas_fuerzas > 0.0).reshape(1, -1).flatten()
+            etiquetas_fuerzas = np.char.mod('%.3g', abs(etiquetas_fuerzas))
+        fuerzas_internas = VGroup()
+        f_1 = elemento_carga(n_1.punto, self.ejes, longitud=1, saliente=sentido_fuerzas[0], ang=90, color_carga=WHITE)
+        label_f_1 = MathTex( etiquetas_fuerzas[0] + unidades[0]).next_to(f_1, UP, buff=0.0).scale(0.5).shift(
+            RIGHT * 0.0)
+        m_1 = elemento_momento(n_1.punto, self.ejes, positivo=not sentido_fuerzas[1], color_carga=WHITE)
+        label_m_1 = MathTex(etiquetas_fuerzas[1] + unidades[1]).next_to(m_1,  UP, buff=-0.2, aligned_edge=LEFT).scale(
+            0.5).shift(RIGHT * 0.4)
+        f_2 = elemento_carga(n_2.punto, self.ejes, longitud=1, saliente=sentido_fuerzas[2], ang=90, color_carga=WHITE)
+        label_f_2 = MathTex(etiquetas_fuerzas[2] + unidades[0]).next_to(f_2, UP, buff=0.0).scale(0.5).shift(
+            RIGHT * 0.0)
+        m_2 = elemento_momento(n_2.punto, self.ejes, positivo=not sentido_fuerzas[3], color_carga=WHITE)
+        label_m_2 = MathTex(etiquetas_fuerzas[3] + unidades[1]).next_to(m_2, UP, buff=-0.2, aligned_edge=LEFT).scale(
+            0.5).shift(RIGHT * 0.4)
+        fuerzas_internas.add(VGroup(f_1, f_2, m_1, m_2))
+        fuerzas_internas.add(VGroup(label_f_1, label_f_2, label_m_1, label_m_2))
+        return fuerzas_internas
 
-    def get_grados_libertad(self, n: Nodo, gl:str ,**kwargs) -> VMobject:
+    def get_grados_libertad(self, n: Nodo, gl: str, **kwargs) -> VMobject:
         grados = elemento_grado_libertad(n.punto, self.ejes, gdl=gl, libre=n.grados_libertad[gl].valor, **kwargs)
         return grados
 
@@ -652,7 +660,7 @@ def elemento_soporte(nodo: tuple[float | int, float | int], ejes: Axes, tipo_sop
 
 
 def elemento_carga(nodo: tuple[float | int, float | int], ejes: Axes, longitud: float = 2.0, h: float | int = 0,
-                   ang: float = 0.0, saliente: bool = True) -> VMobject:
+                   ang: float = 0.0, saliente: bool = True, color_carga: ManimColor= BLUE) -> VMobject:
     ang = np.deg2rad(ang)
     inicio = ejes.c2p(*nodo) + (np.array(
         [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
@@ -666,7 +674,7 @@ def elemento_carga(nodo: tuple[float | int, float | int], ejes: Axes, longitud: 
         start=inicio,
         end=final,
         buff=0,  # ¡Fundamental para que toque los puntos exactamente!
-        color=BLUE,
+        color=color_carga,
         stroke_width=4,  # Grosor de la línea
         tip_shape=StealthTip,  # Aquí cambias la forma
         max_tip_length_to_length_ratio=0.15 / longitud  # Controla el tamaño de la punta
@@ -755,7 +763,7 @@ def elemento_carga_trapezoidal(nodo_i: tuple[float | int, float | int], nodo_j: 
 
 
 def elemento_momento(nodo: tuple[float | int, float | int], ejes: Axes, radio: float = 0.5,
-                     ang: float = 0.0, positivo: bool = True) -> VMobject:
+                     ang: float = 0.0, positivo: bool = True, color_carga: ManimColor= GREEN) -> VMobject:
     ang_i = np.deg2rad(90)
     ang_f = np.deg2rad(325)
     ang = np.deg2rad(ang)
@@ -776,7 +784,7 @@ def elemento_momento(nodo: tuple[float | int, float | int], ejes: Axes, radio: f
         stroke_width=4,  # Grosor de la línea
         tip_length=0.25,  # Controla el tamaño absoluto de la punta
         tip_shape=StealthTip,  # Aquí cambias la forma
-        color=GREEN
+        color= color_carga
     ).move_arc_center_to(centro).rotate(ang, about_point=centro)
     return momento
 
@@ -846,7 +854,6 @@ def elemento_grado_libertad(nodo: tuple[float | int, float | int], ejes: Axes, l
             color=color
         ).move_arc_center_to(centro).rotate(ang, about_point=centro)
     return grado_libertad
-
 
 
 def crear_cota(p1, p2, texto, color=WHITE, tamano_remate=0.15):
@@ -980,6 +987,30 @@ def ecuacion_EI_inv():
 
 def ecuacion_vector_deformaciones(reducida: bool = False):
     return MathTex(r'\dfrac{1}{EI}')
+
+
+def elemento_label_grados_libertad(n: Nodo, **kwargs) -> VGroup:
+    label_grados = VGroup()
+    for k, v in n.grados_libertad.items():
+        if n.rotado:
+            label = n.grados_libertad[k].label_desplazamiento_rotado
+        else:
+            label = n.grados_libertad[k].label_desplazamiento
+        label += '_{' + n.nombre + '}'
+        if n.rotado:
+            label = label if n.grados_libertad[
+                                 k].desplazamiento_rotado is None else label + '=' + _formato_float_latex(
+                n.grados_libertad[k].desplazamiento_rotado)
+        else:
+            label = label if n.grados_libertad[k].desplazamiento is None else label + '=' + _formato_float_latex(
+                n.grados_libertad[k].desplazamiento)
+        if n.grados_libertad[k].valor:
+            color = BLUE
+        else:
+            color = RED
+        label_gl = MathTex(label, color=color, **kwargs)
+        label_grados.add(label_gl)
+    return label_grados
 
 
 def main():

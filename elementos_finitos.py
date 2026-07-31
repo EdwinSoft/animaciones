@@ -50,16 +50,16 @@ class EjemploVigasAnimacion(Scene):
         # Grados de libertad
         n_1_gdl = VGroup(mg.get_grados_libertad(n_1, 'y', offset=0.0, longitud=0.8),
                          mg.get_grados_libertad(n_1, 'eje_z', longitud=1, offset=90))
-        n_1_labels_gdl = mg.label_grados_libertad(n_1)
+        n_1_labels_gdl = elemento_label_grados_libertad(n_1)
         n_2_gdl = VGroup(mg.get_grados_libertad(n_2, 'y', offset=0.0, longitud=0.8),
                          mg.get_grados_libertad(n_2, 'eje_z', longitud=1, offset=-90))
-        n_2_labels_gdl = mg.label_grados_libertad(n_2)
+        n_2_labels_gdl = elemento_label_grados_libertad(n_2)
         n_3_gdl = VGroup(mg.get_grados_libertad(n_3, 'y', offset=0.0, longitud=0.8),
                          mg.get_grados_libertad(n_3, 'eje_z', longitud=1, offset=-90))
-        n_3_labels_gdl = mg.label_grados_libertad(n_3)
+        n_3_labels_gdl = elemento_label_grados_libertad(n_3)
         n_4_gdl = VGroup(mg.get_grados_libertad(n_4, 'y', offset=0.0, longitud=0.8),
                          mg.get_grados_libertad(n_4, 'eje_z', longitud=1, offset=90))
-        n_4_labels_gdl = mg.label_grados_libertad(n_4)
+        n_4_labels_gdl = elemento_label_grados_libertad(n_4)
         vector_desplazamientos_el_1_modificado = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_1, EI_cte=True,
                                                                                                        reducida=False)
         vector_desplazamientos_el_2_modificado = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_2, EI_cte=True,
@@ -364,11 +364,7 @@ class EjemploVigasAnimacion(Scene):
         label_etiquetas_grados_el_2[1].next_to(grados_el_2[1], UL, buff=-0.15).scale(0.5)
         label_etiquetas_grados_el_2[2].next_to(grados_el_2[2], DOWN, buff=0.02).scale(0.5)
         label_etiquetas_grados_el_2[3].next_to(grados_el_2[3], UR, buff=-0.25).scale(0.5)
-        # grados_el_2 = VGroup(gdl_y_2.copy(), gdl_eje_z_2.copy(), gdl_y_3.copy(), gdl_eje_z_3.copy())
-        # label_etiquetas_grados_el_2 = VGroup(label_y_2.copy(),
-        #                                      label_eje_z_2.copy().next_to(gdl_eje_z_2, UL, buff=-0.15),
-        #                                      label_y_3.copy(),
-        #                                      label_eje_z_3.copy())
+        f_internas_elemento_1 = mg.elemento_fuerza_interna_viga(e_1, mostrar_valores=True)
         ### Escena elemento 2
         escena_elemento_2 = VGroup(elementos[1], nodos[1:3], soportes[1:3], label_elementos[1], label_nodos[1:3],
                                    cargas[2:5])
@@ -449,6 +445,7 @@ class EjemploVigasAnimacion(Scene):
         label_etiquetas_grados_el_3[2].next_to(grados_el_3[2], UP, buff=0.02).scale(0.5)
         label_etiquetas_grados_el_3[3].next_to(grados_el_3[3], DOWN, buff=0.0).scale(0.5)
 
+        f_internas_elemento_2 = mg.elemento_fuerza_interna_viga(e_2, unidades=['', ''])
         # grados_el_3 = VGroup(gdl_y_3.copy(), gdl_eje_z_3.copy(), gdl_y_4.copy(), gdl_eje_z_4.copy())
         # label_etiquetas_grados_el_3 = VGroup(label_y_3.copy(), label_eje_z_3.copy(), label_y_4.copy(),
         #                                      label_eje_z_4.copy())
@@ -515,6 +512,7 @@ class EjemploVigasAnimacion(Scene):
                                  vector_fuerza_nodal_equivalente_viga_3).arrange(RIGHT,
                                                                                  buff=0.2)
         mr_elemento_3_4.to_edge(DOWN).scale(0.5)
+        f_internas_elemento_3 = mg.elemento_fuerza_interna_viga(e_3, unidades=['', ''])
         ## Elementos intermedios
         # sum_1 = e_1+e_2+e_3
         # matrix_rigidez_sum_1 = ecuacion_array_a_matriz(sum_1.get_matriz_rigidez(), h_buff=1.8).scale(0.5)
@@ -576,6 +574,9 @@ class EjemploVigasAnimacion(Scene):
                   ReplacementTransform(label_cargas_eq_1[3], mr_elemento_1_4[6].get_entries()[3]),
                   Unwrite(cargas_eq_1), run_time=2)
         self.wait(5)
+        self.play(FadeIn(f_internas_elemento_1))
+        self.wait(2)
+        self.play(FadeOut(f_internas_elemento_1))
         self.play(FadeOut(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]), FadeOut(mr_elemento_1_4))
         ## Análisis Elemento 2
         self.play(FadeIn(escena_elemento_2), run_time=2)
@@ -611,6 +612,9 @@ class EjemploVigasAnimacion(Scene):
                   ReplacementTransform(label_cargas_eq_2[3], mr_elemento_2_4[6].get_entries()[3]),
                   Unwrite(cargas_eq_2), run_time=2)
         self.wait(5)
+        self.play(FadeIn(f_internas_elemento_2))
+        self.wait(2)
+        self.play(FadeOut(f_internas_elemento_2))
         self.play(FadeOut(elementos[1], nodos[1:3], label_elementos[1], label_nodos[1:3]), FadeOut(mr_elemento_2_4))
         ## Análisis Elemento 3
         self.play(FadeIn(escena_elemento_3), run_time=2)
@@ -647,6 +651,9 @@ class EjemploVigasAnimacion(Scene):
                   ReplacementTransform(f_0_2, mr_elemento_3_4[6].get_entries()[2]),
                   ReplacementTransform(f_0_3, mr_elemento_3_4[6].get_entries()[3]), run_time=2)
         self.wait(5)
+        self.play(FadeIn(f_internas_elemento_3))
+        self.wait(2)
+        self.play(FadeOut(f_internas_elemento_3))
         self.play(FadeOut(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]), FadeOut(mr_elemento_3_4),
                   FadeOut(mg.ejes))
         self.wait(2)
