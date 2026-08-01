@@ -1,5 +1,6 @@
 from manim import *
 import numpy as np
+import sympy as sp
 from biblioteca import *
 from mnspy import Nodo, Viga
 
@@ -823,21 +824,22 @@ class EjemploVigasAnimacion(Scene):
         #           ReplacementTransform(matriz_global_reducida_final_3[4], matriz_global_reducida_final_4[3]),
         #           FadeOut(matriz_global_reducida_final_3[2]),
         #           run_time=4)
-        self.play(ReplacementTransform(VGroup(matriz_global_reducida_final_3[1].get_entries(), matriz_global_reducida_final_3[2].get_entries()),
-                                       matriz_global_reducida_final_4[1].get_entries()),
-                  ReplacementTransform(matriz_global_reducida_final_3[1].get_brackets()[0],
-                                       matriz_global_reducida_final_4[1].get_brackets()[0]),
-                  ReplacementTransform(matriz_global_reducida_final_3[2].get_brackets()[1],
-                                       matriz_global_reducida_final_4[1].get_brackets()[1]),
-                  FadeOut(matriz_global_reducida_final_3[1].get_brackets()[1]),
-                  FadeOut(matriz_global_reducida_final_3[2].get_brackets()[0]),
+        self.play(ReplacementTransform(
+            VGroup(matriz_global_reducida_final_3[1].get_entries(), matriz_global_reducida_final_3[2].get_entries()),
+            matriz_global_reducida_final_4[1].get_entries()),
+            ReplacementTransform(matriz_global_reducida_final_3[1].get_brackets()[0],
+                                 matriz_global_reducida_final_4[1].get_brackets()[0]),
+            ReplacementTransform(matriz_global_reducida_final_3[2].get_brackets()[1],
+                                 matriz_global_reducida_final_4[1].get_brackets()[1]),
+            FadeOut(matriz_global_reducida_final_3[1].get_brackets()[1]),
+            FadeOut(matriz_global_reducida_final_3[2].get_brackets()[0]),
 
-                  ReplacementTransform(matriz_global_reducida_final_3[0], matriz_global_reducida_final_4[0]),
-                  ReplacementTransform(matriz_global_reducida_final_3[3], matriz_global_reducida_final_4[2]),
-                  ReplacementTransform(matriz_global_reducida_final_3[4], matriz_global_reducida_final_4[3]),
+            ReplacementTransform(matriz_global_reducida_final_3[0], matriz_global_reducida_final_4[0]),
+            ReplacementTransform(matriz_global_reducida_final_3[3], matriz_global_reducida_final_4[2]),
+            ReplacementTransform(matriz_global_reducida_final_3[4], matriz_global_reducida_final_4[3]),
 
-                  # FadeOut(matriz_global_reducida_final_3[2]),
-                  run_time=4)
+            # FadeOut(matriz_global_reducida_final_3[2]),
+            run_time=4)
         self.wait(2)
         self.play(ReplacementTransform(matriz_global_reducida_final_4[1].get_entries()[0], sol_1[2]),
                   ReplacementTransform(matriz_global_reducida_final_4[1].get_entries()[1], sol_2[2]),
@@ -891,112 +893,201 @@ class EjemploVigasAnimacion(Scene):
         self.wait(5)
         self.play(FadeOut(matriz_global_final))
         self.wait(5)
-        import sympy as sp
-        # 1. Definir la función en SymPy
-        x = sp.Symbol('x')
-        # f(x) = x**2 para x < 1, y f(x) = 3 - x para x >= 1
-        expr_1 = e_1.ecuacion_de_cortante().rhs.args[0].args[0]
-        expr_2 = e_1.ecuacion_de_cortante().rhs.args[1].args[0]
-        expr_3 = e_2.ecuacion_de_cortante().rhs.args[0].args[0]
-        expr_4 = e_3.ecuacion_de_cortante().rhs.args[0].args[0]
 
-        # 2. Convertir a función de NumPy (Esencial para Manim)
-        f_num_1 = sp.lambdify(x, expr_1, 'numpy')
-        f_num_2 = sp.lambdify(x, expr_2, 'numpy')
-        f_num_3 = sp.lambdify(x, expr_3, 'numpy')
-        f_num_4 = sp.lambdify(x, expr_4, 'numpy')
+        x = sp.Symbol('x')
+        v_1 = e_1.ecuacion_de_cortante().rhs.args[0].args[0]
+        v_2 = e_1.ecuacion_de_cortante().rhs.args[1].args[0]
+        v_3 = e_2.ecuacion_de_cortante().rhs.args[0].args[0]
+        v_4 = e_3.ecuacion_de_cortante().rhs.args[0].args[0]
+        nuevos_argumentos = []
+        for sub_piecewise, condicion_externa in mg.ecuacion_de_momento().rhs.args:
+            nuevos_argumentos.extend(sub_piecewise.args)
+        m = sp.Piecewise(*nuevos_argumentos)
+        m_1 = e_1.ecuacion_de_momento().rhs.args[0].args[0]
+        m_2 = e_1.ecuacion_de_momento().rhs.args[1].args[0]
+        m_3 = e_2.ecuacion_de_momento().rhs.args[0].args[0]
+        m_4 = e_3.ecuacion_de_momento().rhs.args[0].args[0]
+
+        f_v_1 = sp.lambdify(x, v_1, 'numpy')
+        f_v_2 = sp.lambdify(x, v_2, 'numpy')
+        f_v_3 = sp.lambdify(x, v_3, 'numpy')
+        f_v_4 = sp.lambdify(x, v_4, 'numpy')
+        f_m = sp.lambdify(x, m, 'numpy')
+        f_m_1 = sp.lambdify(x, m_1, 'numpy')
+        f_m_2 = sp.lambdify(x, m_2, 'numpy')
+        f_m_3 = sp.lambdify(x, m_3, 'numpy')
+        f_m_4 = sp.lambdify(x, m_4, 'numpy')
 
         # 3. Crear los Ejes
-        axes = Axes(
-            x_range=[0, 25, 10],
+        ejes_v = Axes(
+            x_range=[0, 28, 10],
             y_range=[-120, 125, 25],
-            axis_config={"include_numbers": True, "tip_shape": StealthTip,"font_size": 18,}
+            axis_config={"include_numbers": True, "tip_shape": StealthTip, "font_size": 18, }
         )
-        curva_1 = axes.plot(f_num_1, x_range=[0, 6], color=BLUE_E)
-        curva_2 = axes.plot(f_num_2, x_range=[6, 10], color=BLUE_E)
-        curva_3 = axes.plot(f_num_3, x_range=[10, 20], color=BLUE_E)
-        curva_4 = axes.plot(f_num_4, x_range=[20, 25], color=BLUE_E)
-        label_1_1 = MathTex(f'{f_num_1(0):.3g}', color=ORANGE).next_to(axes.c2p(0,f_num_1(0), 0), UP, buff=0.0).shift(RIGHT*0.2).scale(0.35)
-        label_1_2 = MathTex(f'{f_num_1(6):.3g}', color=ORANGE).next_to(axes.c2p(6, f_num_1(6), 0), UP, buff=0.0).scale(0.35)
-        label_2_1 = MathTex(f'{f_num_2(6):.3g}', color=ORANGE).next_to(axes.c2p(6, f_num_2(6), 0), DOWN, buff=0.0).scale(0.35)
-        label_2_2 = MathTex(f'{f_num_2(10):.3g}', color=ORANGE).next_to(axes.c2p(10, f_num_2(10), 0), DOWN, buff=0.0).scale(0.35)
-        label_3_1 = MathTex(f'{f_num_3(10):.3g}', color=ORANGE).next_to(axes.c2p(10, f_num_3(10), 0), UP,
+        ejes_m = Axes(
+            x_range=[0, 28, 10],
+            y_range=[-180, 140, 25],
+            axis_config={"include_numbers": True, "tip_shape": StealthTip, "font_size": 18, }
+        )
+        curva_v_1 = ejes_v.plot(f_v_1, x_range=[0, 6], color=BLUE_E)
+        curva_v_2 = ejes_v.plot(f_v_2, x_range=[6, 10], color=BLUE_E)
+        curva_v_3 = ejes_v.plot(f_v_3, x_range=[10, 20], color=BLUE_E)
+        curva_v_4 = ejes_v.plot(f_v_4, x_range=[20, 25], color=BLUE_E)
+        label_v_1_1 = MathTex(f'{f_v_1(0):.3g}', color=ORANGE).next_to(ejes_v.c2p(0, f_v_1(0), 0), UP, buff=0.0).shift(
+            RIGHT * 0.2).scale(0.35)
+        label_v_1_2 = MathTex(f'{f_v_1(6):.3g}', color=ORANGE).next_to(ejes_v.c2p(6, f_v_1(6), 0), UP, buff=0.0).scale(
+            0.35)
+        label_v_2_1 = MathTex(f'{f_v_2(6):.3g}', color=ORANGE).next_to(ejes_v.c2p(6, f_v_2(6), 0), DOWN,
+                                                                       buff=0.0).scale(0.35)
+        label_v_2_2 = MathTex(f'{f_v_2(10):.3g}', color=ORANGE).next_to(ejes_v.c2p(10, f_v_2(10), 0), DOWN,
                                                                         buff=0.0).scale(0.35)
-        label_3_2 = MathTex(f'{f_num_3(20):.3g}', color=ORANGE).next_to(axes.c2p(20, f_num_3(20), 0), DOWN,
+        label_v_3_1 = MathTex(f'{f_v_3(10):.3g}', color=ORANGE).next_to(ejes_v.c2p(10, f_v_3(10), 0), UP,
                                                                         buff=0.0).scale(0.35)
-        label_4_1 = MathTex(f'{f_num_4(20):.3g}', color=ORANGE).next_to(axes.c2p(20, f_num_4(20), 0), UP,
+        label_v_3_2 = MathTex(f'{f_v_3(20):.3g}', color=ORANGE).next_to(ejes_v.c2p(20, f_v_3(20), 0), DOWN,
                                                                         buff=0.0).scale(0.35)
-        label_4_2 = MathTex(f'{f_num_4(25):.3g}', color=ORANGE).next_to(axes.c2p(25, f_num_4(25), 0), UP,
+        label_v_4_1 = MathTex(f'{f_v_4(20):.3g}', color=ORANGE).next_to(ejes_v.c2p(20, f_v_4(20), 0), UP,
                                                                         buff=0.0).scale(0.35)
-        self.play(Create(axes))
-        # area_1 = axes.get_area(
-        #     curva_1,
-        #     x_range=(0, 6),  # Rellena estrictamente en este rango
-        #     color=BLUE,
-        #     opacity=0.3
-        # )
-        # area_2 = axes.get_area(
-        #     curva_2,
-        #     x_range=(6, 10),  # Rellena estrictamente en este rango
-        #     color=BLUE,
-        #     opacity=0.3
-        # )
-        t_tracker = ValueTracker(0)
+        label_v_4_2 = MathTex(f'{f_v_4(25):.3g}', color=ORANGE).next_to(ejes_v.c2p(25, f_v_4(25), 0), UP,
+                                                                        buff=0.0).scale(0.35)
+        curva_m = ejes_m.plot(f_m, x_range=[0, 25,0.05], color=BLUE_E)
+        # curva_m_1 = ejes_m.plot(f_m_1, x_range=[0, 6], color=BLUE_E)
+        # curva_m_2 = ejes_m.plot(f_m_2, x_range=[6, 10], color=BLUE_E)
+        # curva_m_3 = ejes_m.plot(f_m_3, x_range=[10, 20, 0.1], color=BLUE_E)
+        # curva_m_4 = ejes_m.plot(f_m_4, x_range=[20, 25], color=BLUE_E)
+        label_m_1_1 = MathTex(f'{f_m_1(0):.3g}', color=ORANGE).next_to(ejes_m.c2p(0, f_m_1(0), 0), DOWN,
+                                                                       buff=0.0).shift(
+            RIGHT * 0.2).scale(0.35)
+        label_m_1_2 = MathTex(f'{f_m_1(6):.3g}', color=ORANGE).next_to(ejes_m.c2p(6, f_m_1(6), 0), UP, buff=0.0).scale(
+            0.35)
+        # label_m_2_1 = MathTex(f'{f_m_2(6):.3g}', color=ORANGE).next_to(ejes_m.c2p(6, f_m_2(6), 0), DOWN,
+        #                                                                buff=0.0).scale(
+        #     0.35)
+        label_m_2_2 = MathTex(f'{f_m_2(10):.3g}', color=ORANGE).next_to(ejes_m.c2p(10, f_m_2(10), 0), DOWN,
+                                                                        buff=0.0).scale(0.35)
+        label_m_3_1 = MathTex(f'{f_m_3(15.0956521739130):.3g}', color=ORANGE).next_to(ejes_m.c2p(15.0956521739130, f_m_3(15.0956521739130), 0), UP,
+                                                                         buff=0.0).scale(0.35)
+        label_m_3_2 = MathTex(f'{f_m_3(20):.3g}', color=ORANGE).next_to(ejes_m.c2p(20, f_m_3(20), 0), DOWN,
+                                                                        buff=0.0).scale(0.35)
+        # label_m_4_1 = MathTex(f'{f_m_4(20):.3g}', color=ORANGE).next_to(ejes_m.c2p(20, f_m_4(20), 0), UP,
+        #                                                                 buff=0.0).scale(0.35)
+        label_m_4_2 = MathTex(f'{f_m_4(25):.3g}', color=ORANGE).next_to(ejes_m.c2p(25, f_m_4(25), 0), UP,
+                                                                        buff=0.0).scale(0.35)
+        self.play(Create(ejes_v))
+        t_tracker_v = ValueTracker(0)
 
-        def update_area_1():
-            t = t_tracker.get_value()
-
-            # Si el tracker acaba de empezar, devolvemos un grupo vacío para evitar error de ancho=0
+        def update_area_v_1():
+            t = t_tracker_v.get_value()
             if t <= 0:
                 return VGroup()
-            return axes.get_area(curva_1, x_range=(0, min(t, 6)), color=BLUE, opacity=0.3)
+            return ejes_v.get_area(curva_v_1, x_range=(0, min(t, 6)), color=BLUE, opacity=0.3)
 
-        area_1_dinamica = always_redraw(update_area_1)
-        def update_area_2():
-            t = t_tracker.get_value()
+        area_1_dinamica_v = always_redraw(update_area_v_1)
 
-            # Si el tracker acaba de empezar, devolvemos un grupo vacío para evitar error de ancho=0
+        def update_area_v_2():
+            t = t_tracker_v.get_value()
             if t <= 6:
                 return VGroup()
+            return ejes_v.get_area(curva_v_2, x_range=(6, min(t, 10)), color=BLUE, opacity=0.3)
 
-            return axes.get_area(curva_2, x_range=(6, min(t, 10)), color=BLUE, opacity=0.3)
+        area_2_dinamica_v = always_redraw(update_area_v_2)
 
-        area_2_dinamica = always_redraw(update_area_2)
-        def update_area_3():
-            t = t_tracker.get_value()
-
-            # Si el tracker acaba de empezar, devolvemos un grupo vacío para evitar error de ancho=0
+        def update_area_v_3():
+            t = t_tracker_v.get_value()
             if t <= 10:
                 return VGroup()
+            return ejes_v.get_area(curva_v_3, x_range=(10, min(t, 20)), color=BLUE, opacity=0.3)
 
-            return axes.get_area(curva_3, x_range=(10, min(t, 20)), color=BLUE, opacity=0.3)
+        area_3_dinamica_v = always_redraw(update_area_v_3)
 
-        area_3_dinamica = always_redraw(update_area_3)
-        def update_area_4():
-            t = t_tracker.get_value()
-
-            # Si el tracker acaba de empezar, devolvemos un grupo vacío para evitar error de ancho=0
+        def update_area_v_4():
+            t = t_tracker_v.get_value()
             if t <= 20:
                 return VGroup()
+            return ejes_v.get_area(curva_v_4, x_range=(20, min(t, 25)), color=BLUE, opacity=0.3)
 
-            return axes.get_area(curva_4, x_range=(20, min(t, 25)), color=BLUE, opacity=0.3)
-
-        area_4_dinamica = always_redraw(update_area_4)
-        self.add(area_1_dinamica, area_2_dinamica, area_3_dinamica, area_4_dinamica)
-        self.play(Write(label_1_1))
-        self.play(t_tracker.animate.set_value(6),run_time=4, rate_func=linear)
-        self.play(Write(label_1_2))
+        area_4_dinamica_v = always_redraw(update_area_v_4)
+        self.add(area_1_dinamica_v, area_2_dinamica_v, area_3_dinamica_v, area_4_dinamica_v)
+        self.play(Write(label_v_1_1))
+        self.play(t_tracker_v.animate.set_value(6), run_time=4, rate_func=linear)
+        self.play(Write(label_v_1_2))
         self.wait(0.5)
-        self.play(Write(label_2_1))
-        self.play(t_tracker.animate.set_value(10), run_time=4, rate_func=linear)
-        self.play(Write(label_2_2))
+        self.play(Write(label_v_2_1))
+        self.play(t_tracker_v.animate.set_value(10), run_time=4, rate_func=linear)
+        self.play(Write(label_v_2_2))
         self.wait(0.5)
-        self.play(Write(label_3_1))
-        self.play(t_tracker.animate.set_value(20), run_time=4, rate_func=linear)
-        self.play(Write(label_3_2))
+        self.play(Write(label_v_3_1))
+        self.play(t_tracker_v.animate.set_value(20), run_time=4, rate_func=linear)
+        self.play(Write(label_v_3_2))
         self.wait(0.5)
-        self.play(Write(label_4_1))
-        self.play(t_tracker.animate.set_value(25), run_time=4, rate_func=linear)
-        self.play(Write(label_4_2))
+        self.play(Write(label_v_4_1))
+        self.play(t_tracker_v.animate.set_value(25), run_time=4, rate_func=linear)
+        self.play(Write(label_v_4_2))
         self.wait(2)
+        self.play(
+            FadeOut(ejes_v, label_v_1_1, label_v_1_2, label_v_2_1, label_v_2_2, label_v_3_1, label_v_3_2, label_v_4_1,
+                    label_v_4_2, curva_v_1, curva_v_2, curva_v_3, curva_v_4, area_1_dinamica_v, area_2_dinamica_v,
+                    area_3_dinamica_v, area_4_dinamica_v))
+        self.wait(2)
+        self.play(Create(ejes_m))
+        t_tracker_m = ValueTracker(0)
+        def update_area_m():
+            t = t_tracker_m.get_value()
+            if t <= 0:
+                return VGroup()
+            return ejes_m.get_area(curva_m, x_range=(0, min(t, 25)), color=BLUE, opacity=0.3)
 
+        area_dinamica_m = always_redraw(update_area_m)
+
+        # def update_area_m_1():
+        #     t = t_tracker_m.get_value()
+        #     if t <= 0:
+        #         return VGroup()
+        #     return ejes_m.get_area(curva_m_1, x_range=(0, min(t, 10)), color=BLUE, opacity=0.3)
+        #
+        # area_1_dinamica_m = always_redraw(update_area_m_1)
+        #
+        # def update_area_m_2():
+        #     t = t_tracker_m.get_value()
+        #     if t <= 10:
+        #         return VGroup()
+        #     return ejes_m.get_area(curva_m_3, x_range=(10, min(t, 20)), color=BLUE, opacity=0.3)
+        #
+        # area_2_dinamica_m = always_redraw(update_area_m_2)
+        #
+        # def update_area_m_3():
+        #     t = t_tracker_m.get_value()
+        #     if t <= 20:
+        #         return VGroup()
+        #     return ejes_m.get_area(curva_m_4, x_range=(20, min(t, 25)), color=BLUE, opacity=0.3)
+        #
+        # area_3_dinamica_m = always_redraw(update_area_m_3)
+
+        # def update_area_m_4():
+        #     t = t_tracker_m.get_value()
+        #     if t <= 20:
+        #         return VGroup()
+        #     return ejes_m.get_area(curva_m_4, x_range=(20, min(t, 25)), color=BLUE, opacity=0.3)
+        #
+        # area_4_dinamica_m = always_redraw(update_area_m_4)
+        self.add(area_dinamica_m)
+        self.play(Write(label_m_1_1))
+        self.play(t_tracker_m.animate.set_value(6), run_time=4, rate_func=linear)
+        self.play(Write(label_m_1_2))
+        self.wait(0.5)
+        #self.play(Write(label_m_2_1))
+        self.play(t_tracker_m.animate.set_value(10), run_time=4, rate_func=linear)
+        self.play(Write(label_m_2_2))
+        self.wait(0.5)
+        self.play(t_tracker_m.animate.set_value(15.0956521739130), run_time=4, rate_func=linear)
+        self.play(Write(label_m_3_1))
+        self.wait(0.5)
+        self.play(t_tracker_m.animate.set_value(20), run_time=4, rate_func=linear)
+        self.play(Write(label_m_3_2))
+        self.wait(0.5)
+        #self.play(Write(label_m_4_1))
+        self.play(t_tracker_m.animate.set_value(25), run_time=4, rate_func=linear)
+        self.play(Write(label_m_4_2))
+        self.wait(2)
+        self.play(
+            FadeOut(ejes_m, label_m_1_1, label_m_1_2, label_m_2_2, label_m_3_2,
+                    label_m_4_2, curva_m,area_dinamica_m))
