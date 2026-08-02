@@ -920,12 +920,12 @@ class EjemploVigasAnimacion(Scene):
 
         # 3. Crear los Ejes
         ejes_v = Axes(
-            x_range=[0, 28, 10],
+            x_range=[0, 26, 5],
             y_range=[-120, 125, 25],
             axis_config={"include_numbers": True, "tip_shape": StealthTip, "font_size": 18, }
         )
         ejes_m = Axes(
-            x_range=[0, 28, 10],
+            x_range=[0, 26, 5],
             y_range=[-180, 140, 25],
             axis_config={"include_numbers": True, "tip_shape": StealthTip, "font_size": 18, }
         )
