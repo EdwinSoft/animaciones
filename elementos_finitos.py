@@ -97,8 +97,8 @@ class EjemploVigasAnimacion(Scene):
         cargas_puntuales = mg.get_cargas_puntuales(longitud=2.0)
         cargas_distribuidas = mg.get_cargas_distribuidas(longitud=1.0)
         cargas = cargas_puntuales + cargas_distribuidas
-        cargas_e_1=cargas[0:2].copy()
-        cargas_e_2=cargas[2:5].copy()
+        cargas_e_1 = cargas[0:2].copy()
+        cargas_e_2 = cargas[2:5].copy()
 
         ############
         nodos, label_nodos, soportes = mg.get_nodos_y_soportes()
@@ -246,9 +246,9 @@ class EjemploVigasAnimacion(Scene):
         mr_elemento_1_4_4[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_viga(e_1, mostrar_valores=True,
                                                                                   formato='%.8g').scale(0.5)
         mr_elemento_1_4_4.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        ecuacion_v_e_1 = MathTex(sp.latex(e_1.ecuacion_de_cortante()), color= BLUE_A)
-        ecuacion_m_e_1 = MathTex(sp.latex(e_1.ecuacion_de_momento()), color= GREEN_A)
-        ec_e_1=VGroup(ecuacion_v_e_1, ecuacion_m_e_1).arrange(DOWN, buff=0.2).next_to(mr_elemento_1_4_3, RIGHT).scale(0.5)
+        ecuacion_v_e_1 = MathTex(sp.latex(e_1.ecuacion_de_cortante()), color=BLUE_A)
+        ecuacion_m_e_1 = MathTex(sp.latex(e_1.ecuacion_de_momento()), color=GREEN_A)
+        ec_e_1 = VGroup(ecuacion_v_e_1, ecuacion_m_e_1).arrange(DOWN, buff=0.2).scale(0.5).to_corner(DR, buff=0.5)
         ## Ecuaciones Elemento 2
         ecuacion_local_viga_2 = ecuacion_local_viga.copy()
         matriz_k_2 = ecuacion_vector_fuerza_viga(2, 2, 3)
@@ -334,6 +334,33 @@ class EjemploVigasAnimacion(Scene):
                                  vector_fuerza_nodal_equivalente_viga_2).arrange(RIGHT,
                                                                                  buff=0.2)
         mr_elemento_2_4.to_edge(DOWN).scale(0.5)
+        mr_elemento_2_4_1 = mr_elemento_2_4.copy()
+        mr_elemento_2_4_1[4] = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_2, EI_cte=True,
+                                                                                     reducida=False).scale(0.5)
+        mr_elemento_2_4_1.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_2_4_2 = mr_elemento_2_4_1.copy()
+        mr_elemento_2_4_2.submobjects.pop(2)
+        mr_elemento_2_4_2.submobjects.pop(2)
+        sol_el_2_1 = np.array(e_2._k.obtener_matriz(False)) @ np.array(e_2._k.obtener_desplazamientos(False))
+        sol_el_2_2 = sol_el_1_1 - e_2._obtener_fuerzas()
+        mr_elemento_2_4_2[2] = ecuacion_array_a_matriz(sol_el_2_1, formato_num='{x:.8f}', left_bracket=r"\{",
+                                                       right_bracket=r"\}").scale(0.5)
+        mr_elemento_2_4_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_2_4_3 = mr_elemento_2_4_2.copy()
+        mr_elemento_2_4_3.submobjects.pop(2)
+        mr_elemento_2_4_3.submobjects.pop(2)
+        mr_elemento_2_4_3[2] = ecuacion_array_a_matriz(sol_el_2_2, formato_num='{x:.8f}', left_bracket=r"\{",
+                                                       right_bracket=r"\}").scale(0.5)
+        mr_elemento_2_4_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_2_4_4 = mr_elemento_2_4_1.copy()
+        mr_elemento_2_4_4[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_viga(e_1, mostrar_valores=True,
+                                                                                  formato='%.8g').scale(0.5)
+        mr_elemento_2_4_4.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        ecuacion_v_e_2 = MathTex(sp.latex(e_2.ecuacion_de_cortante()), color=BLUE_A)
+        ecuacion_m_e_2 = MathTex(sp.latex(e_2.ecuacion_de_momento()), color=GREEN_A)
+        ec_e_2 = VGroup(ecuacion_v_e_2, ecuacion_m_e_2).arrange(DOWN, buff=0.2).scale(0.5).to_corner(DR, buff=0.5)
+
+
         ## Ecuaciones Elemento 3
         ecuacion_local_viga_3 = ecuacion_local_viga.copy()
         matriz_k_3 = ecuacion_vector_fuerza_viga(3, 3, 4)
@@ -398,6 +425,32 @@ class EjemploVigasAnimacion(Scene):
                                  vector_fuerza_nodal_equivalente_viga_3).arrange(RIGHT,
                                                                                  buff=0.2)
         mr_elemento_3_4.to_edge(DOWN).scale(0.5)
+        mr_elemento_3_4_1 = mr_elemento_3_4.copy()
+        mr_elemento_3_4_1[4] = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_3, EI_cte=True,
+                                                                                     reducida=False).scale(0.5)
+        mr_elemento_3_4_1.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_3_4_2 = mr_elemento_3_4_1.copy()
+        mr_elemento_3_4_2.submobjects.pop(2)
+        mr_elemento_3_4_2.submobjects.pop(2)
+        sol_el_3_1 = np.array(e_3._k.obtener_matriz(False)) @ np.array(e_3._k.obtener_desplazamientos(False))
+        sol_el_3_2 = sol_el_3_1 - e_3._obtener_fuerzas()
+        mr_elemento_3_4_2[2] = ecuacion_array_a_matriz(sol_el_3_1, formato_num='{x:.8f}', left_bracket=r"\{",
+                                                       right_bracket=r"\}").scale(0.5)
+        mr_elemento_3_4_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_3_4_3 = mr_elemento_3_4_2.copy()
+        mr_elemento_3_4_3.submobjects.pop(2)
+        mr_elemento_3_4_3.submobjects.pop(2)
+        mr_elemento_3_4_3[2] = ecuacion_array_a_matriz(sol_el_3_2, formato_num='{x:.8f}', left_bracket=r"\{",
+                                                       right_bracket=r"\}").scale(0.5)
+        mr_elemento_3_4_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_3_4_4 = mr_elemento_3_4_1.copy()
+        mr_elemento_3_4_4[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_viga(e_3, mostrar_valores=True,
+                                                                                  formato='%.8g').scale(0.5)
+        mr_elemento_3_4_4.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        ecuacion_v_e_3 = MathTex(sp.latex(e_3.ecuacion_de_cortante()), color=BLUE_A)
+        ecuacion_m_e_3 = MathTex(sp.latex(e_3.ecuacion_de_momento()), color=GREEN_A)
+        ec_e_3 = VGroup(ecuacion_v_e_3, ecuacion_m_e_3).arrange(DOWN, buff=0.2).scale(0.5).to_corner(DR, buff=0.5)
+
         f_internas_elemento_3 = mg.elemento_fuerza_interna_viga(e_3, unidades=['', ''])
         ## Elementos intermedios
         ## Diagrama viga inicial
@@ -801,20 +854,129 @@ class EjemploVigasAnimacion(Scene):
                   FadeOut(mr_elemento_1_4_2[4].get_brackets()[0]),
                   run_time=4)
         self.wait(2)
-        self.play(mr_elemento_1_4_3.animate.to_corner(DOWN + LEFT),run_time=4)
+        self.play(mr_elemento_1_4_3.animate.to_corner(DOWN + LEFT), run_time=4)
         self.wait(2)
         self.play(Write(ecuacion_v_e_1))
         self.wait(2)
         self.play(Write(ecuacion_m_e_1))
         self.wait(2)
-        self.play(FadeOut(mr_elemento_1_4_3), FadeOut(ec_e_1))
-        self.wait(2)
-        self.play(FadeOut(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]),
+        self.play(FadeOut(mr_elemento_1_4_3), FadeOut(ec_e_1),
+                  FadeOut(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]),
                   FadeOut(f_internas_elemento_1), FadeOut(cargas_e_1))
         self.wait(2)
         self.play(FadeIn(mr_elemento_1_4_4))
         self.wait(2)
         self.play(FadeOut(mr_elemento_1_4_4))
+        ####################################
+        self.wait(2)
+        self.play(FadeIn(elementos[1], nodos[1:3], label_elementos[1], label_nodos[1:3]), FadeIn(mr_elemento_2_4),
+                  FadeIn(f_internas_elemento_2), FadeIn(cargas_e_2))
+        self.play(
+            ReplacementTransform(mr_elemento_2_4[0], mr_elemento_2_4_1[0]),
+            ReplacementTransform(mr_elemento_2_4[1], mr_elemento_2_4_1[1]),
+            ReplacementTransform(mr_elemento_2_4[2], mr_elemento_2_4_1[2]),
+            ReplacementTransform(mr_elemento_2_4[3], mr_elemento_2_4_1[3]),
+            ReplacementTransform(mr_elemento_2_4[4], mr_elemento_2_4_1[4]),
+            ReplacementTransform(mr_elemento_2_4[5], mr_elemento_2_4_1[5]),
+            ReplacementTransform(mr_elemento_2_4[6], mr_elemento_2_4_1[6]),
+            run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(mr_elemento_2_4_1[3].get_entries(), mr_elemento_2_4_1[4].get_entries()),
+                                       mr_elemento_2_4_2[2].get_entries()),
+                  ReplacementTransform(mr_elemento_2_4_1[3].get_brackets()[0],
+                                       mr_elemento_2_4_2[2].get_brackets()[0]),
+                  ReplacementTransform(mr_elemento_2_4_1[4].get_brackets()[1],
+                                       mr_elemento_2_4_2[2].get_brackets()[1]),
+                  ReplacementTransform(mr_elemento_2_4_1[0], mr_elemento_2_4_2[0]),
+                  ReplacementTransform(mr_elemento_2_4_1[1], mr_elemento_2_4_2[1]),
+                  ReplacementTransform(mr_elemento_2_4_1[5], mr_elemento_2_4_2[3]),
+                  ReplacementTransform(mr_elemento_2_4_1[6], mr_elemento_2_4_2[4]),
+                  FadeOut(mr_elemento_2_4_1[2]),
+                  FadeOut(mr_elemento_2_4_1[3].get_brackets()[1]),
+                  FadeOut(mr_elemento_2_4_1[4].get_brackets()[0]),
+                  run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(mr_elemento_2_4_2[2].get_entries(), mr_elemento_2_4_2[4].get_entries()),
+                                       mr_elemento_2_4_3[2].get_entries()),
+                  ReplacementTransform(mr_elemento_2_4_2[2].get_brackets()[0],
+                                       mr_elemento_2_4_3[2].get_brackets()[0]),
+                  ReplacementTransform(mr_elemento_2_4_2[4].get_brackets()[1],
+                                       mr_elemento_2_4_3[2].get_brackets()[1]),
+                  ReplacementTransform(mr_elemento_2_4_2[0], mr_elemento_2_4_3[0]),
+                  ReplacementTransform(mr_elemento_2_4_2[1], mr_elemento_2_4_3[1]),
+                  FadeOut(mr_elemento_2_4_2[3]),
+                  FadeOut(mr_elemento_2_4_2[2].get_brackets()[1]),
+                  FadeOut(mr_elemento_2_4_2[4].get_brackets()[0]),
+                  run_time=4)
+        self.wait(2)
+        self.play(mr_elemento_2_4_3.animate.to_corner(DOWN + LEFT), run_time=4)
+        self.wait(2)
+        self.play(Write(ecuacion_v_e_2))
+        self.wait(2)
+        self.play(Write(ecuacion_m_e_2))
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_2_4_3), FadeOut(ec_e_2),
+                  FadeOut(elementos[1], nodos[1:3], label_elementos[1], label_nodos[1:3]),
+                  FadeOut(f_internas_elemento_2), FadeOut(cargas_e_2))
+        self.wait(2)
+        self.play(FadeIn(mr_elemento_2_4_4))
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_2_4_4))
+        ####################################
+        self.wait(2)
+        self.play(FadeIn(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]), FadeIn(mr_elemento_3_4),
+                  FadeIn(f_internas_elemento_3))
+        self.play(
+            ReplacementTransform(mr_elemento_3_4[0], mr_elemento_3_4_1[0]),
+            ReplacementTransform(mr_elemento_3_4[1], mr_elemento_3_4_1[1]),
+            ReplacementTransform(mr_elemento_3_4[2], mr_elemento_3_4_1[2]),
+            ReplacementTransform(mr_elemento_3_4[3], mr_elemento_3_4_1[3]),
+            ReplacementTransform(mr_elemento_3_4[4], mr_elemento_3_4_1[4]),
+            ReplacementTransform(mr_elemento_3_4[5], mr_elemento_3_4_1[5]),
+            ReplacementTransform(mr_elemento_3_4[6], mr_elemento_3_4_1[6]),
+            run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(mr_elemento_3_4_1[3].get_entries(), mr_elemento_3_4_1[4].get_entries()),
+                                       mr_elemento_3_4_2[2].get_entries()),
+                  ReplacementTransform(mr_elemento_3_4_1[3].get_brackets()[0],
+                                       mr_elemento_3_4_2[2].get_brackets()[0]),
+                  ReplacementTransform(mr_elemento_3_4_1[4].get_brackets()[1],
+                                       mr_elemento_3_4_2[2].get_brackets()[1]),
+                  ReplacementTransform(mr_elemento_3_4_1[0], mr_elemento_3_4_2[0]),
+                  ReplacementTransform(mr_elemento_3_4_1[1], mr_elemento_3_4_2[1]),
+                  ReplacementTransform(mr_elemento_3_4_1[5], mr_elemento_3_4_2[3]),
+                  ReplacementTransform(mr_elemento_3_4_1[6], mr_elemento_3_4_2[4]),
+                  FadeOut(mr_elemento_3_4_1[2]),
+                  FadeOut(mr_elemento_3_4_1[3].get_brackets()[1]),
+                  FadeOut(mr_elemento_3_4_1[4].get_brackets()[0]),
+                  run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(mr_elemento_3_4_2[2].get_entries(), mr_elemento_3_4_2[4].get_entries()),
+                                       mr_elemento_3_4_3[2].get_entries()),
+                  ReplacementTransform(mr_elemento_3_4_2[2].get_brackets()[0],
+                                       mr_elemento_3_4_3[2].get_brackets()[0]),
+                  ReplacementTransform(mr_elemento_3_4_2[4].get_brackets()[1],
+                                       mr_elemento_3_4_3[2].get_brackets()[1]),
+                  ReplacementTransform(mr_elemento_3_4_2[0], mr_elemento_3_4_3[0]),
+                  ReplacementTransform(mr_elemento_3_4_2[1], mr_elemento_3_4_3[1]),
+                  FadeOut(mr_elemento_3_4_2[3]),
+                  FadeOut(mr_elemento_3_4_2[2].get_brackets()[1]),
+                  FadeOut(mr_elemento_3_4_2[4].get_brackets()[0]),
+                  run_time=4)
+        self.wait(2)
+        self.play(mr_elemento_3_4_3.animate.to_corner(DOWN + LEFT), run_time=4)
+        self.wait(2)
+        self.play(Write(ecuacion_v_e_3))
+        self.wait(2)
+        self.play(Write(ecuacion_m_e_3))
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_3_4_3), FadeOut(ec_e_3),
+                  FadeOut(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]),
+                  FadeOut(f_internas_elemento_3))
+        self.wait(2)
+        self.play(FadeIn(mr_elemento_3_4_4))
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_3_4_4))
         #######################################################################################################
         x = sp.Symbol('x')
         v_1 = e_1.ecuacion_de_cortante().rhs.args[0].args[0]
@@ -1013,5 +1175,5 @@ class EjemploVigasAnimacion(Scene):
         self.play(Write(label_m_4_2))
         self.wait(2)
         self.play(
-            FadeOut(ejes_m, label_m_1_1, label_m_1_2, label_m_2_2, label_m_3_2,
+            FadeOut(ejes_m, label_m_1_1, label_m_1_2, label_m_2_2, label_m_3_1, label_m_3_2,
                     label_m_4_2, curva_m, area_dinamica_m))
