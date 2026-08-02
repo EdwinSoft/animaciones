@@ -7,6 +7,7 @@ from mnspy import Nodo, Viga
 
 class EjemploVigasAnimacion(Scene):
     def construct(self):
+        # Solución del ejercicio con mnspy
         n_1 = Nodo('1', 0, grados_libertad={'y': False, 'eje_z': False})
         n_2 = Nodo('2', 10, grados_libertad={'y': False, 'eje_z': True})
         n_3 = Nodo('3', 20, grados_libertad={'y': False, 'eje_z': True})
@@ -17,6 +18,7 @@ class EjemploVigasAnimacion(Scene):
         e_1.agregar_carga_puntual(-80, 6.0)
         e_2.agregar_carga_distribuida(-24)
         mg = EnsambleAnimacion([e_1, e_2, e_3])
+        ## Se guarda los objetos antes de la solución en mnspy
         matriz_global_base = mg.sistema_ecuaciones_matriz_rigidez_global(EI_cte=True, reducida=False)
         matriz_global = matriz_global_base.copy().scale(0.5).arrange(RIGHT)
         matriz_global_reducida_inicial = mg.sistema_ecuaciones_matriz_rigidez_global(EI_cte=True, reducida=True)
@@ -48,7 +50,7 @@ class EjemploVigasAnimacion(Scene):
         sol_2 = VGroup(MathTex(r'{\phi_3}').set_color(BLUE), ecuacion_signo_igual(),
                        MathTex(r'\dfrac{' + f'{sol[1][0]:.8f}' + '}{EI}')).scale(0.5).arrange(RIGHT).next_to(sol_1,
                                                                                                              DOWN)
-        # Grados de libertad
+        ### Grados de libertad
         n_1_gdl = VGroup(mg.get_grados_libertad(n_1, 'y', offset=0.0, longitud=0.8),
                          mg.get_grados_libertad(n_1, 'eje_z', longitud=1, offset=90))
         n_1_labels_gdl = elemento_label_grados_libertad(n_1)
@@ -67,7 +69,7 @@ class EjemploVigasAnimacion(Scene):
                                                                                                        reducida=False)
         vector_desplazamientos_el_3_modificado = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_3, EI_cte=True,
                                                                                                        reducida=False)
-        ##########################################################################################
+        ## Se soluciona por mnspy
         mg.solucionar_por_gauss_y_calcular_reacciones()
         sol_final = np.array(mg._union._k.obtener_matriz(False)) @ np.array(mg._union._k.obtener_desplazamientos(False))
         sol_final_resta = sol_final - mg._union._k.obtener_fuerzas(False)
@@ -92,101 +94,17 @@ class EjemploVigasAnimacion(Scene):
         matriz_global_final_4.scale(0.35).arrange(RIGHT)
 
         ############
-
-        # ejes = mg.ejes
         cargas_puntuales = mg.get_cargas_puntuales(longitud=2.0)
         cargas_distribuidas = mg.get_cargas_distribuidas(longitud=1.0)
         cargas = cargas_puntuales + cargas_distribuidas
-        # cargas = VGroup()
-        # for carga_puntual in mg._lista_cargas_puntuales:
-        #     cp = elemento_carga((carga_puntual[1][0][0] + carga_puntual[2], 0.0, 0.0), ejes, 2, ang=90, saliente=False,
-        #                         h=0.25 / 2)
-        #     valor = MathTex(str(abs(carga_puntual[0])) + r"\,kN").next_to(cp, UP, buff=0.1).scale(0.5)
-        #     cargas.add(cp)
-        #     cargas.add(valor)
-        # for carga_distribuida in mg._lista_cargas_distribuidas:
-        #     cp = elemento_carga_distribuida((carga_distribuida[1][0][0], 0.0, 0.0),
-        #                                     (carga_distribuida[1][1][0], 0.0, 0.0), ejes, 0.25 / 2,
-        #                                     saliente=False, longitud=1, n_cargas=20)
-        #     valor_1 = MathTex(str(abs(carga_distribuida[0][0])) + r"\,kN/m").next_to(cp, UL, buff=0.0).scale(0.5).shift(
-        #         RIGHT * 0.7)
-        #     valor_2 = MathTex(str(abs(carga_distribuida[0][1])) + r"\,kN/m").next_to(cp, UR, buff=0.0).scale(0.5).shift(
-        #         LEFT * 0.7)
-        #     cargas.add(cp)
-        #     cargas.add(valor_1)
-        #     cargas.add(valor_2)
+        cargas_e_1=cargas[0:2].copy()
+        cargas_e_2=cargas[2:5].copy()
 
-        # mg.solucion()
-        # mg.diagrama_cargas()
+        ############
         nodos, label_nodos, soportes = mg.get_nodos_y_soportes()
-        # nodos = VGroup()
-        # label_nodos = VGroup().set_z_index(1.5)
-        # soportes = VGroup().set_z_index(1)
-        # for n in mg._lista_nodos:
-        #     nodos.add(Dot(ejes.c2p(n.punto), color=BLUE_A))
-        #     label_nodos.add(
-        #         LabeledDot(MathTex(n.nombre, color=WHITE), color=GREEN, stroke_color=GREEN, stroke_width=1,
-        #                    fill_opacity=0.8).next_to(ejes.c2p(n.punto), DR, buff=-0.1).scale(
-        #             0.5))
-        #     tipo_sop = n.get_soporte()
-        #     if len(tipo_sop) == 2:
-        #         tipo, estilo = tipo_sop
-        #         if tipo == 0:  # pivotado
-        #             if estilo == 0:  # móvil
-        #                 soportes.add(elemento_soporte(n.punto, ejes, 0, ang=0))
-        #             elif estilo == 1:  # fijo
-        #                 soportes.add(elemento_soporte(n.punto, ejes, 1, ang=0))
-        #             elif estilo == 2:  # móvil
-        #                 soportes.add(elemento_soporte(n.punto, ejes, 0, ang=180))
-        #             elif estilo == 3:  # fijo
-        #                 soportes.add(elemento_soporte(n.punto, ejes, 1, ang=180))
-        #             elif estilo == 4:  # móvil
-        #                 soportes.add(elemento_soporte(n.punto, ejes, 0, ang=270))
-        #             elif estilo == 5:  # fijo
-        #                 soportes.add(elemento_soporte(n.punto, ejes, 1, ang=270))
-        #             elif estilo == 6:  # móvil
-        #                 soportes.add(elemento_soporte(n.punto, ejes, 0, ang=90))
-        #             elif estilo == 7:  # fijo
-        #                 soportes.add(elemento_soporte(n.punto, ejes, 1, ang=90))
-        #         elif tipo == 1:  # empotrado
-        #             if estilo == 0:  # izquierda
-        #                 soportes.add(elemento_soporte(n.punto, ejes, 2, ang=0))
-        #             elif estilo == 1:  # derecha
-        #                 soportes.add(elemento_soporte(n.punto, ejes, 2, ang=180))
-        #             elif estilo == 2:  # abajo
-        #                 soportes.add(elemento_soporte(n.punto, ejes, 2, ang=90))
-        #             elif estilo == 3:  # arriba
-        #                 soportes.add(elemento_soporte(n.punto, ejes, 2, ang=270))
-        #             elif estilo == 4:  # izquierda con deslizadera
-        #                 soportes.add(elemento_soporte(n.punto, ejes, 3, ang=0))
-        #             elif estilo == 5:  # derecha con deslizadera
-        #                 soportes.add(elemento_soporte(n.punto, ejes, 3, ang=180))
-        #             elif estilo == 6:  # abajo con deslizadera
-        #                 soportes.add(elemento_soporte(n.punto, ejes, 3, ang=90))
-        #             elif estilo == 7:  # arriba con deslizadera
-        #                 soportes.add(elemento_soporte(n.punto, ejes, 3, ang=270))
-        # elementos = VGroup()
-        # label_elementos = VGroup().set_z_index(1.5)
-        # for el in mg._lista_elementos:
-        #     elementos.add(elemento_viga(el.get_nodo_inicial().punto[0], el.get_nodo_final().punto[0], 0.25, ejes))
-        #     punto_medio = ejes.c2p((np.array(el.get_nodo_inicial().punto) + np.array(el.get_nodo_final().punto)) / 2)
-        #     # 1. Crear solo el texto
-        #     texto = MathTex(el.nombre, color=WHITE)
-        #
-        #     # 2. Crear el fondo que envuelve automáticamente al texto
-        #     fondo = SurroundingRectangle(
-        #         texto,
-        #         color=RED,  # Color del fondo
-        #         fill_opacity=0.8,  # Opacidad
-        #         stroke_width=1,  # Sin línea de borde
-        #         buff=0.1  # Padding
-        #     )
-        #     # 3. Agrupar, escalar y posicionar
-        #     etiqueta_completa = VGroup(fondo, texto).scale(0.5)
-        #     etiqueta_completa.move_to(punto_medio).shift(DOWN * 0.4)
-        #     # 4. Añadir a la colección
-        #     label_elementos.add(etiqueta_completa)
+        ############
         elementos, label_elementos = mg.get_elementos()
+        ############
         cotas = VGroup()
         p_1 = mg.c2p([0.0, 0.0, 0.0]) + DOWN
         p_2 = mg.c2p([6.0, 0.0, 0.0]) + DOWN
@@ -197,6 +115,7 @@ class EjemploVigasAnimacion(Scene):
         cotas.add(crear_cota(p_3, p_4, r'10\,m', GRAY))
         p_5 = mg.c2p([25.0, 0.0, 0.0]) + DOWN
         cotas.add(crear_cota(p_4, p_5, r'5\,m', GRAY))
+        ############
         enunciado = Tex(
             r"Determine las reacciones y las fuerzas en los extremos\\",
             r"de los elementos de la viga continua de tres vanos mostrada\\",
@@ -204,29 +123,9 @@ class EjemploVigasAnimacion(Scene):
             tex_environment="flushleft",  # Esto alinea el texto a la izquierda
             font_size=36
         ).to_edge(UP + LEFT)
+        ############
         viga = elemento_viga(0.0, 25.0, 0.25, mg.ejes)
         viga.set_color(GRAY_D)
-        ### Grado libertad nodos
-        # gdl_y_1, label_y_1, gdl_eje_z_1, label_eje_z_1 = (
-        #     mg.get_grados_libertad(n_1,{'y': [{'offset': 0.0, 'longitud': 0.8}],
-        #                                                                          'eje_z': {'offset': 90,
-        #                                                                                    'longitud': 1.0}}, ))
-        # gdl_y_1 = elemento_grado_libertad(n_1.punto, ejes, gdl='y', libre=False, offset=0.0, longitud=0.8)
-        # gdl_eje_z_1 = elemento_grado_libertad(n_1.punto, ejes, gdl='eje_z', libre=False, longitud=1, offset=90)
-        # gdl_y_2 = elemento_grado_libertad(n_2.punto, ejes, gdl='y', libre=False, offset=0.0, longitud=0.8)
-        # gdl_eje_z_2 = elemento_grado_libertad(n_2.punto, ejes, gdl='eje_z', libre=True, longitud=1, offset=-90)
-        # gdl_y_3 = elemento_grado_libertad(n_3.punto, ejes, gdl='y', libre=False, offset=0.0, longitud=0.8)
-        # gdl_eje_z_3 = elemento_grado_libertad(n_3.punto, ejes, gdl='eje_z', libre=True, longitud=1, offset=-90)
-        # gdl_y_4 = elemento_grado_libertad(n_4.punto, ejes, gdl='y', libre=False, offset=0.0, longitud=0.8)
-        # gdl_eje_z_4 = elemento_grado_libertad(n_4.punto, ejes, gdl='eje_z', libre=False, longitud=1, offset=90)
-        # label_y_1 = MathTex(r'v_{1}=0', color=RED).next_to(gdl_y_1, UP, buff=0.02).scale(0.5)
-        # label_eje_z_1 = MathTex(r'\phi_{1}=0', color=RED).next_to(gdl_eje_z_1, DR, buff=-0.4).scale(0.5)
-        # label_y_2 = MathTex(r'v_{2}=0', color=RED).next_to(gdl_y_2, DOWN, buff=0.02).scale(0.5)
-        # label_eje_z_2 = MathTex(r'\phi_{2}', color=GREEN).next_to(gdl_eje_z_2, UR, buff=-0.25).scale(0.5)
-        # label_y_3 = MathTex(r'v_{3}=0', color=RED).next_to(gdl_y_3, DOWN, buff=0.02).scale(0.5)
-        # label_eje_z_3 = MathTex(r'\phi_{3}', color=GREEN).next_to(gdl_eje_z_3, UR, buff=-0.25).scale(0.5)
-        # label_y_4 = MathTex(r'v_{4}=0', color=RED).next_to(gdl_y_4, UP, buff=0.02).scale(0.5)
-        # label_eje_z_4 = MathTex(r'\phi_{4}=0', color=RED).next_to(gdl_eje_z_4, DOWN, buff=0.0).scale(0.5)
         # Ecuaciones generales de la viga
         ecuacion_local_viga = VGroup(Matrix([['f']], left_bracket=r"\{", right_bracket=r"\}"),
                                      ecuacion_signo_igual().copy(),
@@ -270,9 +169,7 @@ class EjemploVigasAnimacion(Scene):
         label_etiquetas_grados_el_1[1].next_to(grados_el_1[1], DR, buff=-0.4).scale(0.5)
         label_etiquetas_grados_el_1[2].next_to(grados_el_1[2], DOWN, buff=0.02).scale(0.5)
         label_etiquetas_grados_el_1[3].next_to(grados_el_1[3], UR, buff=-0.25).scale(0.5)
-        # grados_el_1 = VGroup(gdl_y_1.copy(), gdl_eje_z_1.copy(), gdl_y_2.copy(), gdl_eje_z_2.copy())
-        # label_etiquetas_grados_el_1 = VGroup(label_y_1.copy(), label_eje_z_1.copy(), label_y_2.copy(),
-        #                                      label_eje_z_2.copy())
+        #######################################################################################################
         ### Escena elemento 1
         escena_elemento_1 = VGroup(elementos[0], nodos[0:2], soportes[0:2], label_elementos[0], label_nodos[0:2],
                                    cargas[0:2])
@@ -297,16 +194,6 @@ class EjemploVigasAnimacion(Scene):
         matrix_rigidez_1_3 = matrix_rigidez_1_2.copy()
         matrix_rigidez_1_4 = matrix_rigidez_1_2.copy()
         vector_desplazamientos_el_1 = ecuacion_vector_desplazamiento_viga()
-        # vector_desplazamientos_el_1_modificado = Matrix(
-        #     [["v_{1}=0"], [r"\phi_{1}=0"], ["v_{2}=0"], [r"\phi_{2}"]],
-        #     left_bracket=r"\{",  # Llave izquierda
-        #     right_bracket=r"\}",  # Llave derecha
-        #     element_to_mobject_config={
-        #         "tex_to_color_map": {
-        #             r"\phi_{2}": BLUE
-        #         }
-        #     }
-        # )
         vector_desplazamientos_modificado_1_3 = vector_desplazamientos_el_1_modificado.copy()
         vector_desplazamientos_modificado_1_4 = vector_desplazamientos_el_1_modificado.copy()
         vector_fuerza_nodal_equivalente_viga_1 = ecuacion_array_a_matriz(e_1._obtener_fuerzas(), left_bracket=r"\{",
@@ -337,6 +224,31 @@ class EjemploVigasAnimacion(Scene):
                                  vector_fuerza_nodal_equivalente_viga_1).arrange(RIGHT,
                                                                                  buff=0.2)
         mr_elemento_1_4.to_edge(DOWN).scale(0.5)
+        mr_elemento_1_4_1 = mr_elemento_1_4.copy()
+        mr_elemento_1_4_1[4] = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_1, EI_cte=True,
+                                                                                     reducida=False).scale(0.5)
+        mr_elemento_1_4_1.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_1_4_2 = mr_elemento_1_4_1.copy()
+        mr_elemento_1_4_2.submobjects.pop(2)
+        mr_elemento_1_4_2.submobjects.pop(2)
+        sol_el_1_1 = np.array(e_1._k.obtener_matriz(False)) @ np.array(e_1._k.obtener_desplazamientos(False))
+        sol_el_1_2 = sol_el_1_1 - e_1._obtener_fuerzas()
+        mr_elemento_1_4_2[2] = ecuacion_array_a_matriz(sol_el_1_1, formato_num='{x:.8f}', left_bracket=r"\{",
+                                                       right_bracket=r"\}").scale(0.5)
+        mr_elemento_1_4_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_1_4_3 = mr_elemento_1_4_2.copy()
+        mr_elemento_1_4_3.submobjects.pop(2)
+        mr_elemento_1_4_3.submobjects.pop(2)
+        mr_elemento_1_4_3[2] = ecuacion_array_a_matriz(sol_el_1_2, formato_num='{x:.8f}', left_bracket=r"\{",
+                                                       right_bracket=r"\}").scale(0.5)
+        mr_elemento_1_4_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_1_4_4 = mr_elemento_1_4_1.copy()
+        mr_elemento_1_4_4[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_viga(e_1, mostrar_valores=True,
+                                                                                  formato='%.8g').scale(0.5)
+        mr_elemento_1_4_4.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        ecuacion_v_e_1 = MathTex(sp.latex(e_1.ecuacion_de_cortante()), color= BLUE_A)
+        ecuacion_m_e_1 = MathTex(sp.latex(e_1.ecuacion_de_momento()), color= GREEN_A)
+        ec_e_1=VGroup(ecuacion_v_e_1, ecuacion_m_e_1).arrange(DOWN, buff=0.2).next_to(mr_elemento_1_4_3, RIGHT).scale(0.5)
         ## Ecuaciones Elemento 2
         ecuacion_local_viga_2 = ecuacion_local_viga.copy()
         matriz_k_2 = ecuacion_vector_fuerza_viga(2, 2, 3)
@@ -365,7 +277,9 @@ class EjemploVigasAnimacion(Scene):
         label_etiquetas_grados_el_2[1].next_to(grados_el_2[1], UL, buff=-0.15).scale(0.5)
         label_etiquetas_grados_el_2[2].next_to(grados_el_2[2], DOWN, buff=0.02).scale(0.5)
         label_etiquetas_grados_el_2[3].next_to(grados_el_2[3], UR, buff=-0.25).scale(0.5)
-        f_internas_elemento_1 = mg.elemento_fuerza_interna_viga(e_1, mostrar_valores=True)
+        # f_internas_elemento_1 = mg.elemento_fuerza_interna_viga(e_1, mostrar_valores=True)
+        f_internas_elemento_1 = mg.elemento_fuerza_interna_viga(e_1, unidades=['', ''])
+        #######################################################################################################
         ### Escena elemento 2
         escena_elemento_2 = VGroup(elementos[1], nodos[1:3], soportes[1:3], label_elementos[1], label_nodos[1:3],
                                    cargas[2:5])
@@ -390,17 +304,6 @@ class EjemploVigasAnimacion(Scene):
         matrix_rigidez_2_3 = matrix_rigidez_2_2.copy()
         matrix_rigidez_2_4 = matrix_rigidez_2_2.copy()
         vector_desplazamientos_el_2 = ecuacion_vector_desplazamiento_viga(2, 3)
-        # vector_desplazamientos_el_2_modificado = Matrix(
-        #     [["v_{2}=0"], [r"\phi_{2}"], ["v_{3}=0"], [r"\phi_{3}"]],
-        #     left_bracket=r"\{",  # Llave izquierda
-        #     right_bracket=r"\}",  # Llave derecha
-        #     element_to_mobject_config={
-        #         "tex_to_color_map": {
-        #             r"\phi_{2}": BLUE,
-        #             r"\phi_{3}": BLUE
-        #         }
-        #     }
-        # )
         vector_desplazamientos_modificado_2_3 = vector_desplazamientos_el_2_modificado.copy()
         vector_desplazamientos_modificado_2_4 = vector_desplazamientos_el_2_modificado.copy()
         vector_fuerza_nodal_equivalente_viga_2 = ecuacion_array_a_matriz(e_2._obtener_fuerzas(), left_bracket=r"\{",
@@ -447,9 +350,7 @@ class EjemploVigasAnimacion(Scene):
         label_etiquetas_grados_el_3[3].next_to(grados_el_3[3], DOWN, buff=0.0).scale(0.5)
 
         f_internas_elemento_2 = mg.elemento_fuerza_interna_viga(e_2, unidades=['', ''])
-        # grados_el_3 = VGroup(gdl_y_3.copy(), gdl_eje_z_3.copy(), gdl_y_4.copy(), gdl_eje_z_4.copy())
-        # label_etiquetas_grados_el_3 = VGroup(label_y_3.copy(), label_eje_z_3.copy(), label_y_4.copy(),
-        #                                      label_eje_z_4.copy())
+        #######################################################################################################
         ### Escena elemento 3
         escena_elemento_3 = VGroup(elementos[2], nodos[2:4], soportes[2:4], label_elementos[2], label_nodos[2:4])
         factor_matrix_rigidez_3_1 = MathTex(r'\dfrac{EI}{125}')
@@ -462,27 +363,11 @@ class EjemploVigasAnimacion(Scene):
              ['-12', '-30', '12', '-30'],
              ['63', '50', '-30', '100']]
         )
-        # matrix_rigidez_3_2 = Matrix(
-        #     [['0.012', '0.06', '-0.012', '0.06'],
-        #      ['0.06', '0.4', '-0.06', '0.2'],
-        #      ['-0.012', '-0.06', '0.012', '-0.06'],
-        #      ['0.06', '0.2', '-0.060', '0.4']],
-        #     h_buff=1.8
-        # )
+
         matrix_rigidez_3_2 = ecuacion_array_a_matriz(e_3.get_matriz_rigidez(), h_buff=1.8)
         matrix_rigidez_3_3 = matrix_rigidez_3_2.copy()
         matrix_rigidez_3_4 = matrix_rigidez_3_2.copy()
         vector_desplazamientos_el_3 = ecuacion_vector_desplazamiento_viga(3, 4)
-        # vector_desplazamientos_el_3_modificado = Matrix(
-        #     [["v_{3}=0"], [r"\phi_{3}"], ["v_{4}=0"], [r"\phi_{4}=0"]],
-        #     left_bracket=r"\{",  # Llave izquierda
-        #     right_bracket=r"\}",  # Llave derecha
-        #     element_to_mobject_config={
-        #         "tex_to_color_map": {
-        #             r"\phi_{3}": BLUE
-        #         }
-        #     }
-        # )
         vector_desplazamientos_modificado_3_3 = vector_desplazamientos_el_3_modificado.copy()
         vector_desplazamientos_modificado_3_4 = vector_desplazamientos_el_3_modificado.copy()
         vector_fuerza_nodal_equivalente_viga_3 = ecuacion_array_a_matriz(e_3._obtener_fuerzas(), left_bracket=r"\{",
@@ -515,8 +400,6 @@ class EjemploVigasAnimacion(Scene):
         mr_elemento_3_4.to_edge(DOWN).scale(0.5)
         f_internas_elemento_3 = mg.elemento_fuerza_interna_viga(e_3, unidades=['', ''])
         ## Elementos intermedios
-        # sum_1 = e_1+e_2+e_3
-        # matrix_rigidez_sum_1 = ecuacion_array_a_matriz(sum_1.get_matriz_rigidez(), h_buff=1.8).scale(0.5)
         ## Diagrama viga inicial
         escena_inicial = VGroup(viga, soportes, cargas, cotas)
         escena_inicial.save_state()
@@ -540,7 +423,7 @@ class EjemploVigasAnimacion(Scene):
         self.wait(5)
         ## Desvanecimiento de la viga
         self.play(FadeOut(escena), run_time=2)
-
+        #######################################################################################################
         ## Análisis Elemento 1
         self.play(FadeIn(escena_elemento_1), run_time=2)
         self.wait(1)
@@ -579,6 +462,7 @@ class EjemploVigasAnimacion(Scene):
         self.wait(2)
         self.play(FadeOut(f_internas_elemento_1))
         self.play(FadeOut(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]), FadeOut(mr_elemento_1_4))
+        #######################################################################################################
         ## Análisis Elemento 2
         self.play(FadeIn(escena_elemento_2), run_time=2)
         self.wait(1)
@@ -617,6 +501,7 @@ class EjemploVigasAnimacion(Scene):
         self.wait(2)
         self.play(FadeOut(f_internas_elemento_2))
         self.play(FadeOut(elementos[1], nodos[1:3], label_elementos[1], label_nodos[1:3]), FadeOut(mr_elemento_2_4))
+        #######################################################################################################
         ## Análisis Elemento 3
         self.play(FadeIn(escena_elemento_3), run_time=2)
         self.wait(1)
@@ -747,11 +632,6 @@ class EjemploVigasAnimacion(Scene):
             ReplacementTransform(m_3[6].get_entries()[2:], matriz_global[6].get_entries()[6:]),
             ReplacementTransform(VGroup(m_1[5], m_2[5], m_3[5]), matriz_global[5]),
             runtime=4)
-        # self.play(FadeOut(mr_elemento_1_4[:2]),FadeOut(mr_elemento_2_4[:2]),FadeOut(mr_elemento_3_4[:2]))
-        # self.wait(2)
-        # self.play(FadeOut(mr_elemento_1_4[2:]), FadeOut(mr_elemento_2_4[2:]), FadeOut(mr_elemento_3_4[2:]))
-        # self.wait(2)
-        # self.play(FadeIn(matriz_global))
         self.wait(5)
         items_reducida = [3, 5]
         elementos_reducida = list()
@@ -815,15 +695,6 @@ class EjemploVigasAnimacion(Scene):
 
                   FadeOut(matriz_global_reducida_final_2[1][1]), run_time=4)
         self.wait(2)
-        # self.play(ReplacementTransform(matriz_global_reducida_final_3[1].get_brackets(),
-        #                                matriz_global_reducida_final_4[1].get_brackets()),
-        #           ReplacementTransform(matriz_global_reducida_final_3[1].get_entries(),
-        #                                matriz_global_reducida_final_4[1].get_entries()),
-        #           ReplacementTransform(matriz_global_reducida_final_3[0], matriz_global_reducida_final_4[0]),
-        #           ReplacementTransform(matriz_global_reducida_final_3[3], matriz_global_reducida_final_4[2]),
-        #           ReplacementTransform(matriz_global_reducida_final_3[4], matriz_global_reducida_final_4[3]),
-        #           FadeOut(matriz_global_reducida_final_3[2]),
-        #           run_time=4)
         self.play(ReplacementTransform(
             VGroup(matriz_global_reducida_final_3[1].get_entries(), matriz_global_reducida_final_3[2].get_entries()),
             matriz_global_reducida_final_4[1].get_entries()),
@@ -871,9 +742,6 @@ class EjemploVigasAnimacion(Scene):
                   # FadeOut(matriz_global_final_2),
                   run_time=4)
         self.wait(2)
-        # self.play(ReplacementTransform(VGroup(matriz_global_final_3[0:2]), VGroup(matriz_global_final_4[0:2])),
-        #           ReplacementTransform(VGroup(matriz_global_final_3[2:5]), VGroup(matriz_global_final_4[2])),
-        #           run_time=4)
         self.play(ReplacementTransform(VGroup(matriz_global_final_3[0:2]), VGroup(matriz_global_final_4[0:2])),
                   ReplacementTransform(matriz_global_final_3[2].get_brackets()[0],
                                        matriz_global_final_4[2].get_brackets()[0]),
@@ -892,8 +760,62 @@ class EjemploVigasAnimacion(Scene):
         self.play(FadeIn(matriz_global_final))
         self.wait(5)
         self.play(FadeOut(matriz_global_final))
-        self.wait(5)
-
+        self.wait(2)
+        self.play(FadeIn(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]), FadeIn(mr_elemento_1_4),
+                  FadeIn(f_internas_elemento_1), FadeIn(cargas_e_1))
+        self.play(
+            ReplacementTransform(mr_elemento_1_4[0], mr_elemento_1_4_1[0]),
+            ReplacementTransform(mr_elemento_1_4[1], mr_elemento_1_4_1[1]),
+            ReplacementTransform(mr_elemento_1_4[2], mr_elemento_1_4_1[2]),
+            ReplacementTransform(mr_elemento_1_4[3], mr_elemento_1_4_1[3]),
+            ReplacementTransform(mr_elemento_1_4[4], mr_elemento_1_4_1[4]),
+            ReplacementTransform(mr_elemento_1_4[5], mr_elemento_1_4_1[5]),
+            ReplacementTransform(mr_elemento_1_4[6], mr_elemento_1_4_1[6]),
+            run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(mr_elemento_1_4_1[3].get_entries(), mr_elemento_1_4_1[4].get_entries()),
+                                       mr_elemento_1_4_2[2].get_entries()),
+                  ReplacementTransform(mr_elemento_1_4_1[3].get_brackets()[0],
+                                       mr_elemento_1_4_2[2].get_brackets()[0]),
+                  ReplacementTransform(mr_elemento_1_4_1[4].get_brackets()[1],
+                                       mr_elemento_1_4_2[2].get_brackets()[1]),
+                  ReplacementTransform(mr_elemento_1_4_1[0], mr_elemento_1_4_2[0]),
+                  ReplacementTransform(mr_elemento_1_4_1[1], mr_elemento_1_4_2[1]),
+                  ReplacementTransform(mr_elemento_1_4_1[5], mr_elemento_1_4_2[3]),
+                  ReplacementTransform(mr_elemento_1_4_1[6], mr_elemento_1_4_2[4]),
+                  FadeOut(mr_elemento_1_4_1[2]),
+                  FadeOut(mr_elemento_1_4_1[3].get_brackets()[1]),
+                  FadeOut(mr_elemento_1_4_1[4].get_brackets()[0]),
+                  run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(mr_elemento_1_4_2[2].get_entries(), mr_elemento_1_4_2[4].get_entries()),
+                                       mr_elemento_1_4_3[2].get_entries()),
+                  ReplacementTransform(mr_elemento_1_4_2[2].get_brackets()[0],
+                                       mr_elemento_1_4_3[2].get_brackets()[0]),
+                  ReplacementTransform(mr_elemento_1_4_2[4].get_brackets()[1],
+                                       mr_elemento_1_4_3[2].get_brackets()[1]),
+                  ReplacementTransform(mr_elemento_1_4_2[0], mr_elemento_1_4_3[0]),
+                  ReplacementTransform(mr_elemento_1_4_2[1], mr_elemento_1_4_3[1]),
+                  FadeOut(mr_elemento_1_4_2[3]),
+                  FadeOut(mr_elemento_1_4_2[2].get_brackets()[1]),
+                  FadeOut(mr_elemento_1_4_2[4].get_brackets()[0]),
+                  run_time=4)
+        self.wait(2)
+        self.play(mr_elemento_1_4_3.animate.to_corner(DOWN + LEFT),run_time=4)
+        self.wait(2)
+        self.play(Write(ecuacion_v_e_1))
+        self.wait(2)
+        self.play(Write(ecuacion_m_e_1))
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_1_4_3), FadeOut(ec_e_1))
+        self.wait(2)
+        self.play(FadeOut(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]),
+                  FadeOut(f_internas_elemento_1), FadeOut(cargas_e_1))
+        self.wait(2)
+        self.play(FadeIn(mr_elemento_1_4_4))
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_1_4_4))
+        #######################################################################################################
         x = sp.Symbol('x')
         v_1 = e_1.ecuacion_de_cortante().rhs.args[0].args[0]
         v_2 = e_1.ecuacion_de_cortante().rhs.args[1].args[0]
@@ -949,7 +871,7 @@ class EjemploVigasAnimacion(Scene):
                                                                         buff=0.0).scale(0.35)
         label_v_4_2 = MathTex(f'{f_v_4(25):.3g}', color=ORANGE).next_to(ejes_v.c2p(25, f_v_4(25), 0), UP,
                                                                         buff=0.0).scale(0.35)
-        curva_m = ejes_m.plot(f_m, x_range=[0, 25,0.05], color=BLUE_E)
+        curva_m = ejes_m.plot(f_m, x_range=[0, 25, 0.05], color=BLUE_E)
         # curva_m_1 = ejes_m.plot(f_m_1, x_range=[0, 6], color=BLUE_E)
         # curva_m_2 = ejes_m.plot(f_m_2, x_range=[6, 10], color=BLUE_E)
         # curva_m_3 = ejes_m.plot(f_m_3, x_range=[10, 20, 0.1], color=BLUE_E)
@@ -964,8 +886,9 @@ class EjemploVigasAnimacion(Scene):
         #     0.35)
         label_m_2_2 = MathTex(f'{f_m_2(10):.3g}', color=ORANGE).next_to(ejes_m.c2p(10, f_m_2(10), 0), DOWN,
                                                                         buff=0.0).scale(0.35)
-        label_m_3_1 = MathTex(f'{f_m_3(15.0956521739130):.3g}', color=ORANGE).next_to(ejes_m.c2p(15.0956521739130, f_m_3(15.0956521739130), 0), UP,
-                                                                         buff=0.0).scale(0.35)
+        label_m_3_1 = MathTex(f'{f_m_3(15.0956521739130):.3g}', color=ORANGE).next_to(
+            ejes_m.c2p(15.0956521739130, f_m_3(15.0956521739130), 0), UP,
+            buff=0.0).scale(0.35)
         label_m_3_2 = MathTex(f'{f_m_3(20):.3g}', color=ORANGE).next_to(ejes_m.c2p(20, f_m_3(20), 0), DOWN,
                                                                         buff=0.0).scale(0.35)
         # label_m_4_1 = MathTex(f'{f_m_4(20):.3g}', color=ORANGE).next_to(ejes_m.c2p(20, f_m_4(20), 0), UP,
@@ -1030,6 +953,7 @@ class EjemploVigasAnimacion(Scene):
         self.wait(2)
         self.play(Create(ejes_m))
         t_tracker_m = ValueTracker(0)
+
         def update_area_m():
             t = t_tracker_m.get_value()
             if t <= 0:
@@ -1074,7 +998,7 @@ class EjemploVigasAnimacion(Scene):
         self.play(t_tracker_m.animate.set_value(6), run_time=4, rate_func=linear)
         self.play(Write(label_m_1_2))
         self.wait(0.5)
-        #self.play(Write(label_m_2_1))
+        # self.play(Write(label_m_2_1))
         self.play(t_tracker_m.animate.set_value(10), run_time=4, rate_func=linear)
         self.play(Write(label_m_2_2))
         self.wait(0.5)
@@ -1084,10 +1008,10 @@ class EjemploVigasAnimacion(Scene):
         self.play(t_tracker_m.animate.set_value(20), run_time=4, rate_func=linear)
         self.play(Write(label_m_3_2))
         self.wait(0.5)
-        #self.play(Write(label_m_4_1))
+        # self.play(Write(label_m_4_1))
         self.play(t_tracker_m.animate.set_value(25), run_time=4, rate_func=linear)
         self.play(Write(label_m_4_2))
         self.wait(2)
         self.play(
             FadeOut(ejes_m, label_m_1_1, label_m_1_2, label_m_2_2, label_m_3_2,
-                    label_m_4_2, curva_m,area_dinamica_m))
+                    label_m_4_2, curva_m, area_dinamica_m))

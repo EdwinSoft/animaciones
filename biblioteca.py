@@ -123,6 +123,18 @@ class EnsambleAnimacion(Ensamble):
             }
         }, left_bracket=r"\{", right_bracket=r"\}")
 
+    def ecuacion_vector_etiquetas_fuerzas_internas_viga(self, ele: Viga, mostrar_valores: bool = False,
+                                                        formato: str = '%.3g') -> VMobject:
+        etiquetas_fuerzas = ele._obtener_etiquetas_fuerzas()
+        if mostrar_valores:
+            fuerzas = (np.matmul(ele._k.k,
+                                 ele._obtener_desplazamientos()) - ele._obtener_fuerzas() - ele._obtener_fuerzas_por_rotula()).reshape(
+                1, -1).flatten()
+            etiquetas_fuerzas = etiquetas_fuerzas + np.array(['=', '=', '=', '=']) + np.char.mod(formato, fuerzas)
+        return Matrix(np.array(etiquetas_fuerzas).reshape(-1, 1)
+                      , left_bracket=r"\{", right_bracket=r"\}")
+
+
     def ecuacion_vector_etiquetas_reacciones(self, color_incognitas: ManimColor = BLUE,
                                              reducida: bool = False, tol_cero: float = 1E-10,
                                              formato: str = '{:.10g}') -> VMobject:
@@ -503,7 +515,8 @@ class EnsambleAnimacion(Ensamble):
             label_elementos.add(etiqueta_completa)
         return [elementos, label_elementos]
 
-    def elemento_fuerza_interna_viga(self, ele: Viga, unidades: list[str] | None = None, mostrar_valores: bool = False) -> VMobject:
+    def elemento_fuerza_interna_viga(self, ele: Viga, unidades: list[str] | None = None,
+                                     mostrar_valores: bool = False) -> VMobject:
         if unidades is None:
             unidades = [r"\,kN", r"\,kN\cdot m"]
         n_1 = ele.get_nodo_inicial()
@@ -512,15 +525,16 @@ class EnsambleAnimacion(Ensamble):
         sentido_fuerzas = np.array([True, True, True, True])
         if mostrar_valores:
             etiquetas_fuerzas = (np.matmul(ele._k.k,
-                                         ele._obtener_desplazamientos()) - ele._obtener_fuerzas() - ele._obtener_fuerzas_por_rotula()).reshape(1, -1).flatten()
+                                           ele._obtener_desplazamientos()) - ele._obtener_fuerzas() - ele._obtener_fuerzas_por_rotula()).reshape(
+                1, -1).flatten()
             sentido_fuerzas = (etiquetas_fuerzas > 0.0).reshape(1, -1).flatten()
             etiquetas_fuerzas = np.char.mod('%.3g', abs(etiquetas_fuerzas))
         fuerzas_internas = VGroup()
         f_1 = elemento_carga(n_1.punto, self.ejes, longitud=1, saliente=sentido_fuerzas[0], ang=90, color_carga=WHITE)
-        label_f_1 = MathTex( etiquetas_fuerzas[0] + unidades[0]).next_to(f_1, UP, buff=0.0).scale(0.5).shift(
+        label_f_1 = MathTex(etiquetas_fuerzas[0] + unidades[0]).next_to(f_1, UP, buff=0.0).scale(0.5).shift(
             RIGHT * 0.0)
         m_1 = elemento_momento(n_1.punto, self.ejes, positivo=not sentido_fuerzas[1], color_carga=WHITE)
-        label_m_1 = MathTex(etiquetas_fuerzas[1] + unidades[1]).next_to(m_1,  UP, buff=-0.2, aligned_edge=LEFT).scale(
+        label_m_1 = MathTex(etiquetas_fuerzas[1] + unidades[1]).next_to(m_1, UP, buff=-0.2, aligned_edge=LEFT).scale(
             0.5).shift(RIGHT * 0.4)
         f_2 = elemento_carga(n_2.punto, self.ejes, longitud=1, saliente=sentido_fuerzas[2], ang=90, color_carga=WHITE)
         label_f_2 = MathTex(etiquetas_fuerzas[2] + unidades[0]).next_to(f_2, UP, buff=0.0).scale(0.5).shift(
@@ -660,7 +674,7 @@ def elemento_soporte(nodo: tuple[float | int, float | int], ejes: Axes, tipo_sop
 
 
 def elemento_carga(nodo: tuple[float | int, float | int], ejes: Axes, longitud: float = 2.0, h: float | int = 0,
-                   ang: float = 0.0, saliente: bool = True, color_carga: ManimColor= BLUE) -> VMobject:
+                   ang: float = 0.0, saliente: bool = True, color_carga: ManimColor = BLUE) -> VMobject:
     ang = np.deg2rad(ang)
     inicio = ejes.c2p(*nodo) + (np.array(
         [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
@@ -763,7 +777,7 @@ def elemento_carga_trapezoidal(nodo_i: tuple[float | int, float | int], nodo_j: 
 
 
 def elemento_momento(nodo: tuple[float | int, float | int], ejes: Axes, radio: float = 0.5,
-                     ang: float = 0.0, positivo: bool = True, color_carga: ManimColor= GREEN) -> VMobject:
+                     ang: float = 0.0, positivo: bool = True, color_carga: ManimColor = GREEN) -> VMobject:
     ang_i = np.deg2rad(90)
     ang_f = np.deg2rad(325)
     ang = np.deg2rad(ang)
@@ -784,7 +798,7 @@ def elemento_momento(nodo: tuple[float | int, float | int], ejes: Axes, radio: f
         stroke_width=4,  # Grosor de la línea
         tip_length=0.25,  # Controla el tamaño absoluto de la punta
         tip_shape=StealthTip,  # Aquí cambias la forma
-        color= color_carga
+        color=color_carga
     ).move_arc_center_to(centro).rotate(ang, about_point=centro)
     return momento
 
