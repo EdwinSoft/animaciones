@@ -95,7 +95,7 @@ class EjemploVigasAnimacion(Scene):
 
         ############
         cargas_puntuales = mg.get_cargas_puntuales(longitud=2.0)
-        cargas_distribuidas = mg.get_cargas_distribuidas(longitud=1.0)
+        cargas_distribuidas = mg.get_cargas_distribuidas(longitud=1.3)
         cargas = cargas_puntuales + cargas_distribuidas
         cargas_e_1 = cargas[0:2].copy()
         cargas_e_2 = cargas[2:5].copy()
@@ -163,7 +163,7 @@ class EjemploVigasAnimacion(Scene):
         cargas_eq_1 = VGroup(f_1_0.copy(), m_1_0.copy(), f_2_0.copy(), m_2_0.copy())
         label_cargas_eq_1 = VGroup(label_f_1_0.copy(), label_m_1_0.copy(), label_f_2_0.copy(), label_m_2_0.copy())
         ### Grados de libertad en elemento 1
-        grados_el_1 = VGroup(*n_1_gdl.copy(), *n_2_gdl.copy())
+        grados_el_1 = VGroup(*n_1_gdl.copy(), *n_2_gdl.copy()).set_z_index(1)
         label_etiquetas_grados_el_1 = VGroup(*n_1_labels_gdl.copy(), *n_2_labels_gdl.copy())
         label_etiquetas_grados_el_1[0].next_to(grados_el_1[0], UP, buff=0.02).scale(0.5)
         label_etiquetas_grados_el_1[1].next_to(grados_el_1[1], DR, buff=-0.4).scale(0.5)
@@ -271,7 +271,7 @@ class EjemploVigasAnimacion(Scene):
         cargas_eq_2 = VGroup(f_2_0.copy(), m_2_0.copy(), f_3_0.copy(), m_3_0.copy())
         label_cargas_eq_2 = VGroup(label_f_2_0.copy(), label_m_2_0.copy(), label_f_3_0.copy(), label_m_3_0.copy())
         ### Grados de libertad en elemento 2
-        grados_el_2 = VGroup(*n_2_gdl.copy(), *n_3_gdl.copy())
+        grados_el_2 = VGroup(*n_2_gdl.copy(), *n_3_gdl.copy()).set_z_index(1)
         label_etiquetas_grados_el_2 = VGroup(*n_2_labels_gdl.copy(), *n_3_labels_gdl.copy())
         label_etiquetas_grados_el_2[0].next_to(grados_el_2[0], DOWN, buff=0.02).scale(0.5)
         label_etiquetas_grados_el_2[1].next_to(grados_el_2[1], UL, buff=-0.15).scale(0.5)
@@ -369,7 +369,7 @@ class EjemploVigasAnimacion(Scene):
         ### Cargas en elemento 3
         # Ninguna
         ### Grados de libertad en elemento 3
-        grados_el_3 = VGroup(*n_3_gdl.copy(), *n_4_gdl.copy())
+        grados_el_3 = VGroup(*n_3_gdl.copy(), *n_4_gdl.copy()).set_z_index(1)
         label_etiquetas_grados_el_3 = VGroup(*n_3_labels_gdl.copy(), *n_4_labels_gdl.copy())
         label_etiquetas_grados_el_3[0].next_to(grados_el_3[0], DOWN, buff=0.02).scale(0.5)
         label_etiquetas_grados_el_3[1].next_to(grados_el_3[1], UR, buff=-0.25).scale(0.5)
@@ -460,6 +460,14 @@ class EjemploVigasAnimacion(Scene):
         escena = VGroup(nodos, elementos, soportes, label_elementos, label_nodos, cargas, cotas)
 
         # Animaciones
+
+        tit = titulo("Método de Elementos Finitos","Análisis de una viga")
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.play(FadeIn(tit[2], shift=UP))  # Sube ligeramente al aparecer
+        self.wait(2)
+        self.play(FadeOut(tit))
+
         ## Enunciado
         self.play(Write(enunciado), run_time=5)
         ## Diagrama de la viga
@@ -468,6 +476,14 @@ class EjemploVigasAnimacion(Scene):
         self.play(FadeOut(enunciado), run_time=2)
         self.play(Restore(escena_inicial), run_time=2)
         self.wait(5)
+        self.play(FadeOut(escena_inicial))
+        self.wait(0.5)
+        tit = animacion_titulo("Discretización de la viga")
+        self.play(*tit[0])
+        self.wait(2)
+        self.play(FadeOut(tit[1]))
+        self.play(Restore(escena_inicial))
+        self.wait(2)
         ## Discretización de la viga
         self.play(Create(mg.ejes), run_time=2)
         self.play(FadeOut(viga), run_time=2)
@@ -870,7 +886,7 @@ class EjemploVigasAnimacion(Scene):
         ####################################
         self.wait(2)
         self.play(FadeIn(elementos[1], nodos[1:3], label_elementos[1], label_nodos[1:3]), FadeIn(mr_elemento_2_4),
-                  FadeIn(f_internas_elemento_2), FadeIn(cargas_e_2))
+                  FadeIn(cargas_e_2),FadeIn(f_internas_elemento_2))
         self.play(
             ReplacementTransform(mr_elemento_2_4[0], mr_elemento_2_4_1[0]),
             ReplacementTransform(mr_elemento_2_4[1], mr_elemento_2_4_1[1]),

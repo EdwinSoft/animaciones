@@ -134,7 +134,6 @@ class EnsambleAnimacion(Ensamble):
         return Matrix(np.array(etiquetas_fuerzas).reshape(-1, 1)
                       , left_bracket=r"\{", right_bracket=r"\}")
 
-
     def ecuacion_vector_etiquetas_reacciones(self, color_incognitas: ManimColor = BLUE,
                                              reducida: bool = False, tol_cero: float = 1E-10,
                                              formato: str = '{:.10g}') -> VMobject:
@@ -1025,6 +1024,38 @@ def elemento_label_grados_libertad(n: Nodo, **kwargs) -> VGroup:
         label_gl = MathTex(label, color=color, **kwargs)
         label_grados.add(label_gl)
     return label_grados
+
+
+def titulo(titulo: str, subtitulo: str = '') -> VMobject:
+    titulo = Text(titulo, font_size=48, color=BLUE)
+    linea = Underline(titulo, color=WHITE)
+    if subtitulo != '':
+        subtitulo = Text(subtitulo, font_size=28, color=GRAY)
+        subtitulo.next_to(linea, DOWN, buff=0.5)
+        todo = VGroup(titulo, linea, subtitulo).move_to(ORIGIN)
+    else:
+        todo = VGroup(titulo, linea).move_to(ORIGIN)
+    return todo
+
+
+def animacion_titulo(titulo: str, subtitulo: str = '') -> list:
+    titulo = Text(titulo, font_size=40, color=WHITE)
+    caja = BackgroundRectangle(
+        titulo,
+        buff=0.4,
+        color=BLUE,
+        fill_opacity=0.2,
+        stroke_width=2,
+        stroke_color=BLUE
+    )
+    if subtitulo != '':
+        subtitulo = Text(subtitulo, font_size=32, color=BLUE_A).shift(DOWN * 1.2)
+        animacion = [DrawBorderThenFill(caja), Write(titulo), FadeIn(subtitulo, scale=0.9)]
+        todo = VGroup(titulo, caja, subtitulo).move_to(ORIGIN)
+    else:
+        animacion = [DrawBorderThenFill(caja), Write(titulo)]
+        todo = VGroup(titulo, caja).move_to(ORIGIN)
+    return [animacion, todo]
 
 
 def main():
