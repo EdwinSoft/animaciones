@@ -1026,9 +1026,9 @@ class SecanteAnimacion(MovingCameraScene):
             fondo_encabezado = Rectangle(
                 width=linea_sup.width,  # Toma el ancho exacto de la tabla
                 height=abs(linea_sup.get_y() - linea_inf.get_y()),  # Calcula el alto exacto de la celda
-                color=TEAL_E,
+                color=YELLOW,
                 fill_opacity=0.2,
-                stroke_width=0
+                stroke_width=2
             ).move_to((linea_sup.get_center() + linea_inf.get_center()) / 2)  # Lo centra entre las dos líneas
             # self.play(FadeIn(tabla))
 

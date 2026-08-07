@@ -1038,24 +1038,52 @@ def titulo(titulo: str, subtitulo: str = '') -> VMobject:
     return todo
 
 
-def animacion_titulo(titulo: str, subtitulo: str = '') -> list:
+def animacion_titulo(titulo: str, subtitulo: str = '') -> VMobject:
     titulo = Text(titulo, font_size=40, color=WHITE)
     caja = BackgroundRectangle(
         titulo,
         buff=0.4,
-        color=BLUE,
+        color=RED,
         fill_opacity=0.2,
         stroke_width=2,
-        stroke_color=BLUE
+        stroke_color=RED
     )
     if subtitulo != '':
         subtitulo = Text(subtitulo, font_size=32, color=BLUE_A).shift(DOWN * 1.2)
-        animacion = [DrawBorderThenFill(caja), Write(titulo), FadeIn(subtitulo, scale=0.9)]
         todo = VGroup(titulo, caja, subtitulo).move_to(ORIGIN)
     else:
-        animacion = [DrawBorderThenFill(caja), Write(titulo)]
         todo = VGroup(titulo, caja).move_to(ORIGIN)
-    return [animacion, todo]
+    return todo
+
+
+def elemento_tabla(encabezado: list, datos: list, color_tabla: ManimColor = TEAL_C,
+                   color_encabezado: ManimColor = TEAL_C) -> VMobject:
+    tabla = Table(
+        datos,
+        col_labels=encabezado.copy(),
+        include_outer_lines=True,
+        v_buff=0.35,
+        h_buff=0.6,
+        line_config={"stroke_width": 1.0, "color": color_tabla},
+        element_to_mobject=MathTex,
+    )
+    encabezado = tabla.get_rows()[0]
+    encabezado.set_color(color_encabezado)
+    lineas_h = tabla.get_horizontal_lines()
+    cuadricula = VGroup(
+        tabla.get_horizontal_lines(),
+        tabla.get_vertical_lines()
+    )
+    linea_sup = lineas_h[0]
+    linea_inf = lineas_h[2]
+    fondo_encabezado = Rectangle(
+        width=linea_sup.width,  # Toma el ancho exacto de la tabla
+        height=abs(linea_sup.get_y() - linea_inf.get_y()),  # Calcula el alto exacto de la celda
+        color=color_encabezado,
+        fill_opacity=0.2,
+        stroke_width=1
+    ).move_to((linea_sup.get_center() + linea_inf.get_center()) / 2)
+    return VGroup(tabla, cuadricula, fondo_encabezado)
 
 
 def main():

@@ -479,9 +479,10 @@ class EjemploVigasAnimacion(Scene):
         self.play(FadeOut(escena_inicial))
         self.wait(0.5)
         tit = animacion_titulo("Discretización de la viga")
-        self.play(*tit[0])
+        self.play(Write(tit[0]))
+        self.play(DrawBorderThenFill(tit[1]))
         self.wait(2)
-        self.play(FadeOut(tit[1]))
+        self.play(FadeOut(tit))
         self.play(Restore(escena_inicial))
         self.wait(2)
         ## Discretización de la viga
@@ -489,6 +490,25 @@ class EjemploVigasAnimacion(Scene):
         self.play(FadeOut(viga), run_time=2)
         self.play(DrawBorderThenFill(nodos), DrawBorderThenFill(elementos), run_time=2)
         self.play(Write(label_nodos), Write(label_elementos), run_time=2)
+        etiquetas = [MathTex('Nodo'), MathTex('x[m]'), MathTex('GL[y]'), MathTex(r'GL[\phi]')]
+        rows = [[1, 0.0, 'Restringido', 'Restringido'],
+                [2, 10.0, 'Restringido', 'Libre'],
+                [3, 20.0, 'Restringido', 'Libre'],
+                [4, 25.0, 'Restringido', 'Restringido']]
+        tab_nodos = elemento_tabla(etiquetas, rows).scale(0.5).to_edge(DOWN, buff=0.5)
+        etiquetas = [MathTex('Elemento'), MathTex(r'Nodo_i'), MathTex(r'Nodo_j'), MathTex('EI')]
+        rows = [[1, 1, 2, 'cte'],
+                [2, 2, 3, 'cte'],
+                [3, 3, 4, 'cte']]
+        tab_elementos = elemento_tabla(etiquetas, rows).scale(0.5).to_edge(DOWN, buff=0.5)
+        VGroup(tab_nodos, tab_elementos).arrange(RIGHT, buff=1).to_edge(DOWN, buff=0.5)
+        self.play(Create(tab_nodos[1]), Create(tab_nodos[2]), run_time=1)
+        self.play(FadeIn(tab_nodos[0].get_rows()))
+        self.wait(2)
+        self.play(Create(tab_elementos[1]), Create(tab_elementos[2]), run_time=1)
+        self.play(FadeIn(tab_elementos[0].get_rows()))
+        self.wait(2)
+        self.play(FadeOut(tab_nodos, tab_elementos), run_time=2)
         self.wait(5)
         ## Desvanecimiento de la viga
         self.play(FadeOut(escena), run_time=2)
@@ -1193,3 +1213,25 @@ class EjemploVigasAnimacion(Scene):
         self.play(
             FadeOut(ejes_m, label_m_1_1, label_m_1_2, label_m_2_2, label_m_3_1, label_m_3_2,
                     label_m_4_2, curva_m, area_dinamica_m))
+
+class pruebas(Scene):
+    def construct(self) -> None:
+        etiquetas = [MathTex('Nodo'), MathTex('x[m]'), MathTex('GL[y]'), MathTex(r'GL[\phi]')]
+        rows = [[1, 0.0, 'Restringido', 'Restringido'],
+                [2, 10.0, 'Restringido', 'Libre'],
+                [3, 20.0, 'Restringido', 'Libre'],
+                [4, 25.0, 'Restringido', 'Restringido']]
+        tab_nodos = elemento_tabla(etiquetas, rows).scale(0.5).to_edge(DOWN, buff=0.5)
+        etiquetas = [MathTex('Elemento'), MathTex(r'Nodo_i'), MathTex(r'Nodo_j'), MathTex('EI')]
+        rows = [[1, 1, 2, 'cte'],
+                [2, 2, 3, 'cte'],
+                [3, 3, 4, 'cte']]
+        tab_elementos = elemento_tabla(etiquetas, rows).scale(0.5).to_edge(DOWN, buff=0.5)
+        VGroup(tab_nodos, tab_elementos).arrange(RIGHT, buff=1).to_edge(DOWN, buff=0.5)
+        self.play(Create(tab_nodos[1]), Create(tab_nodos[2]), run_time=1)
+        self.play(FadeIn(tab_nodos[0].get_rows()))
+        self.wait(2)
+        self.play(Create(tab_elementos[1]), Create(tab_elementos[2]), run_time=1)
+        self.play(FadeIn(tab_elementos[0].get_rows()))
+        self.wait(2)
+        self.play(FadeOut(tab_nodos, tab_elementos), run_time=2)
