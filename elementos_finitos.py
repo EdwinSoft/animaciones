@@ -360,7 +360,6 @@ class EjemploVigasAnimacion(Scene):
         ecuacion_m_e_2 = MathTex(sp.latex(e_2.ecuacion_de_momento()), color=GREEN_A)
         ec_e_2 = VGroup(ecuacion_v_e_2, ecuacion_m_e_2).arrange(DOWN, buff=0.2).scale(0.5).to_corner(DR, buff=0.5)
 
-
         ## Ecuaciones Elemento 3
         ecuacion_local_viga_3 = ecuacion_local_viga.copy()
         matriz_k_3 = ecuacion_vector_fuerza_viga(3, 3, 4)
@@ -461,7 +460,7 @@ class EjemploVigasAnimacion(Scene):
 
         # Animaciones
 
-        tit = titulo("Método de Elementos Finitos","Análisis de una viga")
+        tit = titulo("Método de Elementos Finitos", "Análisis de una viga")
         self.play(Write(tit[0]))
         self.play(Create(tit[1]))
         self.play(FadeIn(tit[2], shift=UP))  # Sube ligeramente al aparecer
@@ -478,9 +477,9 @@ class EjemploVigasAnimacion(Scene):
         self.wait(5)
         self.play(FadeOut(escena_inicial))
         self.wait(0.5)
-        tit = animacion_titulo("Discretización de la viga")
+        tit = titulo("Discretización de la viga", size_titulo=36)
         self.play(Write(tit[0]))
-        self.play(DrawBorderThenFill(tit[1]))
+        self.play(Create(tit[1]))
         self.wait(2)
         self.play(FadeOut(tit))
         self.play(Restore(escena_inicial))
@@ -496,10 +495,10 @@ class EjemploVigasAnimacion(Scene):
                 [3, 20.0, 'Restringido', 'Libre'],
                 [4, 25.0, 'Restringido', 'Restringido']]
         tab_nodos = elemento_tabla(etiquetas, rows).scale(0.5).to_edge(DOWN, buff=0.5)
-        etiquetas = [MathTex('Elemento'), MathTex(r'Nodo_i'), MathTex(r'Nodo_j'), MathTex('EI')]
-        rows = [[1, 1, 2, 'cte'],
-                [2, 2, 3, 'cte'],
-                [3, 3, 4, 'cte']]
+        etiquetas = [MathTex('Elemento'), MathTex(r'Nodo_i'), MathTex(r'Nodo_j'), MathTex('L[m]'), MathTex('EI')]
+        rows = [[1, 1, 2, 10, 'cte'],
+                [2, 2, 3, 10, 'cte'],
+                [3, 3, 4, 5, 'cte']]
         tab_elementos = elemento_tabla(etiquetas, rows).scale(0.5).to_edge(DOWN, buff=0.5)
         VGroup(tab_nodos, tab_elementos).arrange(RIGHT, buff=1).to_edge(DOWN, buff=0.5)
         self.play(Create(tab_nodos[1]), Create(tab_nodos[2]), run_time=1)
@@ -507,13 +506,15 @@ class EjemploVigasAnimacion(Scene):
         self.wait(2)
         self.play(Create(tab_elementos[1]), Create(tab_elementos[2]), run_time=1)
         self.play(FadeIn(tab_elementos[0].get_rows()))
-        self.wait(2)
-        self.play(FadeOut(tab_nodos, tab_elementos), run_time=2)
         self.wait(5)
-        ## Desvanecimiento de la viga
-        self.play(FadeOut(escena), run_time=2)
+        self.play(FadeOut(tab_nodos, tab_elementos), FadeOut(escena), run_time=2)
         #######################################################################################################
         ## Análisis Elemento 1
+        tit = titulo("Matriz de rigidez del elemento 1", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
         self.play(FadeIn(escena_elemento_1), run_time=2)
         self.wait(1)
         self.play(Write(ecuacion_local_viga_1), run_time=2)
@@ -553,6 +554,11 @@ class EjemploVigasAnimacion(Scene):
         self.play(FadeOut(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]), FadeOut(mr_elemento_1_4))
         #######################################################################################################
         ## Análisis Elemento 2
+        tit = titulo("Matriz de rigidez del elemento 2", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
         self.play(FadeIn(escena_elemento_2), run_time=2)
         self.wait(1)
         self.play(Write(ecuacion_local_viga_2), run_time=2)
@@ -592,6 +598,11 @@ class EjemploVigasAnimacion(Scene):
         self.play(FadeOut(elementos[1], nodos[1:3], label_elementos[1], label_nodos[1:3]), FadeOut(mr_elemento_2_4))
         #######################################################################################################
         ## Análisis Elemento 3
+        tit = titulo("Matriz de rigidez del elemento 3", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
         self.play(FadeIn(escena_elemento_3), run_time=2)
         self.wait(1)
         self.play(Write(ecuacion_local_viga_3), run_time=2)
@@ -632,6 +643,11 @@ class EjemploVigasAnimacion(Scene):
         self.play(FadeOut(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]), FadeOut(mr_elemento_3_4),
                   FadeOut(mg.ejes))
         self.wait(2)
+        tit = titulo("Matriz de rigidez goblal (Ensamblaje)", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
         m_1 = mr_elemento_1_4.copy()
         m_2 = mr_elemento_2_4.copy()
         m_3 = mr_elemento_3_4.copy()
@@ -722,6 +738,13 @@ class EjemploVigasAnimacion(Scene):
             ReplacementTransform(VGroup(m_1[5], m_2[5], m_3[5]), matriz_global[5]),
             runtime=4)
         self.wait(5)
+        self.play(FadeOut(matriz_global))
+        tit = titulo("Matriz de rigidez goblal reducida", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+        self.play(FadeIn(matriz_global))
         items_reducida = [3, 5]
         elementos_reducida = list()
         elementos_no_reducida = list()
@@ -759,6 +782,14 @@ class EjemploVigasAnimacion(Scene):
                   ReplacementTransform(matriz_global[6].get_entries()[5], matriz_global_reducida[6].get_entries()[1]),
                   run_time=4)
         self.wait(2)
+        self.play(FadeOut(matriz_global_reducida))
+        tit = titulo("Resolución de los desplazamientos desconocidos", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+        self.play(FadeIn(matriz_global_reducida))
+
         self.play(ReplacementTransform(matriz_global_reducida[6], matriz_global_reducida_final[0]),
                   ReplacementTransform(matriz_global_reducida[1], matriz_global_reducida_final[1]),
                   ReplacementTransform(matriz_global_reducida[2], matriz_global_reducida_final[2]),
@@ -812,7 +843,11 @@ class EjemploVigasAnimacion(Scene):
                   run_time=4)
         self.wait(2)
         self.play(FadeOut(sol_1), FadeOut(sol_2))
+        tit = titulo("Resolución de las reacciones desconocidas", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
         self.wait(2)
+        self.play(FadeOut(tit))
         self.play(FadeIn(matriz_global_final_2))
         self.wait(2)
         self.play(ReplacementTransform(VGroup(matriz_global_final_2[0:2]), VGroup(matriz_global_final_3[0:2])),
@@ -845,11 +880,22 @@ class EjemploVigasAnimacion(Scene):
                   FadeOut(matriz_global_final_3[4].get_brackets()[0]),
                   run_time=4)
         self.wait(2)
+
         self.play(FadeOut(matriz_global_final_4))
+        tit = titulo("Matriz global solucionada", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
         self.play(FadeIn(matriz_global_final))
         self.wait(5)
         self.play(FadeOut(matriz_global_final))
+        tit = titulo("Fuerzas internas del elemento 1", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
         self.wait(2)
+        self.play(FadeOut(tit))
+
         self.play(FadeIn(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]), FadeIn(mr_elemento_1_4),
                   FadeIn(f_internas_elemento_1), FadeIn(cargas_e_1))
         self.play(
@@ -900,13 +946,18 @@ class EjemploVigasAnimacion(Scene):
                   FadeOut(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]),
                   FadeOut(f_internas_elemento_1), FadeOut(cargas_e_1))
         self.wait(2)
+        mr_elemento_1_4_4.move_to(ORIGIN)
         self.play(FadeIn(mr_elemento_1_4_4))
         self.wait(2)
         self.play(FadeOut(mr_elemento_1_4_4))
         ####################################
+        tit = titulo("Fuerzas internas del elemento 2", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
         self.wait(2)
+        self.play(FadeOut(tit))
         self.play(FadeIn(elementos[1], nodos[1:3], label_elementos[1], label_nodos[1:3]), FadeIn(mr_elemento_2_4),
-                  FadeIn(cargas_e_2),FadeIn(f_internas_elemento_2))
+                  FadeIn(cargas_e_2), FadeIn(f_internas_elemento_2))
         self.play(
             ReplacementTransform(mr_elemento_2_4[0], mr_elemento_2_4_1[0]),
             ReplacementTransform(mr_elemento_2_4[1], mr_elemento_2_4_1[1]),
@@ -955,11 +1006,16 @@ class EjemploVigasAnimacion(Scene):
                   FadeOut(elementos[1], nodos[1:3], label_elementos[1], label_nodos[1:3]),
                   FadeOut(f_internas_elemento_2), FadeOut(cargas_e_2))
         self.wait(2)
+        mr_elemento_2_4_4.move_to(ORIGIN)
         self.play(FadeIn(mr_elemento_2_4_4))
         self.wait(2)
         self.play(FadeOut(mr_elemento_2_4_4))
         ####################################
+        tit = titulo("Fuerzas internas del elemento 3", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
         self.wait(2)
+        self.play(FadeOut(tit))
         self.play(FadeIn(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]), FadeIn(mr_elemento_3_4),
                   FadeIn(f_internas_elemento_3))
         self.play(
@@ -1010,10 +1066,16 @@ class EjemploVigasAnimacion(Scene):
                   FadeOut(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]),
                   FadeOut(f_internas_elemento_3))
         self.wait(2)
+        mr_elemento_3_4_4.move_to(ORIGIN)
         self.play(FadeIn(mr_elemento_3_4_4))
         self.wait(2)
         self.play(FadeOut(mr_elemento_3_4_4))
         #######################################################################################################
+        tit = titulo("Diagrama de cortantes", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
         x = sp.Symbol('x')
         v_1 = e_1.ecuacion_de_cortante().rhs.args[0].args[0]
         v_2 = e_1.ecuacion_de_cortante().rhs.args[1].args[0]
@@ -1044,11 +1106,31 @@ class EjemploVigasAnimacion(Scene):
             y_range=[-120, 125, 25],
             axis_config={"include_numbers": True, "tip_shape": StealthTip, "font_size": 18, }
         )
+        titulos_ejes_v = ejes_v.get_axis_labels(
+        x_label = MathTex("x (m)", font_size=20),
+        y_label = MathTex("Cortante (kN)", font_size=20)
+        ).set_color(BLUE_A)
+        # ejes_v.add_coordinates(
+        #     x_label="x (m)",
+        #     y_label="Cortante (kN)"
+        # )
+        titulo_v = Text("Diagrama de cortante", font_size=28)
+        titulo_v.next_to(ejes_v, UP, buff=0.1)
         ejes_m = Axes(
             x_range=[0, 26, 5],
             y_range=[-180, 140, 25],
             axis_config={"include_numbers": True, "tip_shape": StealthTip, "font_size": 18, }
         )
+        titulos_ejes_m = ejes_v.get_axis_labels(
+            x_label=MathTex("x (m)", font_size=20),
+            y_label=MathTex(r"Momento (kN \cdot m)", font_size=20)
+        ).set_color(BLUE_A)
+        # ejes_m.add_coordinates(
+        #     x_label="x (m)",
+        #     y_label=r"Momento (kN \cdot m)"
+        # )
+        titulo_m = Text("Diagrama de momento", font_size=28)
+        titulo_m.next_to(ejes_m, UP, buff=0.1)
         curva_v_1 = ejes_v.plot(f_v_1, x_range=[0, 6], color=BLUE_E)
         curva_v_2 = ejes_v.plot(f_v_2, x_range=[6, 10], color=BLUE_E)
         curva_v_3 = ejes_v.plot(f_v_3, x_range=[10, 20], color=BLUE_E)
@@ -1093,7 +1175,7 @@ class EjemploVigasAnimacion(Scene):
         #                                                                 buff=0.0).scale(0.35)
         label_m_4_2 = MathTex(f'{f_m_4(25):.3g}', color=ORANGE).next_to(ejes_m.c2p(25, f_m_4(25), 0), UP,
                                                                         buff=0.0).scale(0.35)
-        self.play(Create(ejes_v))
+        self.play(Create(ejes_v), Write(titulos_ejes_v), Write(titulo_v), run_time=4)
         t_tracker_v = ValueTracker(0)
 
         def update_area_v_1():
@@ -1145,11 +1227,16 @@ class EjemploVigasAnimacion(Scene):
         self.play(Write(label_v_4_2))
         self.wait(2)
         self.play(
-            FadeOut(ejes_v, label_v_1_1, label_v_1_2, label_v_2_1, label_v_2_2, label_v_3_1, label_v_3_2, label_v_4_1,
+            FadeOut(titulos_ejes_v, titulo_v, ejes_v, label_v_1_1, label_v_1_2, label_v_2_1, label_v_2_2, label_v_3_1,
+                    label_v_3_2, label_v_4_1,
                     label_v_4_2, curva_v_1, curva_v_2, curva_v_3, curva_v_4, area_1_dinamica_v, area_2_dinamica_v,
                     area_3_dinamica_v, area_4_dinamica_v))
+        tit = titulo("Diagrama de momento", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
         self.wait(2)
-        self.play(Create(ejes_m))
+        self.play(FadeOut(tit))
+        self.play(Create(ejes_m), Write(titulos_ejes_m), Write(titulo_m), run_time=4)
         t_tracker_m = ValueTracker(0)
 
         def update_area_m():
@@ -1211,8 +1298,9 @@ class EjemploVigasAnimacion(Scene):
         self.play(Write(label_m_4_2))
         self.wait(2)
         self.play(
-            FadeOut(ejes_m, label_m_1_1, label_m_1_2, label_m_2_2, label_m_3_1, label_m_3_2,
+            FadeOut(titulos_ejes_m, titulo_m, ejes_m, label_m_1_1, label_m_1_2, label_m_2_2, label_m_3_1, label_m_3_2,
                     label_m_4_2, curva_m, area_dinamica_m))
+
 
 class pruebas(Scene):
     def construct(self) -> None:

@@ -1026,8 +1026,8 @@ def elemento_label_grados_libertad(n: Nodo, **kwargs) -> VGroup:
     return label_grados
 
 
-def titulo(titulo: str, subtitulo: str = '') -> VMobject:
-    titulo = Text(titulo, font_size=48, color=BLUE)
+def titulo(titulo: str, subtitulo: str = '', size_titulo: int = 48) -> VMobject:
+    titulo = Text(titulo, font_size=size_titulo, color=BLUE)
     linea = Underline(titulo, color=WHITE)
     if subtitulo != '':
         subtitulo = Text(subtitulo, font_size=28, color=GRAY)
