@@ -342,7 +342,7 @@ class EjemploVigasAnimacion(Scene):
         mr_elemento_2_4_2.submobjects.pop(2)
         mr_elemento_2_4_2.submobjects.pop(2)
         sol_el_2_1 = np.array(e_2._k.obtener_matriz(False)) @ np.array(e_2._k.obtener_desplazamientos(False))
-        sol_el_2_2 = sol_el_1_1 - e_2._obtener_fuerzas()
+        sol_el_2_2 = sol_el_2_1 - e_2._obtener_fuerzas()
         mr_elemento_2_4_2[2] = ecuacion_array_a_matriz(sol_el_2_1, formato_num='{x:.8f}', left_bracket=r"\{",
                                                        right_bracket=r"\}").scale(0.5)
         mr_elemento_2_4_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
