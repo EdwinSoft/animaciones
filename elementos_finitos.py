@@ -1107,8 +1107,8 @@ class EjemploVigasAnimacion(Scene):
             axis_config={"include_numbers": True, "tip_shape": StealthTip, "font_size": 18, }
         )
         titulos_ejes_v = ejes_v.get_axis_labels(
-        x_label = MathTex("x (m)", font_size=20),
-        y_label = MathTex("Cortante (kN)", font_size=20)
+            x_label=MathTex("x (m)", font_size=20),
+            y_label=MathTex("Cortante (kN)", font_size=20)
         ).set_color(BLUE_A)
         # ejes_v.add_coordinates(
         #     x_label="x (m)",
@@ -1304,22 +1304,37 @@ class EjemploVigasAnimacion(Scene):
 
 class pruebas(Scene):
     def construct(self) -> None:
-        etiquetas = [MathTex('Nodo'), MathTex('x[m]'), MathTex('GL[y]'), MathTex(r'GL[\phi]')]
-        rows = [[1, 0.0, 'Restringido', 'Restringido'],
-                [2, 10.0, 'Restringido', 'Libre'],
-                [3, 20.0, 'Restringido', 'Libre'],
-                [4, 25.0, 'Restringido', 'Restringido']]
-        tab_nodos = elemento_tabla(etiquetas, rows).scale(0.5).to_edge(DOWN, buff=0.5)
-        etiquetas = [MathTex('Elemento'), MathTex(r'Nodo_i'), MathTex(r'Nodo_j'), MathTex('EI')]
-        rows = [[1, 1, 2, 'cte'],
-                [2, 2, 3, 'cte'],
-                [3, 3, 4, 'cte']]
-        tab_elementos = elemento_tabla(etiquetas, rows).scale(0.5).to_edge(DOWN, buff=0.5)
-        VGroup(tab_nodos, tab_elementos).arrange(RIGHT, buff=1).to_edge(DOWN, buff=0.5)
-        self.play(Create(tab_nodos[1]), Create(tab_nodos[2]), run_time=1)
-        self.play(FadeIn(tab_nodos[0].get_rows()))
+        # etiquetas = [MathTex('Nodo'), MathTex('x[m]'), MathTex('GL[y]'), MathTex(r'GL[\phi]')]
+        # rows = [[1, 0.0, 'Restringido', 'Restringido'],
+        #         [2, 10.0, 'Restringido', 'Libre'],
+        #         [3, 20.0, 'Restringido', 'Libre'],
+        #         [4, 25.0, 'Restringido', 'Restringido']]
+        # tab_nodos = elemento_tabla(etiquetas, rows).scale(0.5).to_edge(DOWN, buff=0.5)
+        # etiquetas = [MathTex('Elemento'), MathTex(r'Nodo_i'), MathTex(r'Nodo_j'), MathTex('EI')]
+        # rows = [[1, 1, 2, 'cte'],
+        #         [2, 2, 3, 'cte'],
+        #         [3, 3, 4, 'cte']]
+        # tab_elementos = elemento_tabla(etiquetas, rows).scale(0.5).to_edge(DOWN, buff=0.5)
+        # VGroup(tab_nodos, tab_elementos).arrange(RIGHT, buff=1).to_edge(DOWN, buff=0.5)
+        # self.play(Create(tab_nodos[1]), Create(tab_nodos[2]), run_time=1)
+        # self.play(FadeIn(tab_nodos[0].get_rows()))
+        # self.wait(2)
+        # self.play(Create(tab_elementos[1]), Create(tab_elementos[2]), run_time=1)
+        # self.play(FadeIn(tab_elementos[0].get_rows()))
+        # self.wait(2)
+        # self.play(FadeOut(tab_nodos, tab_elementos), run_time=2)
+        punto_a = 2 * LEFT
+        punto_b = 2 * RIGHT
+        punto_c = 3 * RIGHT
+
+        # Instanciamos nuestro objeto personalizado
+        mi_resorte = Resorte(punto_a, punto_b, n=30)
+        mi_resorte_2 = Resorte(punto_a, punto_c, n=30, porc_h=0.08)
+        n_a = Dot(punto_a, radius=0.04, color=RED_D)
+        n_b = Dot(punto_b, radius=0.04, color=RED_D)
+        n_c = Dot(punto_c, radius=0.04, color=RED_D)
+        # Animamos su aparición
+        self.play(FadeIn(mi_resorte, n_a, n_b), run_time=3)
         self.wait(2)
-        self.play(Create(tab_elementos[1]), Create(tab_elementos[2]), run_time=1)
-        self.play(FadeIn(tab_elementos[0].get_rows()))
-        self.wait(2)
-        self.play(FadeOut(tab_nodos, tab_elementos), run_time=2)
+        self.play(ReplacementTransform(mi_resorte, mi_resorte_2),
+                  ReplacementTransform(n_b, n_c), run_time=4)

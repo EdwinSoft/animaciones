@@ -1086,6 +1086,111 @@ def elemento_tabla(encabezado: list, datos: list, color_tabla: ManimColor = TEAL
     return VGroup(tabla, cuadricula, fondo_encabezado)
 
 
+
+
+class SegmentoResorte(VMobject):
+    """Clase auxiliar para dibujar un eslabón individual del resorte."""
+
+    def __init__(self, p_1, p_2, t, **kwargs):
+        super().__init__(**kwargs)
+
+        # Asegurar que los puntos sean arreglos de Manim (3D)
+        p_1 = np.array(p_1)
+        p_2 = np.array(p_2)
+
+        dx = p_2[0] - p_1[0]
+        dy = p_2[1] - p_1[1]
+        l_res = np.sqrt(dx ** 2 + dy ** 2)
+
+        if l_res == 0:
+            return
+
+        c = dx / l_res
+        s = dy / l_res
+
+        x_1, y_1 = p_1[:2]
+        x_2, y_2 = p_2[:2]
+
+        # Cálculo de los vértices (manteniendo z=0)
+        v0 = np.array([x_1 + 0.5 * t * s, y_1 - 0.5 * t * c, 0])
+        v1 = np.array([x_2 + 0.5 * t * s, y_2 - 0.5 * t * c, 0])
+        v2 = np.array([x_2 + 0.5 * t * s + 0.7 * t * c, y_2 - 0.5 * t * c + 0.7 * t * s, 0])
+        v3 = np.array([x_2 - 0.5 * t * s + 0.7 * t * c, y_2 + 0.5 * t * c + 0.7 * t * s, 0])
+        v4 = np.array([x_2 - 0.5 * t * s, y_2 + 0.5 * t * c, 0])
+        v5 = np.array([x_1 - 0.5 * t * s, y_1 + 0.5 * t * c, 0])
+        v6 = np.array([x_1 - 0.5 * t * s - 0.7 * t * c, y_1 + 0.5 * t * c - 0.7 * t * s, 0])
+        v7 = np.array([x_1 + 0.5 * t * s - 0.7 * t * c, y_1 - 0.5 * t * c - 0.7 * t * s, 0])
+        v8 = np.array([x_1 + 0.5 * t * s, y_1 - 0.5 * t * c, 0])
+
+        # Trazado equivalente a Matplotlib (MOVETO, LINETO, CURVE4...)
+        self.start_new_path(v0)
+        self.add_line_to(v1)
+        self.add_cubic_bezier_curve_to(v2, v3, v4)
+        self.add_line_to(v5)
+        self.add_cubic_bezier_curve_to(v6, v7, v8)
+
+
+class Resorte(VGroup):
+    """Objeto Manim que genera un resorte completo."""
+
+    def __init__(self, p_1, p_2, n=30,porc_h: float=0.1, **kwargs):
+        super().__init__(**kwargs)
+
+        p_1 = np.array(p_1)
+        p_2 = np.array(p_2)
+
+        dx = p_2[0] - p_1[0]
+        dy = p_2[1] - p_1[1]
+        l_res = np.sqrt(dx ** 2 + dy ** 2)
+
+        if l_res == 0:
+            return
+
+        h = porc_h * l_res
+        t = 0.25 * h
+
+        c = dx / l_res
+        s = dy / l_res
+
+        x = np.linspace(p_1[0], p_2[0], n)
+        y = np.linspace(p_1[1], p_2[1], n)
+
+        # Desplazamiento en zigzag
+        for i in range(n - 4):
+            if i % 2 == 0:
+                x[i + 2] -= h * s
+                y[i + 2] += h * c
+            else:
+                x[i + 2] += h * s
+                y[i + 2] -= h * c
+
+        puntos = [np.array([x[i], y[i], 0]) for i in range(n)]
+
+        # Dibujar parte trasera (índices impares)
+        for i in range(n - 1):
+            if i % 2 == 1:
+                segmento = SegmentoResorte(
+                    puntos[i], puntos[i + 1], t,
+                    fill_color="#4682B4",  # Equivalente a 'steelblue'
+                    fill_opacity=1.0,
+                    stroke_width=0.25,
+                    stroke_color=WHITE  # Ajuste para visibilidad en fondo oscuro
+                )
+                self.add(segmento)
+
+        # Dibujar parte delantera (índices pares)
+        for i in range(n - 1):
+            if i % 2 == 0:
+                segmento = SegmentoResorte(
+                    puntos[i], puntos[i + 1], t,
+                    fill_color="#B0C4DE",  # Equivalente a 'lightsteelblue'
+                    fill_opacity=1.0,
+                    stroke_color="#4169E1",  # Equivalente a 'royalblue'
+                    stroke_width=0.2
+                )
+                self.add(segmento)
+
+
 def main():
     class demo(Scene):
         def construct(self):
