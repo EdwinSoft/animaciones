@@ -672,6 +672,32 @@ def elemento_soporte(nodo: tuple[float | int, float | int], ejes: Axes, tipo_sop
     return soporte
 
 
+def elemento_direccion_eje(punto: tuple[float | int, float | int]| ndarray, longitud: float = 0.5, ang: float = 0.0,
+                           color: ManimColor = BLUE, **kwargs) -> VMobject:
+    ang = np.deg2rad(ang)
+    inicio = punto
+    final = np.array(inicio) + (np.array(
+        [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+        [[longitud], [0.0], [0.0]])).flatten()
+    p_1 = np.array(inicio) + (np.array(
+        [[np.cos(ang+np.pi/2), -np.sin(ang+np.pi/2), 0.0], [np.sin(ang+np.pi/2), np.cos(ang+np.pi/2), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+        [[0.07], [0.0], [0.0]])).flatten()
+    p_2 = np.array(inicio) + (np.array(
+        [[np.cos(ang-np.pi/2), -np.sin(ang-np.pi/2), 0.0], [np.sin(ang-np.pi/2), np.cos(ang-np.pi/2), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+        [[0.07], [0.0], [0.0]])).flatten()
+    vector = Arrow(
+        start=inicio,
+        end=final,
+        buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+        color=color,
+        stroke_width=4,  # Grosor de la línea
+        tip_shape=StealthTip,  # Aquí cambias la forma
+        max_tip_length_to_length_ratio=0.10 / longitud  # Controla el tamaño de la punta
+    )
+    base = Line(p_1, p_2,stroke_width=2, color=color)
+    return VGroup(vector, base, **kwargs)
+
+
 def elemento_carga(nodo: tuple[float | int, float | int], ejes: Axes, longitud: float = 2.0, h: float | int = 0,
                    ang: float = 0.0, saliente: bool = True, color_carga: ManimColor = BLUE) -> VMobject:
     ang = np.deg2rad(ang)
@@ -1086,8 +1112,6 @@ def elemento_tabla(encabezado: list, datos: list, color_tabla: ManimColor = TEAL
     return VGroup(tabla, cuadricula, fondo_encabezado)
 
 
-
-
 class SegmentoResorte(VMobject):
     """Clase auxiliar para dibujar un eslabón individual del resorte."""
 
@@ -1133,7 +1157,7 @@ class SegmentoResorte(VMobject):
 class Resorte(VGroup):
     """Objeto Manim que genera un resorte completo."""
 
-    def __init__(self, p_1, p_2, n=30,porc_h: float=0.1, **kwargs):
+    def __init__(self, p_1, p_2, n=30, porc_h: float = 0.1, **kwargs):
         super().__init__(**kwargs)
 
         p_1 = np.array(p_1)
