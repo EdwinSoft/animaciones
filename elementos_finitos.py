@@ -1507,8 +1507,10 @@ class pruebas(Scene):
                   run_time=2)
         self.wait(2)
         self.play(ReplacementTransform(ecuacion_f_1_4[3], ecuacion_local_resorte_1[2].get_entries()[0]),
-                  ReplacementTransform(ecuacion_f_1_4[5:7], ecuacion_local_resorte_1[2].get_entries()[1]),
-                  ReplacementTransform(ecuacion_f_2_4[3:5], ecuacion_local_resorte_1[2].get_entries()[2]),
+                  ReplacementTransform(ecuacion_f_1_4[5], ecuacion_local_resorte_1[2].get_entries()[1][0][0]),
+                  ReplacementTransform(ecuacion_f_1_4[6], ecuacion_local_resorte_1[2].get_entries()[1][0][1]),
+                  ReplacementTransform(ecuacion_f_2_4[3], ecuacion_local_resorte_1[2].get_entries()[2][0][0]),
+                  ReplacementTransform(ecuacion_f_2_4[4], ecuacion_local_resorte_1[2].get_entries()[2][0][1]),
                   ReplacementTransform(ecuacion_f_2_4[7], ecuacion_local_resorte_1[2].get_entries()[3]),
                   FadeOut(ecuacion_f_2_4[6]),
                   run_time=2)
