@@ -2,6 +2,7 @@ from manim import *
 import numpy as np
 from mnspy import *
 from mnspy.utilidades import _formato_float_latex
+from mnspy.ecuaciones_diferenciales_parciales.mef.ensamble import es_viga, es_resorte
 
 mi_plantilla = TexTemplate()
 mi_plantilla.add_to_preamble(r"\usepackage{cancel}")
@@ -18,6 +19,8 @@ class EnsambleAnimacion(Ensamble):
         super().__init__(lista_elementos)
         min_x, max_x = self._graf['lim_x'][0], self._graf['lim_x'][1]
         min_y, max_y = self._graf['lim_y'][0], self._graf['lim_y'][1]
+        if min_y == np.inf and max_y == -np.inf:
+            min_y = max_y = 0.0
         centro = ((min_x + max_x) / 2, (min_y + max_y) / 2)
         if 16.0 * (max_y - min_y) > 9.0 * (max_x - min_x):
             rango_y = [min_y, max_y, 1]
@@ -202,6 +205,25 @@ class EnsambleAnimacion(Ensamble):
             valor = MathTex(str(abs(carga_puntual[0])) + r"\,kN").next_to(cp, UP, buff=0.1).scale(0.5)
             cargas.add(cp)
             cargas.add(valor)
+        return cargas
+
+    def get_cargas_puntuales_nodales(self, longitud: float | int = 2.0) -> VGroup:
+        cargas = VGroup()
+        for n in self._lista_nodos:
+            if n.fuerzas_externas.get('x', 0.0) != 0.0:
+                sentido = True if n.fuerzas_externas['x'] > 0.0 else False
+                p = n.punto
+                cp = elemento_carga(p, self.ejes, longitud, ang=0, saliente=sentido, h=0.0)
+                valor = MathTex(str(abs(n.fuerzas_externas['x'])) + r"\,kN").scale(0.5).next_to(cp, RIGHT, buff=0.1)
+                cargas.add(cp)
+                cargas.add(valor)
+            if n.fuerzas_externas.get('y', 0.0) != 0.0:
+                sentido = True if n.fuerzas_externas['y'] > 0.0 else False
+                p = n.punto
+                cp = elemento_carga(p, self.ejes, longitud, ang=90, saliente=sentido, h=0.0)
+                valor = MathTex(str(abs(n.fuerzas_externas['y'])) + r"\,kN").scale(0.5).next_to(cp, UP, buff=0.1)
+                cargas.add(cp)
+                cargas.add(valor)
         return cargas
 
     def get_cargas_distribuidas(self, longitud: float | int = 2.0) -> VGroup:
@@ -493,7 +515,10 @@ class EnsambleAnimacion(Ensamble):
         elementos = VGroup()
         label_elementos = VGroup().set_z_index(1.5)
         for el in self._lista_elementos:
-            elementos.add(elemento_viga(el.get_nodo_inicial().punto[0], el.get_nodo_final().punto[0], 0.25, self.ejes))
+            if es_viga(el):
+                elementos.add(elemento_viga(el.get_nodo_inicial().punto[0], el.get_nodo_final().punto[0], 0.25, self.ejes))
+            elif es_resorte(el):
+                elementos.add(Resorte(el.get_nodo_inicial().punto, el.get_nodo_final().punto, n=40))
             punto_medio = self.ejes.c2p(
                 (np.array(el.get_nodo_inicial().punto) + np.array(el.get_nodo_final().punto)) / 2)
             # 1. Crear solo el texto
@@ -672,7 +697,7 @@ def elemento_soporte(nodo: tuple[float | int, float | int], ejes: Axes, tipo_sop
     return soporte
 
 
-def elemento_direccion_eje(punto: tuple[float | int, float | int]| ndarray, longitud: float = 0.5, ang: float = 0.0,
+def elemento_direccion_eje(punto: tuple[float | int, float | int] | ndarray, longitud: float = 0.5, ang: float = 0.0,
                            color: ManimColor = BLUE, **kwargs) -> VMobject:
     ang = np.deg2rad(ang)
     inicio = punto
@@ -680,10 +705,12 @@ def elemento_direccion_eje(punto: tuple[float | int, float | int]| ndarray, long
         [[np.cos(ang), -np.sin(ang), 0.0], [np.sin(ang), np.cos(ang), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
         [[longitud], [0.0], [0.0]])).flatten()
     p_1 = np.array(inicio) + (np.array(
-        [[np.cos(ang+np.pi/2), -np.sin(ang+np.pi/2), 0.0], [np.sin(ang+np.pi/2), np.cos(ang+np.pi/2), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+        [[np.cos(ang + np.pi / 2), -np.sin(ang + np.pi / 2), 0.0],
+         [np.sin(ang + np.pi / 2), np.cos(ang + np.pi / 2), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
         [[0.07], [0.0], [0.0]])).flatten()
     p_2 = np.array(inicio) + (np.array(
-        [[np.cos(ang-np.pi/2), -np.sin(ang-np.pi/2), 0.0], [np.sin(ang-np.pi/2), np.cos(ang-np.pi/2), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
+        [[np.cos(ang - np.pi / 2), -np.sin(ang - np.pi / 2), 0.0],
+         [np.sin(ang - np.pi / 2), np.cos(ang - np.pi / 2), 0.0], [0.0, 0.0, 0.0]]) @ np.array(
         [[0.07], [0.0], [0.0]])).flatten()
     vector = Arrow(
         start=inicio,
@@ -694,7 +721,7 @@ def elemento_direccion_eje(punto: tuple[float | int, float | int]| ndarray, long
         tip_shape=StealthTip,  # Aquí cambias la forma
         max_tip_length_to_length_ratio=0.10 / longitud  # Controla el tamaño de la punta
     )
-    base = Line(p_1, p_2,stroke_width=2, color=color)
+    base = Line(p_1, p_2, stroke_width=2, color=color)
     return VGroup(vector, base, **kwargs)
 
 
@@ -1197,7 +1224,7 @@ class Resorte(VGroup):
                     puntos[i], puntos[i + 1], t,
                     fill_color="#4682B4",  # Equivalente a 'steelblue'
                     fill_opacity=1.0,
-                    stroke_width=0.25,
+                    stroke_width=0.0,
                     stroke_color=WHITE  # Ajuste para visibilidad en fondo oscuro
                 )
                 self.add(segmento)
@@ -1210,7 +1237,7 @@ class Resorte(VGroup):
                     fill_color="#B0C4DE",  # Equivalente a 'lightsteelblue'
                     fill_opacity=1.0,
                     stroke_color="#4169E1",  # Equivalente a 'royalblue'
-                    stroke_width=0.2
+                    stroke_width=0.0
                 )
                 self.add(segmento)
 
