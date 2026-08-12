@@ -1386,9 +1386,12 @@ class EjemploResorteAnimacion(Scene):
         matriz_global_final_4.scale(0.35).arrange(RIGHT)
 
         # ############
-        cargas_puntuales = mg.get_cargas_puntuales_nodales(longitud=1.0)
-        print(cargas_puntuales)
-
+        cargas_puntuales = mg.get_cargas_puntuales_nodales(longitud=1.0).set_color(RED_D)
+        cargas_puntuales[1].add_background_rectangle(
+            color=BLACK,  # Color del recuadro
+            opacity=0.6,  # Opacidad (0 es invisible, 1 es sólido)
+            buff=0.01  # Margen/espacio entre el texto y el borde
+        )
         # cargas_distribuidas = mg.get_cargas_distribuidas(longitud=1.3)
         # cargas = cargas_puntuales + cargas_distribuidas
         # cargas_e_1 = cargas[0:2].copy()
@@ -1396,10 +1399,11 @@ class EjemploResorteAnimacion(Scene):
         #
         # ############
         nodos, label_nodos, soportes = mg.get_nodos_y_soportes()
+        nodos.set_color(RED)
         # ############
         elementos, label_elementos = mg.get_elementos()
-
-        self.add(cargas_puntuales, nodos, label_nodos, soportes, elementos, label_elementos)
+        label_elementos.shift(0.4*DOWN)
+        self.add(elementos, label_elementos, soportes,cargas_puntuales, nodos, label_nodos)
         # ############
         # cotas = VGroup()
         # p_1 = mg.c2p([0.0, 0.0, 0.0]) + DOWN

@@ -518,7 +518,7 @@ class EnsambleAnimacion(Ensamble):
             if es_viga(el):
                 elementos.add(elemento_viga(el.get_nodo_inicial().punto[0], el.get_nodo_final().punto[0], 0.25, self.ejes))
             elif es_resorte(el):
-                elementos.add(Resorte(el.get_nodo_inicial().punto, el.get_nodo_final().punto, n=40))
+                elementos.add(elemento_resorte(el.get_nodo_inicial().punto[:2], el.get_nodo_final().punto[:2], self.ejes))
             punto_medio = self.ejes.c2p(
                 (np.array(el.get_nodo_inicial().punto) + np.array(el.get_nodo_final().punto)) / 2)
             # 1. Crear solo el texto
@@ -574,6 +574,11 @@ class EnsambleAnimacion(Ensamble):
         grados = elemento_grado_libertad(n.punto, self.ejes, gdl=gl, libre=n.grados_libertad[gl].valor, **kwargs)
         return grados
 
+def elemento_resorte(nodo_i: tuple[float, float], nodo_j: tuple[float, float],  ejes: Axes) -> VMobject:
+    coord_i = ejes.c2p(*nodo_i)
+    coord_j = ejes.c2p(*nodo_j)
+    resorte = Resorte(coord_i, coord_j, n=40)
+    return resorte
 
 def elemento_viga(x_i: float, x_f: float, h: float | int, ejes: Axes) -> VMobject:
     coord_i = ejes.c2p((x_i, 0))
@@ -585,6 +590,7 @@ def elemento_viga(x_i: float, x_f: float, h: float | int, ejes: Axes) -> VMobjec
     # nodo_j = Dot(coord_j, color=RED)
     # return VGroup(viga, nodo_i, nodo_j)
     return viga
+
 
 
 def elemento_armadura(nodo_i: tuple[float, float], nodo_j: tuple[float, float], h: float | int, ejes: Axes) -> VMobject:
