@@ -516,9 +516,11 @@ class EnsambleAnimacion(Ensamble):
         label_elementos = VGroup().set_z_index(1.5)
         for el in self._lista_elementos:
             if es_viga(el):
-                elementos.add(elemento_viga(el.get_nodo_inicial().punto[0], el.get_nodo_final().punto[0], 0.25, self.ejes))
+                elementos.add(
+                    elemento_viga(el.get_nodo_inicial().punto[0], el.get_nodo_final().punto[0], 0.25, self.ejes))
             elif es_resorte(el):
-                elementos.add(elemento_resorte(el.get_nodo_inicial().punto[:2], el.get_nodo_final().punto[:2], self.ejes))
+                elementos.add(
+                    elemento_resorte(el.get_nodo_inicial().punto[:2], el.get_nodo_final().punto[:2], self.ejes))
             punto_medio = self.ejes.c2p(
                 (np.array(el.get_nodo_inicial().punto) + np.array(el.get_nodo_final().punto)) / 2)
             # 1. Crear solo el texto
@@ -570,15 +572,40 @@ class EnsambleAnimacion(Ensamble):
         fuerzas_internas.add(VGroup(label_f_1, label_f_2, label_m_1, label_m_2))
         return fuerzas_internas
 
+    def elemento_fuerza_interna_resorte(self, ele: Resorte, unidades: str | None = None,
+                                        mostrar_valores: bool = False) -> VMobject:
+        if unidades is None:
+            unidades = r"\,kN"
+        n_1 = ele.get_nodo_inicial()
+        n_2 = ele.get_nodo_final()
+        etiquetas_fuerzas = ele._obtener_etiquetas_fuerzas()
+        sentido_fuerzas = np.array([True, True])
+        if mostrar_valores:
+            etiquetas_fuerzas = (np.matmul(ele._k.k, ele._obtener_desplazamientos())).reshape(1, -1).flatten()
+            sentido_fuerzas = (etiquetas_fuerzas > 0.0).reshape(1, -1).flatten()
+            etiquetas_fuerzas = np.char.mod('%.3g', abs(etiquetas_fuerzas))
+        fuerzas_internas = VGroup()
+        f_1 = elemento_carga(n_1.punto, self.ejes, longitud=1, saliente=sentido_fuerzas[0], ang=0, color_carga=WHITE)
+        label_f_1 = MathTex(etiquetas_fuerzas[0] + unidades).next_to(f_1, LEFT, buff=0.0).scale(0.5).shift(
+            RIGHT * 0.0)
+        f_2 = elemento_carga(n_2.punto, self.ejes, longitud=1, saliente=sentido_fuerzas[1], ang=0, color_carga=WHITE)
+        label_f_2 = MathTex(etiquetas_fuerzas[1] + unidades).next_to(f_2, RIGHT, buff=0.0).scale(0.5).shift(
+            RIGHT * 0.0)
+        fuerzas_internas.add(VGroup(f_1, f_2))
+        fuerzas_internas.add(VGroup(label_f_1, label_f_2))
+        return fuerzas_internas
+
     def get_grados_libertad(self, n: Nodo, gl: str, **kwargs) -> VMobject:
         grados = elemento_grado_libertad(n.punto, self.ejes, gdl=gl, libre=n.grados_libertad[gl].valor, **kwargs)
         return grados
 
-def elemento_resorte(nodo_i: tuple[float, float], nodo_j: tuple[float, float],  ejes: Axes) -> VMobject:
+
+def elemento_resorte(nodo_i: tuple[float, float], nodo_j: tuple[float, float], ejes: Axes) -> VMobject:
     coord_i = ejes.c2p(*nodo_i)
     coord_j = ejes.c2p(*nodo_j)
     resorte = Resorte(coord_i, coord_j, n=40)
     return resorte
+
 
 def elemento_viga(x_i: float, x_f: float, h: float | int, ejes: Axes) -> VMobject:
     coord_i = ejes.c2p((x_i, 0))
@@ -590,7 +617,6 @@ def elemento_viga(x_i: float, x_f: float, h: float | int, ejes: Axes) -> VMobjec
     # nodo_j = Dot(coord_j, color=RED)
     # return VGroup(viga, nodo_i, nodo_j)
     return viga
-
 
 
 def elemento_armadura(nodo_i: tuple[float, float], nodo_j: tuple[float, float], h: float | int, ejes: Axes) -> VMobject:
@@ -996,6 +1022,20 @@ def ecuacion_vector_fuerza_viga(id_elemento: int | str = '1', id_nodo_inicial: i
     return vector_fuerzas
 
 
+def ecuacion_vector_fuerza_resorte(id_elemento: int | str = '1', id_nodo_inicial: int | str = '1',
+                                   id_nodo_final: int | str = '2') -> VMobject:
+    str_elemento = str(id_elemento)
+    str_nodo_ini = str(id_nodo_inicial)
+    str_nodo_fin = str(id_nodo_final)
+    vector_fuerzas = Matrix(
+        [["f^{(" + str_elemento + ")}_{" + str_nodo_ini + "x}"],
+         ["f^{(" + str_elemento + ")}_{" + str_nodo_fin + "x}"]],
+        left_bracket=r"\{",  # Llave izquierda
+        right_bracket=r"\}"  # Llave derecha
+    )
+    return vector_fuerzas
+
+
 def ecuacion_vector_desplazamiento_viga(id_nodo_inicial: int | str = '1', id_nodo_final: int | str = '2') -> VMobject:
     str_nodo_ini = str(id_nodo_inicial)
     str_nodo_fin = str(id_nodo_final)
@@ -1010,7 +1050,9 @@ def ecuacion_vector_desplazamiento_viga(id_nodo_inicial: int | str = '1', id_nod
     )
     return vector_deformacion
 
-def ecuacion_vector_desplazamiento_resorte(id_nodo_inicial: int | str = '1', id_nodo_final: int | str = '2') -> VMobject:
+
+def ecuacion_vector_desplazamiento_resorte(id_nodo_inicial: int | str = '1',
+                                           id_nodo_final: int | str = '2') -> VMobject:
     str_nodo_ini = str(id_nodo_inicial)
     str_nodo_fin = str(id_nodo_final)
     vector_deformacion = Matrix(
@@ -1021,6 +1063,7 @@ def ecuacion_vector_desplazamiento_resorte(id_nodo_inicial: int | str = '1', id_
         right_bracket=r"\}"  # Llave derecha
     )
     return vector_deformacion
+
 
 def ecuacion_vector_fuerza_nodal_equivalente_viga(id_nodo_inicial: int | str = '1',
                                                   id_nodo_final: int | str = '2') -> VMobject:
