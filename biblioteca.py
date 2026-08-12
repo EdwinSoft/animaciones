@@ -1010,6 +1010,17 @@ def ecuacion_vector_desplazamiento_viga(id_nodo_inicial: int | str = '1', id_nod
     )
     return vector_deformacion
 
+def ecuacion_vector_desplazamiento_resorte(id_nodo_inicial: int | str = '1', id_nodo_final: int | str = '2') -> VMobject:
+    str_nodo_ini = str(id_nodo_inicial)
+    str_nodo_fin = str(id_nodo_final)
+    vector_deformacion = Matrix(
+        [["u_{" + str_nodo_ini + "}"],
+         ["u_{" + str_nodo_fin + "}"],
+         ],
+        left_bracket=r"\{",  # Llave izquierda
+        right_bracket=r"\}"  # Llave derecha
+    )
+    return vector_deformacion
 
 def ecuacion_vector_fuerza_nodal_equivalente_viga(id_nodo_inicial: int | str = '1',
                                                   id_nodo_final: int | str = '2') -> VMobject:
