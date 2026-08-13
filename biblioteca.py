@@ -136,6 +136,15 @@ class EnsambleAnimacion(Ensamble):
             etiquetas_fuerzas = etiquetas_fuerzas + np.array(['=', '=', '=', '=']) + np.char.mod(formato, fuerzas)
         return Matrix(np.array(etiquetas_fuerzas).reshape(-1, 1)
                       , left_bracket=r"\{", right_bracket=r"\}")
+    def ecuacion_vector_etiquetas_fuerzas_internas_resorte(self, ele: Resorte, mostrar_valores: bool = False,
+                                                        formato: str = '%.3g') -> VMobject:
+        etiquetas_fuerzas = ele._obtener_etiquetas_fuerzas()
+        if mostrar_valores:
+            fuerzas = (np.matmul(ele._k.k,
+                                 ele._obtener_desplazamientos())).reshape(1, -1).flatten()
+            etiquetas_fuerzas = etiquetas_fuerzas + np.array(['=', '=']) + np.char.mod(formato, fuerzas)
+        return Matrix(np.array(etiquetas_fuerzas).reshape(-1, 1)
+                      , left_bracket=r"\{", right_bracket=r"\}")
 
     def ecuacion_vector_etiquetas_reacciones(self, color_incognitas: ManimColor = BLUE,
                                              reducida: bool = False, tol_cero: float = 1E-10,
@@ -195,26 +204,26 @@ class EnsambleAnimacion(Ensamble):
             return VGroup(vec_r_global, ecuacion_signo_igual(), vec_k_global, vec_d_global, ecuacion_signo_menos(),
                           vec_f_global)
 
-    def get_cargas_puntuales(self, longitud: float | int = 2.0) -> VGroup:
+    def get_cargas_puntuales(self, longitud: float | int = 2.0, unidades: str = r"\,kN") -> VGroup:
         cargas = VGroup()
         for carga_puntual in self._lista_cargas_puntuales:
             p_1 = np.array(carga_puntual[1][0])
             p_2 = np.array(carga_puntual[1][1])
             p = p_1 + carga_puntual[2] * (p_2 - p_1) / np.linalg.norm(p_2 - p_1)
             cp = elemento_carga(p, self.ejes, longitud, ang=90, saliente=False, h=0.25 / 2)
-            valor = MathTex(str(abs(carga_puntual[0])) + r"\,kN").next_to(cp, UP, buff=0.1).scale(0.5)
+            valor = MathTex(str(abs(carga_puntual[0])) + unidades).next_to(cp, UP, buff=0.1).scale(0.5)
             cargas.add(cp)
             cargas.add(valor)
         return cargas
 
-    def get_cargas_puntuales_nodales(self, longitud: float | int = 2.0) -> VGroup:
+    def get_cargas_puntuales_nodales(self, longitud: float | int = 2.0, unidades: str = r"\,kN") -> VGroup:
         cargas = VGroup()
         for n in self._lista_nodos:
             if n.fuerzas_externas.get('x', 0.0) != 0.0:
                 sentido = True if n.fuerzas_externas['x'] > 0.0 else False
                 p = n.punto
                 cp = elemento_carga(p, self.ejes, longitud, ang=0, saliente=sentido, h=0.0)
-                valor = MathTex(str(abs(n.fuerzas_externas['x'])) + r"\,kN").scale(0.5).next_to(cp, RIGHT, buff=0.1)
+                valor = MathTex(str(abs(n.fuerzas_externas['x'])) + unidades).scale(0.5).next_to(cp, RIGHT, buff=0.1)
                 cargas.add(cp)
                 cargas.add(valor)
             if n.fuerzas_externas.get('y', 0.0) != 0.0:
