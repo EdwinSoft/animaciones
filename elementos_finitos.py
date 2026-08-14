@@ -1317,31 +1317,33 @@ class EjemploResorteAnimacion(Scene):
         #### Cargas
         n_4.agregar_fuerza_externa(25000, 'x')
         ## Se guarda los objetos antes de la solución en mnspy
-        matriz_global_base = mg.sistema_ecuaciones_matriz_rigidez_global(reducida=False)
+        matriz_global_base = mg.sistema_ecuaciones_matriz_rigidez_global_2(reducida=False)
         matriz_global = matriz_global_base.copy().scale(0.5).arrange(RIGHT)
-        matriz_global_reducida_inicial = mg.sistema_ecuaciones_matriz_rigidez_global(reducida=True)
+        matriz_global_reducida_inicial = mg.sistema_ecuaciones_matriz_rigidez_global_2(reducida=True)
         matriz_global_reducida = matriz_global_reducida_inicial.copy().scale(0.5).arrange(RIGHT)
-        matriz_global_reducida_final = VGroup(matriz_global_reducida_inicial[5].copy(), ecuacion_signo_igual(),
-                                              matriz_global_reducida_inicial[2].copy(),
-                                              matriz_global_reducida_inicial[3].copy()).scale(0.5).arrange(RIGHT)
-        matriz = matriz_global_reducida_inicial[2].copy()
+        # matriz_global_reducida_final = VGroup(matriz_global_reducida_inicial[5].copy(), ecuacion_signo_igual(),
+        #                                       matriz_global_reducida_inicial[2].copy(),
+        #                                       matriz_global_reducida_inicial[3].copy()).scale(0.5).arrange(RIGHT)
+
+        matriz_global_reducida_final = matriz_global_reducida_inicial[2:].copy().scale(0.5).arrange(RIGHT)
+        matriz = matriz_global_reducida_inicial[4].copy()
         vec_k_reduc_inverso = ecuacion_array_a_matriz(np.linalg.inv(np.array(mg._union._k.obtener_matriz(True))),
                                                       h_buff=2.8)
 
         sol = np.linalg.inv(np.array(mg._union._k.obtener_matriz(True))) @ np.array(mg._union._k.obtener_fuerzas(True))
         solucion_reducida = ecuacion_array_a_matriz(sol, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
         superindice = MathTex("-1").next_to(matriz, RIGHT, aligned_edge=UP, buff=0.1)
-        matriz_global_reducida_final_2 = VGroup(VGroup(matriz_global_reducida_inicial[2].copy(), superindice),
-                                                matriz_global_reducida_inicial[5].copy(),
-                                                ecuacion_signo_igual(), matriz_global_reducida_inicial[3].copy()).scale(
+        matriz_global_reducida_final_2 = VGroup(VGroup(matriz_global_reducida_inicial[4].copy(), superindice),
+                                                matriz_global_reducida_inicial[2].copy(),
+                                                ecuacion_signo_igual(), matriz_global_reducida_inicial[5].copy()).scale(
             0.5).arrange(RIGHT)
         matriz_global_reducida_final_3 = VGroup(vec_k_reduc_inverso,
-                                                matriz_global_reducida_inicial[5].copy(),
+                                                matriz_global_reducida_inicial[2].copy(),
                                                 ecuacion_signo_igual(),
-                                                matriz_global_reducida_inicial[3].copy()).scale(
+                                                matriz_global_reducida_inicial[5].copy()).scale(
             0.5).arrange(RIGHT)
         matriz_global_reducida_final_4 = VGroup(solucion_reducida.copy(), ecuacion_signo_igual(),
-                                                matriz_global_reducida_inicial[3].copy()).scale(
+                                                matriz_global_reducida_inicial[5].copy()).scale(
             0.5).arrange(RIGHT)
 
         sol_1 = VGroup(MathTex(r'{u_3}').set_color(BLUE), ecuacion_signo_igual(),
@@ -1366,27 +1368,39 @@ class EjemploResorteAnimacion(Scene):
                                                                                                        reducida=False)
         ## Se soluciona por mnspy
         mg.solucionar_por_gauss_y_calcular_reacciones()
+        # vec_f_global = mg.sistema_ecuaciones_matriz_rigidez_global_2(reducida=False).arrange(RIGHT).scale(0.5)
+        # self.add(vec_f_global)
+        # return
+        # self.add(mg.ecuacion_vector_fuerzas_externas_nodales(True))
+        # return
         sol_final = np.array(mg._union._k.obtener_matriz(False)) @ np.array(mg._union._k.obtener_desplazamientos(False))
         sol_final_resta = sol_final - mg._union._k.obtener_fuerzas(False)
         solucion = ecuacion_array_a_matriz(sol_final, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
 
-        matriz_global_final_base = mg.sistema_ecuaciones_matriz_rigidez_global(reducida=False)
+        matriz_global_final_base = mg.sistema_ecuaciones_matriz_rigidez_global_2(reducida=False)
         matriz_global_final = matriz_global_final_base.copy().scale(0.35).arrange(RIGHT)
         matriz_global_final_2 = matriz_global_final_base.copy()
         matriz_global_final_2[0] = matriz_global_base.copy()[0]
         matriz_global_final_2.scale(0.35).arrange(RIGHT)
         matriz_global_final_3 = matriz_global_final_base.copy()
         matriz_global_final_3[0] = matriz_global_base.copy()[0]
-        matriz_global_final_3.submobjects.pop(2)
-        matriz_global_final_3[2] = solucion
+        matriz_global_final_3.submobjects.pop(4)
+        matriz_global_final_3[4] = solucion
 
+        # matriz_global_final_4 = VGroup(matriz_global_final_3[0].copy(), matriz_global_final_3[3].copy(),
+        #                                matriz_global_final_3[4].copy(), matriz_global_final_3[1].copy(),
+        #                                matriz_global_final_3[2].copy())
         matriz_global_final_4 = matriz_global_final_3.copy()
-        matriz_global_final_3.scale(0.35).arrange(RIGHT)
-        matriz_global_final_4.submobjects.pop(2)
-        matriz_global_final_4.submobjects.pop(2)
-        matriz_global_final_4[2] = ecuacion_array_a_matriz(sol_final_resta, formato_num='{x:.8f}', left_bracket=r"\{",
-                                                           right_bracket=r"\}")
+        matriz_global_final_4[1], matriz_global_final_4[2], matriz_global_final_4[3], matriz_global_final_4[4] = \
+        matriz_global_final_4[3], matriz_global_final_4[4], ecuacion_signo_menos(), matriz_global_final_4[2]
+        matriz_global_final_5 = matriz_global_final_4.copy()
         matriz_global_final_4.scale(0.35).arrange(RIGHT)
+        matriz_global_final_3.scale(0.35).arrange(RIGHT)
+        matriz_global_final_5.submobjects.pop(3)
+        matriz_global_final_5.submobjects.pop(3)
+        matriz_global_final_5[2] = ecuacion_array_a_matriz(sol_final_resta, formato_num='{x:.8f}', left_bracket=r"\{",
+                                                           right_bracket=r"\}")
+        matriz_global_final_5.scale(0.35).arrange(RIGHT)
 
         # ############
         cargas_puntuales = mg.get_cargas_puntuales_nodales(longitud=1.0, unidades=r"\,N").set_color(RED_D)
@@ -1459,19 +1473,15 @@ class EjemploResorteAnimacion(Scene):
         mr_elemento_1_2_1[3] = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_1, reducida=False).scale(0.5)
         mr_elemento_1_2_1.arrange(RIGHT, buff=0.2).to_edge(DOWN)
         mr_elemento_1_2_2 = mr_elemento_1_2_1.copy()
+        mr_elemento_1_2_2.submobjects.pop(3)
         sol_el_1_1 = np.array(e_1._k.obtener_matriz(False)) @ np.array(e_1._k.obtener_desplazamientos(False))
         mr_elemento_1_2_2[2] = ecuacion_array_a_matriz(sol_el_1_1, formato_num='{x:.8f}', left_bracket=r"\{",
                                                        right_bracket=r"\}").scale(0.5)
         mr_elemento_1_2_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        mr_elemento_1_2_3 = mr_elemento_1_2_2.copy()
-        mr_elemento_1_2_3.submobjects.pop(2)
-        mr_elemento_1_2_3[2] = ecuacion_array_a_matriz(sol_el_1_1, formato_num='{x:.8f}', left_bracket=r"\{",
-                                                       right_bracket=r"\}").scale(0.5)
-        mr_elemento_1_2_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        mr_elemento_1_2_4 = mr_elemento_1_2_1.copy()
-        mr_elemento_1_2_4[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_resorte(e_1, mostrar_valores=True,
+        mr_elemento_1_2_3 = mr_elemento_1_2_1.copy()
+        mr_elemento_1_2_3[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_resorte(e_1, mostrar_valores=True,
                                                                                      formato='%.8g').scale(0.5)
-        mr_elemento_1_2_4.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_1_2_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
         f_internas_elemento_1 = mg.elemento_fuerza_interna_resorte(e_1, unidades='')
         #######################################################################################################
         ## Ecuaciones Elemento 2
@@ -1510,19 +1520,15 @@ class EjemploResorteAnimacion(Scene):
         mr_elemento_2_2_1[3] = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_2, reducida=False).scale(0.5)
         mr_elemento_2_2_1.arrange(RIGHT, buff=0.2).to_edge(DOWN)
         mr_elemento_2_2_2 = mr_elemento_2_2_1.copy()
+        mr_elemento_2_2_2.submobjects.pop(3)
         sol_el_2_1 = np.array(e_2._k.obtener_matriz(False)) @ np.array(e_2._k.obtener_desplazamientos(False))
         mr_elemento_2_2_2[2] = ecuacion_array_a_matriz(sol_el_2_1, formato_num='{x:.8f}', left_bracket=r"\{",
                                                        right_bracket=r"\}").scale(0.5)
         mr_elemento_2_2_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        mr_elemento_2_2_3 = mr_elemento_2_2_2.copy()
-        mr_elemento_2_2_3.submobjects.pop(2)
-        mr_elemento_2_2_3[2] = ecuacion_array_a_matriz(sol_el_2_1, formato_num='{x:.8f}', left_bracket=r"\{",
-                                                       right_bracket=r"\}").scale(0.5)
-        mr_elemento_2_2_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        mr_elemento_2_2_4 = mr_elemento_2_2_1.copy()
-        mr_elemento_2_2_4[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_resorte(e_2, mostrar_valores=True,
+        mr_elemento_2_2_3 = mr_elemento_2_2_1.copy()
+        mr_elemento_2_2_3[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_resorte(e_2, mostrar_valores=True,
                                                                                      formato='%.8g').scale(0.5)
-        mr_elemento_2_2_4.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_2_2_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
         f_internas_elemento_2 = mg.elemento_fuerza_interna_resorte(e_2, unidades='')
         #######################################################################################################
         ## Ecuaciones Elemento 3
@@ -1559,22 +1565,18 @@ class EjemploResorteAnimacion(Scene):
         mr_elemento_3_2_1[3] = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_3, reducida=False).scale(0.5)
         mr_elemento_3_2_1.arrange(RIGHT, buff=0.2).to_edge(DOWN)
         mr_elemento_3_2_2 = mr_elemento_3_2_1.copy()
+        mr_elemento_3_2_2.submobjects.pop(3)
         sol_el_3_1 = np.array(e_3._k.obtener_matriz(False)) @ np.array(e_3._k.obtener_desplazamientos(False))
         mr_elemento_3_2_2[2] = ecuacion_array_a_matriz(sol_el_3_1, formato_num='{x:.8f}', left_bracket=r"\{",
                                                        right_bracket=r"\}").scale(0.5)
         mr_elemento_3_2_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        mr_elemento_3_2_3 = mr_elemento_3_2_2.copy()
-        mr_elemento_3_2_3.submobjects.pop(2)
-        mr_elemento_3_2_3[2] = ecuacion_array_a_matriz(sol_el_3_1, formato_num='{x:.8f}', left_bracket=r"\{",
-                                                       right_bracket=r"\}").scale(0.5)
-        mr_elemento_3_2_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        mr_elemento_3_2_4 = mr_elemento_3_2_1.copy()
-        mr_elemento_3_2_4[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_resorte(e_3, mostrar_valores=True,
+        mr_elemento_3_2_3 = mr_elemento_3_2_1.copy()
+        mr_elemento_3_2_3[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_resorte(e_3, mostrar_valores=True,
                                                                                      formato='%.8g').scale(0.5)
-        mr_elemento_3_2_4.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_3_2_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
         f_internas_elemento_3 = mg.elemento_fuerza_interna_resorte(e_3, unidades='')
         f_internas_elemento_3[0][1].shift(LEFT)
-        f_internas_elemento_3[1][1].next_to(f_internas_elemento_3[0][1], UP, buff=0.0).shift(0.5*RIGHT)
+        f_internas_elemento_3[1][1].next_to(f_internas_elemento_3[0][1], UP, buff=0.0).shift(0.5 * RIGHT)
         # #######################################################################################################
         # ### Escena elemento 2
         # escena_elemento_2 = VGroup(elementos[1], nodos[1:3], soportes[1:3], label_elementos[1], label_nodos[1:3],
@@ -1909,6 +1911,7 @@ class EjemploResorteAnimacion(Scene):
             ReplacementTransform(VGroup(m_1[0].get_brackets()[1], m_2[0].get_brackets()[1], m_3[0].get_brackets()[1]),
                                  matriz_global[0].get_brackets()[1]),
             runtime=4)
+
         self.play(
             ReplacementTransform(m_1[0].get_entries()[0], matriz_global[0].get_entries()[0]),
             ReplacementTransform(VGroup(m_1[0].get_entries()[1], m_2[0].get_entries()[0]),
@@ -1917,626 +1920,303 @@ class EjemploResorteAnimacion(Scene):
                                  matriz_global[0].get_entries()[2]),
             ReplacementTransform(m_3[0].get_entries()[1], matriz_global[0].get_entries()[3]),
             runtime=4)
+        self.wait(2)
+        self.play(FadeIn(matriz_global[1:3]), runtime=4)
+        self.wait(2)
         self.play(
-            ReplacementTransform(VGroup(m_1[1], m_2[1], m_3[1]), matriz_global[1]),
+            ReplacementTransform(VGroup(m_1[1], m_2[1], m_3[1]), matriz_global[3]),
             runtime=4)
         self.play(
             ReplacementTransform(VGroup(m_1[2].get_brackets()[0], m_2[2].get_brackets()[0], m_3[2].get_brackets()[0]),
-                                 matriz_global[2].get_brackets()[0]),
+                                 matriz_global[4].get_brackets()[0]),
             ReplacementTransform(VGroup(m_1[2].get_brackets()[1], m_2[2].get_brackets()[1], m_3[2].get_brackets()[1]),
-                                 matriz_global[2].get_brackets()[1]),
-            m_1[3].animate.next_to(matriz_global[2], RIGHT, buff=0.5).align_to(m_1[3], UP),
-            m_2[3].animate.next_to(matriz_global[2], RIGHT, buff=0.5).align_to(m_2[3], UP),
-            m_3[3].animate.next_to(matriz_global[2], RIGHT, buff=0.5).align_to(m_3[3], UP),
+                                 matriz_global[4].get_brackets()[1]),
+            m_1[3].animate.next_to(matriz_global[4], RIGHT, buff=0.5).align_to(m_1[3], UP),
+            m_2[3].animate.next_to(matriz_global[4], RIGHT, buff=0.5).align_to(m_2[3], UP),
+            m_3[3].animate.next_to(matriz_global[4], RIGHT, buff=0.5).align_to(m_3[3], UP),
             runtime=4)
         self.play(
-            ReplacementTransform(m_1[2].get_entries()[0:2], matriz_global[2].get_entries()[0:2]),
-            ReplacementTransform(m_1[2].get_entries()[2], matriz_global[2].get_entries()[4]),
-            ReplacementTransform(m_2[2].get_entries()[1], matriz_global[2].get_entries()[6]),
-            ReplacementTransform(m_2[2].get_entries()[2], matriz_global[2].get_entries()[9]),
-            ReplacementTransform(m_3[2].get_entries()[1], matriz_global[2].get_entries()[11]),
-            ReplacementTransform(m_3[2].get_entries()[2:], matriz_global[2].get_entries()[14:]),
+            ReplacementTransform(m_1[2].get_entries()[0:2], matriz_global[4].get_entries()[0:2]),
+            ReplacementTransform(m_1[2].get_entries()[2], matriz_global[4].get_entries()[4]),
+            ReplacementTransform(m_2[2].get_entries()[1], matriz_global[4].get_entries()[6]),
+            ReplacementTransform(m_2[2].get_entries()[2], matriz_global[4].get_entries()[9]),
+            ReplacementTransform(m_3[2].get_entries()[1], matriz_global[4].get_entries()[11]),
+            ReplacementTransform(m_3[2].get_entries()[2:], matriz_global[4].get_entries()[14:]),
             ReplacementTransform(
                 VGroup(m_1[2].get_entries()[3], m_2[2].get_entries()[0]),
-                matriz_global[2].get_entries()[5]),
+                matriz_global[4].get_entries()[5]),
             ReplacementTransform(
                 VGroup(m_2[2].get_entries()[3], m_3[2].get_entries()[0]),
-                matriz_global[2].get_entries()[10]),
+                matriz_global[4].get_entries()[10]),
             runtime=4)
         self.play(
-            FadeIn(matriz_global[2].get_entries()[2:4]),
-            FadeIn(matriz_global[2].get_entries()[7:9]),
-            FadeIn(matriz_global[2].get_entries()[12:14]),
+            FadeIn(matriz_global[4].get_entries()[2:4]),
+            FadeIn(matriz_global[4].get_entries()[7:9]),
+            FadeIn(matriz_global[4].get_entries()[12:14]),
             runtime=4)
         self.play(
             ReplacementTransform(VGroup(m_1[3].get_brackets()[0], m_2[3].get_brackets()[0], m_3[3].get_brackets()[0]),
-                                 matriz_global[3].get_brackets()[0]),
+                                 matriz_global[5].get_brackets()[0]),
             ReplacementTransform(VGroup(m_1[3].get_brackets()[1], m_2[3].get_brackets()[1], m_3[3].get_brackets()[1]),
-                                 matriz_global[3].get_brackets()[1]),
-            ReplacementTransform(m_1[3].get_entries()[0], matriz_global[3].get_entries()[0]),
+                                 matriz_global[5].get_brackets()[1]),
+            ReplacementTransform(m_1[3].get_entries()[0], matriz_global[5].get_entries()[0]),
             ReplacementTransform(VGroup(m_1[3].get_entries()[1], m_2[3].get_entries()[0]),
-                                 matriz_global[3].get_entries()[1]),
+                                 matriz_global[5].get_entries()[1]),
             ReplacementTransform(VGroup(m_2[3].get_entries()[1], m_3[3].get_entries()[0]),
-                                 matriz_global[3].get_entries()[2]),
-            ReplacementTransform(m_3[3].get_entries()[1], matriz_global[3].get_entries()[3]),
+                                 matriz_global[5].get_entries()[2]),
+            ReplacementTransform(m_3[3].get_entries()[1], matriz_global[5].get_entries()[3]),
             runtime=4)
-        # self.play(
-        #     ReplacementTransform(VGroup(m_1[6].get_brackets()[0], m_2[6].get_brackets()[0], m_3[6].get_brackets()[0]),
-        #                          matriz_global[6].get_brackets()[0]),
-        #     ReplacementTransform(VGroup(m_1[6].get_brackets()[1], m_2[6].get_brackets()[1], m_3[6].get_brackets()[1]),
-        #                          matriz_global[6].get_brackets()[1]),
-        #     ReplacementTransform(m_1[6].get_entries()[:2], matriz_global[6].get_entries()[:2]),
-        #     ReplacementTransform(VGroup(m_1[6].get_entries()[2:], m_2[6].get_entries()[:2]),
-        #                          matriz_global[6].get_entries()[2:4]),
-        #     ReplacementTransform(VGroup(m_2[6].get_entries()[2:], m_3[6].get_entries()[:2]),
-        #                          matriz_global[6].get_entries()[4:6]),
-        #     ReplacementTransform(m_3[6].get_entries()[2:], matriz_global[6].get_entries()[6:]),
-        #     ReplacementTransform(VGroup(m_1[5], m_2[5], m_3[5]), matriz_global[5]),
-        #     runtime=4)
-        # self.wait(5)
-        # self.play(FadeOut(matriz_global))
-        # tit = titulo("Matriz de rigidez goblal reducida", size_titulo=36)
-        # self.play(Write(tit[0]))
-        # self.play(Create(tit[1]))
-        # self.wait(2)
-        # self.play(FadeOut(tit))
-        # self.play(FadeIn(matriz_global))
-        # items_reducida = [3, 5]
-        # elementos_reducida = list()
-        # elementos_no_reducida = list()
-        # for f in items_reducida:
-        #     for c, elem in enumerate(matriz_global[3].get_rows()[f]):
-        #         if c in items_reducida:
-        #             elementos_reducida.append(elem)
-        #         else:
-        #             elementos_no_reducida.append(elem)
-        # self.play(ReplacementTransform(matriz_global[0].get_brackets(), matriz_global_reducida[0].get_brackets()),
-        #           ReplacementTransform(matriz_global[3].get_brackets(), matriz_global_reducida[3].get_brackets()),
-        #           ReplacementTransform(matriz_global[4].get_brackets(), matriz_global_reducida[4].get_brackets()),
-        #           ReplacementTransform(matriz_global[6].get_brackets(), matriz_global_reducida[6].get_brackets()),
-        #           FadeOut(matriz_global[0].get_rows()[:3], matriz_global[3].get_rows()[:3],
-        #                   matriz_global[4].get_rows()[:3], matriz_global[6].get_rows()[:3]),
-        #           FadeOut(matriz_global[0].get_rows()[4], matriz_global[3].get_rows()[4],
-        #                   matriz_global[4].get_rows()[4],
-        #                   matriz_global[6].get_rows()[4]),
-        #           FadeOut(matriz_global[0].get_rows()[6:], matriz_global[3].get_rows()[6:],
-        #                   matriz_global[4].get_rows()[6:],
-        #                   matriz_global[6].get_rows()[6:]),
-        #           *[FadeOut(elem) for elem in elementos_no_reducida],
-        #           ReplacementTransform(matriz_global[1], matriz_global_reducida[1]),
-        #           ReplacementTransform(matriz_global[2], matriz_global_reducida[2]),
-        #           ReplacementTransform(matriz_global[5], matriz_global_reducida[5]),
-        #           ReplacementTransform(matriz_global[0].get_entries()[3], matriz_global_reducida[0].get_entries()[0]),
-        #           ReplacementTransform(matriz_global[0].get_entries()[5], matriz_global_reducida[0].get_entries()[1]),
-        #           ReplacementTransform(elementos_reducida[0], matriz_global_reducida[3].get_entries()[0]),
-        #           ReplacementTransform(elementos_reducida[1], matriz_global_reducida[3].get_entries()[1]),
-        #           ReplacementTransform(elementos_reducida[2], matriz_global_reducida[3].get_entries()[2]),
-        #           ReplacementTransform(elementos_reducida[3], matriz_global_reducida[3].get_entries()[3]),
-        #           ReplacementTransform(matriz_global[4].get_entries()[3], matriz_global_reducida[4].get_entries()[0]),
-        #           ReplacementTransform(matriz_global[4].get_entries()[5], matriz_global_reducida[4].get_entries()[1]),
-        #           ReplacementTransform(matriz_global[6].get_entries()[3], matriz_global_reducida[6].get_entries()[0]),
-        #           ReplacementTransform(matriz_global[6].get_entries()[5], matriz_global_reducida[6].get_entries()[1]),
-        #           run_time=4)
-        # self.wait(2)
-        # self.play(FadeOut(matriz_global_reducida))
-        # tit = titulo("Resolución de los desplazamientos desconocidos", size_titulo=36)
-        # self.play(Write(tit[0]))
-        # self.play(Create(tit[1]))
-        # self.wait(2)
-        # self.play(FadeOut(tit))
-        # self.play(FadeIn(matriz_global_reducida))
-        #
-        # self.play(ReplacementTransform(matriz_global_reducida[6], matriz_global_reducida_final[0]),
-        #           ReplacementTransform(matriz_global_reducida[1], matriz_global_reducida_final[1]),
-        #           ReplacementTransform(matriz_global_reducida[2], matriz_global_reducida_final[2]),
-        #           ReplacementTransform(matriz_global_reducida[3], matriz_global_reducida_final[3]),
-        #           ReplacementTransform(matriz_global_reducida[4], matriz_global_reducida_final[4]),
-        #           FadeOut(matriz_global_reducida[0], matriz_global_reducida[5]), run_time=4)
-        # self.wait(2)
-        # self.play(ReplacementTransform(matriz_global_reducida_final[3], matriz_global_reducida_final_2[1][0]),
-        #           ReplacementTransform(matriz_global_reducida_final[0], matriz_global_reducida_final_2[2]),
-        #           ReplacementTransform(matriz_global_reducida_final[2], matriz_global_reducida_final_2[0]),
-        #           ReplacementTransform(matriz_global_reducida_final[1], matriz_global_reducida_final_2[3]),
-        #           ReplacementTransform(matriz_global_reducida_final[4], matriz_global_reducida_final_2[4]),
-        #           FadeIn(matriz_global_reducida_final_2[1][1]), run_time=4)
-        # self.wait(2)
-        # self.play(ReplacementTransform(matriz_global_reducida_final_2[1][0].get_brackets(),
-        #                                matriz_global_reducida_final_3[1].get_brackets()),
-        #           ReplacementTransform(matriz_global_reducida_final_2[1][0].get_entries(),
-        #                                matriz_global_reducida_final_3[1].get_entries()),
-        #           ReplacementTransform(matriz_global_reducida_final_2[0], matriz_global_reducida_final_3[0]),
-        #           ReplacementTransform(matriz_global_reducida_final_2[2], matriz_global_reducida_final_3[2]),
-        #           ReplacementTransform(matriz_global_reducida_final_2[3], matriz_global_reducida_final_3[3]),
-        #           ReplacementTransform(matriz_global_reducida_final_2[4], matriz_global_reducida_final_3[4]),
-        #
-        #           FadeOut(matriz_global_reducida_final_2[1][1]), run_time=4)
-        # self.wait(2)
-        # self.play(ReplacementTransform(
-        #     VGroup(matriz_global_reducida_final_3[1].get_entries(), matriz_global_reducida_final_3[2].get_entries()),
-        #     matriz_global_reducida_final_4[1].get_entries()),
-        #     ReplacementTransform(matriz_global_reducida_final_3[1].get_brackets()[0],
-        #                          matriz_global_reducida_final_4[1].get_brackets()[0]),
-        #     ReplacementTransform(matriz_global_reducida_final_3[2].get_brackets()[1],
-        #                          matriz_global_reducida_final_4[1].get_brackets()[1]),
-        #     FadeOut(matriz_global_reducida_final_3[1].get_brackets()[1]),
-        #     FadeOut(matriz_global_reducida_final_3[2].get_brackets()[0]),
-        #
-        #     ReplacementTransform(matriz_global_reducida_final_3[0], matriz_global_reducida_final_4[0]),
-        #     ReplacementTransform(matriz_global_reducida_final_3[3], matriz_global_reducida_final_4[2]),
-        #     ReplacementTransform(matriz_global_reducida_final_3[4], matriz_global_reducida_final_4[3]),
-        #
-        #     # FadeOut(matriz_global_reducida_final_3[2]),
-        #     run_time=4)
-        # self.wait(2)
-        # self.play(ReplacementTransform(matriz_global_reducida_final_4[1].get_entries()[0], sol_1[2]),
-        #           ReplacementTransform(matriz_global_reducida_final_4[1].get_entries()[1], sol_2[2]),
-        #           ReplacementTransform(matriz_global_reducida_final_4[2], VGroup(sol_1[1], sol_2[1])),
-        #           ReplacementTransform(matriz_global_reducida_final_4[3].get_entries()[0], sol_1[0]),
-        #           ReplacementTransform(matriz_global_reducida_final_4[3].get_entries()[1], sol_2[0]),
-        #           FadeOut(matriz_global_reducida_final_4[1].get_brackets()),
-        #           FadeOut(matriz_global_reducida_final_4[3].get_brackets()),
-        #           FadeOut(matriz_global_reducida_final_4[0]),
-        #           run_time=4)
-        # self.wait(2)
-        # self.play(FadeOut(sol_1), FadeOut(sol_2))
-        # tit = titulo("Resolución de las reacciones desconocidas", size_titulo=36)
-        # self.play(Write(tit[0]))
-        # self.play(Create(tit[1]))
-        # self.wait(2)
-        # self.play(FadeOut(tit))
-        # self.play(FadeIn(matriz_global_final_2))
-        # self.wait(2)
-        # self.play(ReplacementTransform(VGroup(matriz_global_final_2[0:2]), VGroup(matriz_global_final_3[0:2])),
-        #           ReplacementTransform(
-        #               VGroup(matriz_global_final_2[3].get_entries(), matriz_global_final_2[4].get_entries()),
-        #               VGroup(matriz_global_final_3[2].get_entries())),
-        #           # ReplacementTransform(VGroup(matriz_global_final_2[2:5]), VGroup(matriz_global_final_3[2])),
-        #           ReplacementTransform(matriz_global_final_2[3].get_brackets()[0],
-        #                                matriz_global_final_3[2].get_brackets()[0]),
-        #           ReplacementTransform(matriz_global_final_2[4].get_brackets()[1],
-        #                                matriz_global_final_3[2].get_brackets()[1]),
-        #           FadeOut(matriz_global_final_2[3].get_brackets()[1]),
-        #           FadeOut(matriz_global_final_2[4].get_brackets()[0]),
-        #           FadeOut(matriz_global_final_2[2]),
-        #           ReplacementTransform(VGroup(matriz_global_final_2[5:7]), VGroup(matriz_global_final_3[3:5])),
-        #           # FadeOut(matriz_global_final_2),
-        #           run_time=4)
-        # self.wait(2)
-        # self.play(ReplacementTransform(VGroup(matriz_global_final_3[0:2]), VGroup(matriz_global_final_4[0:2])),
-        #           ReplacementTransform(matriz_global_final_3[2].get_brackets()[0],
-        #                                matriz_global_final_4[2].get_brackets()[0]),
-        #           ReplacementTransform(matriz_global_final_3[4].get_brackets()[1],
-        #                                matriz_global_final_4[2].get_brackets()[1]),
-        #
-        #           ReplacementTransform(
-        #               VGroup(matriz_global_final_3[2].get_entries(), matriz_global_final_3[4].get_entries()),
-        #               VGroup(matriz_global_final_4[2].get_entries())),
-        #           FadeOut(matriz_global_final_3[3]),
-        #           FadeOut(matriz_global_final_3[2].get_brackets()[1]),
-        #           FadeOut(matriz_global_final_3[4].get_brackets()[0]),
-        #           run_time=4)
-        # self.wait(2)
-        #
-        # self.play(FadeOut(matriz_global_final_4))
-        # tit = titulo("Matriz global solucionada", size_titulo=36)
-        # self.play(Write(tit[0]))
-        # self.play(Create(tit[1]))
-        # self.wait(2)
-        # self.play(FadeOut(tit))
-        # self.play(FadeIn(matriz_global_final))
-        # self.wait(5)
-        # self.play(FadeOut(matriz_global_final))
-        # tit = titulo("Fuerzas internas del elemento 1", size_titulo=36)
-        # self.play(Write(tit[0]))
-        # self.play(Create(tit[1]))
-        # self.wait(2)
-        # self.play(FadeOut(tit))
-        #
-        # self.play(FadeIn(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]), FadeIn(mr_elemento_1_4),
-        #           FadeIn(f_internas_elemento_1), FadeIn(cargas_e_1))
-        # self.play(
-        #     ReplacementTransform(mr_elemento_1_4[0], mr_elemento_1_4_1[0]),
-        #     ReplacementTransform(mr_elemento_1_4[1], mr_elemento_1_4_1[1]),
-        #     ReplacementTransform(mr_elemento_1_4[2], mr_elemento_1_4_1[2]),
-        #     ReplacementTransform(mr_elemento_1_4[3], mr_elemento_1_4_1[3]),
-        #     ReplacementTransform(mr_elemento_1_4[4], mr_elemento_1_4_1[4]),
-        #     ReplacementTransform(mr_elemento_1_4[5], mr_elemento_1_4_1[5]),
-        #     ReplacementTransform(mr_elemento_1_4[6], mr_elemento_1_4_1[6]),
-        #     run_time=4)
-        # self.wait(2)
-        # self.play(ReplacementTransform(VGroup(mr_elemento_1_4_1[3].get_entries(), mr_elemento_1_4_1[4].get_entries()),
-        #                                mr_elemento_1_4_2[2].get_entries()),
-        #           ReplacementTransform(mr_elemento_1_4_1[3].get_brackets()[0],
-        #                                mr_elemento_1_4_2[2].get_brackets()[0]),
-        #           ReplacementTransform(mr_elemento_1_4_1[4].get_brackets()[1],
-        #                                mr_elemento_1_4_2[2].get_brackets()[1]),
-        #           ReplacementTransform(mr_elemento_1_4_1[0], mr_elemento_1_4_2[0]),
-        #           ReplacementTransform(mr_elemento_1_4_1[1], mr_elemento_1_4_2[1]),
-        #           ReplacementTransform(mr_elemento_1_4_1[5], mr_elemento_1_4_2[3]),
-        #           ReplacementTransform(mr_elemento_1_4_1[6], mr_elemento_1_4_2[4]),
-        #           FadeOut(mr_elemento_1_4_1[2]),
-        #           FadeOut(mr_elemento_1_4_1[3].get_brackets()[1]),
-        #           FadeOut(mr_elemento_1_4_1[4].get_brackets()[0]),
-        #           run_time=4)
-        # self.wait(2)
-        # self.play(ReplacementTransform(VGroup(mr_elemento_1_4_2[2].get_entries(), mr_elemento_1_4_2[4].get_entries()),
-        #                                mr_elemento_1_4_3[2].get_entries()),
-        #           ReplacementTransform(mr_elemento_1_4_2[2].get_brackets()[0],
-        #                                mr_elemento_1_4_3[2].get_brackets()[0]),
-        #           ReplacementTransform(mr_elemento_1_4_2[4].get_brackets()[1],
-        #                                mr_elemento_1_4_3[2].get_brackets()[1]),
-        #           ReplacementTransform(mr_elemento_1_4_2[0], mr_elemento_1_4_3[0]),
-        #           ReplacementTransform(mr_elemento_1_4_2[1], mr_elemento_1_4_3[1]),
-        #           FadeOut(mr_elemento_1_4_2[3]),
-        #           FadeOut(mr_elemento_1_4_2[2].get_brackets()[1]),
-        #           FadeOut(mr_elemento_1_4_2[4].get_brackets()[0]),
-        #           run_time=4)
-        # self.wait(2)
-        # self.play(mr_elemento_1_4_3.animate.to_corner(DOWN + LEFT), run_time=4)
-        # self.wait(2)
-        # self.play(Write(ecuacion_v_e_1))
-        # self.wait(2)
-        # self.play(Write(ecuacion_m_e_1))
-        # self.wait(2)
-        # self.play(FadeOut(mr_elemento_1_4_3), FadeOut(ec_e_1),
-        #           FadeOut(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]),
-        #           FadeOut(f_internas_elemento_1), FadeOut(cargas_e_1))
-        # self.wait(2)
-        # mr_elemento_1_4_4.move_to(ORIGIN)
-        # self.play(FadeIn(mr_elemento_1_4_4))
-        # self.wait(2)
-        # self.play(FadeOut(mr_elemento_1_4_4))
-        # ####################################
-        # tit = titulo("Fuerzas internas del elemento 2", size_titulo=36)
-        # self.play(Write(tit[0]))
-        # self.play(Create(tit[1]))
-        # self.wait(2)
-        # self.play(FadeOut(tit))
-        # self.play(FadeIn(elementos[1], nodos[1:3], label_elementos[1], label_nodos[1:3]), FadeIn(mr_elemento_2_4),
-        #           FadeIn(cargas_e_2), FadeIn(f_internas_elemento_2))
-        # self.play(
-        #     ReplacementTransform(mr_elemento_2_4[0], mr_elemento_2_4_1[0]),
-        #     ReplacementTransform(mr_elemento_2_4[1], mr_elemento_2_4_1[1]),
-        #     ReplacementTransform(mr_elemento_2_4[2], mr_elemento_2_4_1[2]),
-        #     ReplacementTransform(mr_elemento_2_4[3], mr_elemento_2_4_1[3]),
-        #     ReplacementTransform(mr_elemento_2_4[4], mr_elemento_2_4_1[4]),
-        #     ReplacementTransform(mr_elemento_2_4[5], mr_elemento_2_4_1[5]),
-        #     ReplacementTransform(mr_elemento_2_4[6], mr_elemento_2_4_1[6]),
-        #     run_time=4)
-        # self.wait(2)
-        # self.play(ReplacementTransform(VGroup(mr_elemento_2_4_1[3].get_entries(), mr_elemento_2_4_1[4].get_entries()),
-        #                                mr_elemento_2_4_2[2].get_entries()),
-        #           ReplacementTransform(mr_elemento_2_4_1[3].get_brackets()[0],
-        #                                mr_elemento_2_4_2[2].get_brackets()[0]),
-        #           ReplacementTransform(mr_elemento_2_4_1[4].get_brackets()[1],
-        #                                mr_elemento_2_4_2[2].get_brackets()[1]),
-        #           ReplacementTransform(mr_elemento_2_4_1[0], mr_elemento_2_4_2[0]),
-        #           ReplacementTransform(mr_elemento_2_4_1[1], mr_elemento_2_4_2[1]),
-        #           ReplacementTransform(mr_elemento_2_4_1[5], mr_elemento_2_4_2[3]),
-        #           ReplacementTransform(mr_elemento_2_4_1[6], mr_elemento_2_4_2[4]),
-        #           FadeOut(mr_elemento_2_4_1[2]),
-        #           FadeOut(mr_elemento_2_4_1[3].get_brackets()[1]),
-        #           FadeOut(mr_elemento_2_4_1[4].get_brackets()[0]),
-        #           run_time=4)
-        # self.wait(2)
-        # self.play(ReplacementTransform(VGroup(mr_elemento_2_4_2[2].get_entries(), mr_elemento_2_4_2[4].get_entries()),
-        #                                mr_elemento_2_4_3[2].get_entries()),
-        #           ReplacementTransform(mr_elemento_2_4_2[2].get_brackets()[0],
-        #                                mr_elemento_2_4_3[2].get_brackets()[0]),
-        #           ReplacementTransform(mr_elemento_2_4_2[4].get_brackets()[1],
-        #                                mr_elemento_2_4_3[2].get_brackets()[1]),
-        #           ReplacementTransform(mr_elemento_2_4_2[0], mr_elemento_2_4_3[0]),
-        #           ReplacementTransform(mr_elemento_2_4_2[1], mr_elemento_2_4_3[1]),
-        #           FadeOut(mr_elemento_2_4_2[3]),
-        #           FadeOut(mr_elemento_2_4_2[2].get_brackets()[1]),
-        #           FadeOut(mr_elemento_2_4_2[4].get_brackets()[0]),
-        #           run_time=4)
-        # self.wait(2)
-        # self.play(mr_elemento_2_4_3.animate.to_corner(DOWN + LEFT), run_time=4)
-        # self.wait(2)
-        # self.play(Write(ecuacion_v_e_2))
-        # self.wait(2)
-        # self.play(Write(ecuacion_m_e_2))
-        # self.wait(2)
-        # self.play(FadeOut(mr_elemento_2_4_3), FadeOut(ec_e_2),
-        #           FadeOut(elementos[1], nodos[1:3], label_elementos[1], label_nodos[1:3]),
-        #           FadeOut(f_internas_elemento_2), FadeOut(cargas_e_2))
-        # self.wait(2)
-        # mr_elemento_2_4_4.move_to(ORIGIN)
-        # self.play(FadeIn(mr_elemento_2_4_4))
-        # self.wait(2)
-        # self.play(FadeOut(mr_elemento_2_4_4))
-        # ####################################
-        # tit = titulo("Fuerzas internas del elemento 3", size_titulo=36)
-        # self.play(Write(tit[0]))
-        # self.play(Create(tit[1]))
-        # self.wait(2)
-        # self.play(FadeOut(tit))
-        # self.play(FadeIn(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]), FadeIn(mr_elemento_3_4),
-        #           FadeIn(f_internas_elemento_3))
-        # self.play(
-        #     ReplacementTransform(mr_elemento_3_4[0], mr_elemento_3_4_1[0]),
-        #     ReplacementTransform(mr_elemento_3_4[1], mr_elemento_3_4_1[1]),
-        #     ReplacementTransform(mr_elemento_3_4[2], mr_elemento_3_4_1[2]),
-        #     ReplacementTransform(mr_elemento_3_4[3], mr_elemento_3_4_1[3]),
-        #     ReplacementTransform(mr_elemento_3_4[4], mr_elemento_3_4_1[4]),
-        #     ReplacementTransform(mr_elemento_3_4[5], mr_elemento_3_4_1[5]),
-        #     ReplacementTransform(mr_elemento_3_4[6], mr_elemento_3_4_1[6]),
-        #     run_time=4)
-        # self.wait(2)
-        # self.play(ReplacementTransform(VGroup(mr_elemento_3_4_1[3].get_entries(), mr_elemento_3_4_1[4].get_entries()),
-        #                                mr_elemento_3_4_2[2].get_entries()),
-        #           ReplacementTransform(mr_elemento_3_4_1[3].get_brackets()[0],
-        #                                mr_elemento_3_4_2[2].get_brackets()[0]),
-        #           ReplacementTransform(mr_elemento_3_4_1[4].get_brackets()[1],
-        #                                mr_elemento_3_4_2[2].get_brackets()[1]),
-        #           ReplacementTransform(mr_elemento_3_4_1[0], mr_elemento_3_4_2[0]),
-        #           ReplacementTransform(mr_elemento_3_4_1[1], mr_elemento_3_4_2[1]),
-        #           ReplacementTransform(mr_elemento_3_4_1[5], mr_elemento_3_4_2[3]),
-        #           ReplacementTransform(mr_elemento_3_4_1[6], mr_elemento_3_4_2[4]),
-        #           FadeOut(mr_elemento_3_4_1[2]),
-        #           FadeOut(mr_elemento_3_4_1[3].get_brackets()[1]),
-        #           FadeOut(mr_elemento_3_4_1[4].get_brackets()[0]),
-        #           run_time=4)
-        # self.wait(2)
-        # self.play(ReplacementTransform(VGroup(mr_elemento_3_4_2[2].get_entries(), mr_elemento_3_4_2[4].get_entries()),
-        #                                mr_elemento_3_4_3[2].get_entries()),
-        #           ReplacementTransform(mr_elemento_3_4_2[2].get_brackets()[0],
-        #                                mr_elemento_3_4_3[2].get_brackets()[0]),
-        #           ReplacementTransform(mr_elemento_3_4_2[4].get_brackets()[1],
-        #                                mr_elemento_3_4_3[2].get_brackets()[1]),
-        #           ReplacementTransform(mr_elemento_3_4_2[0], mr_elemento_3_4_3[0]),
-        #           ReplacementTransform(mr_elemento_3_4_2[1], mr_elemento_3_4_3[1]),
-        #           FadeOut(mr_elemento_3_4_2[3]),
-        #           FadeOut(mr_elemento_3_4_2[2].get_brackets()[1]),
-        #           FadeOut(mr_elemento_3_4_2[4].get_brackets()[0]),
-        #           run_time=4)
-        # self.wait(2)
-        # self.play(mr_elemento_3_4_3.animate.to_corner(DOWN + LEFT), run_time=4)
-        # self.wait(2)
-        # self.play(Write(ecuacion_v_e_3))
-        # self.wait(2)
-        # self.play(Write(ecuacion_m_e_3))
-        # self.wait(2)
-        # self.play(FadeOut(mr_elemento_3_4_3), FadeOut(ec_e_3),
-        #           FadeOut(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]),
-        #           FadeOut(f_internas_elemento_3))
-        # self.wait(2)
-        # mr_elemento_3_4_4.move_to(ORIGIN)
-        # self.play(FadeIn(mr_elemento_3_4_4))
-        # self.wait(2)
-        # self.play(FadeOut(mr_elemento_3_4_4))
-        # #######################################################################################################
-        # tit = titulo("Diagrama de cortantes", size_titulo=36)
-        # self.play(Write(tit[0]))
-        # self.play(Create(tit[1]))
-        # self.wait(2)
-        # self.play(FadeOut(tit))
-        # x = sp.Symbol('x')
-        # v_1 = e_1.ecuacion_de_cortante().rhs.args[0].args[0]
-        # v_2 = e_1.ecuacion_de_cortante().rhs.args[1].args[0]
-        # v_3 = e_2.ecuacion_de_cortante().rhs.args[0].args[0]
-        # v_4 = e_3.ecuacion_de_cortante().rhs.args[0].args[0]
-        # nuevos_argumentos = []
-        # for sub_piecewise, condicion_externa in mg.ecuacion_de_momento().rhs.args:
-        #     nuevos_argumentos.extend(sub_piecewise.args)
-        # m = sp.Piecewise(*nuevos_argumentos)
-        # m_1 = e_1.ecuacion_de_momento().rhs.args[0].args[0]
-        # m_2 = e_1.ecuacion_de_momento().rhs.args[1].args[0]
-        # m_3 = e_2.ecuacion_de_momento().rhs.args[0].args[0]
-        # m_4 = e_3.ecuacion_de_momento().rhs.args[0].args[0]
-        #
-        # f_v_1 = sp.lambdify(x, v_1, 'numpy')
-        # f_v_2 = sp.lambdify(x, v_2, 'numpy')
-        # f_v_3 = sp.lambdify(x, v_3, 'numpy')
-        # f_v_4 = sp.lambdify(x, v_4, 'numpy')
-        # f_m = sp.lambdify(x, m, 'numpy')
-        # f_m_1 = sp.lambdify(x, m_1, 'numpy')
-        # f_m_2 = sp.lambdify(x, m_2, 'numpy')
-        # f_m_3 = sp.lambdify(x, m_3, 'numpy')
-        # f_m_4 = sp.lambdify(x, m_4, 'numpy')
-        #
-        # # 3. Crear los Ejes
-        # ejes_v = Axes(
-        #     x_range=[0, 26, 5],
-        #     y_range=[-120, 125, 25],
-        #     axis_config={"include_numbers": True, "tip_shape": StealthTip, "font_size": 18, }
-        # )
-        # titulos_ejes_v = ejes_v.get_axis_labels(
-        #     x_label=MathTex("x (m)", font_size=20),
-        #     y_label=MathTex("Cortante (kN)", font_size=20)
-        # ).set_color(BLUE_A)
-        # # ejes_v.add_coordinates(
-        # #     x_label="x (m)",
-        # #     y_label="Cortante (kN)"
-        # # )
-        # titulo_v = Text("Diagrama de cortante", font_size=28)
-        # titulo_v.next_to(ejes_v, UP, buff=0.1)
-        # ejes_m = Axes(
-        #     x_range=[0, 26, 5],
-        #     y_range=[-180, 140, 25],
-        #     axis_config={"include_numbers": True, "tip_shape": StealthTip, "font_size": 18, }
-        # )
-        # titulos_ejes_m = ejes_v.get_axis_labels(
-        #     x_label=MathTex("x (m)", font_size=20),
-        #     y_label=MathTex(r"Momento (kN \cdot m)", font_size=20)
-        # ).set_color(BLUE_A)
-        # # ejes_m.add_coordinates(
-        # #     x_label="x (m)",
-        # #     y_label=r"Momento (kN \cdot m)"
-        # # )
-        # titulo_m = Text("Diagrama de momento", font_size=28)
-        # titulo_m.next_to(ejes_m, UP, buff=0.1)
-        # curva_v_1 = ejes_v.plot(f_v_1, x_range=[0, 6], color=BLUE_E)
-        # curva_v_2 = ejes_v.plot(f_v_2, x_range=[6, 10], color=BLUE_E)
-        # curva_v_3 = ejes_v.plot(f_v_3, x_range=[10, 20], color=BLUE_E)
-        # curva_v_4 = ejes_v.plot(f_v_4, x_range=[20, 25], color=BLUE_E)
-        # label_v_1_1 = MathTex(f'{f_v_1(0):.3g}', color=ORANGE).next_to(ejes_v.c2p(0, f_v_1(0), 0), UP, buff=0.0).shift(
-        #     RIGHT * 0.2).scale(0.35)
-        # label_v_1_2 = MathTex(f'{f_v_1(6):.3g}', color=ORANGE).next_to(ejes_v.c2p(6, f_v_1(6), 0), UP, buff=0.0).scale(
-        #     0.35)
-        # label_v_2_1 = MathTex(f'{f_v_2(6):.3g}', color=ORANGE).next_to(ejes_v.c2p(6, f_v_2(6), 0), DOWN,
-        #                                                                buff=0.0).scale(0.35)
-        # label_v_2_2 = MathTex(f'{f_v_2(10):.3g}', color=ORANGE).next_to(ejes_v.c2p(10, f_v_2(10), 0), DOWN,
-        #                                                                 buff=0.0).scale(0.35)
-        # label_v_3_1 = MathTex(f'{f_v_3(10):.3g}', color=ORANGE).next_to(ejes_v.c2p(10, f_v_3(10), 0), UP,
-        #                                                                 buff=0.0).scale(0.35)
-        # label_v_3_2 = MathTex(f'{f_v_3(20):.3g}', color=ORANGE).next_to(ejes_v.c2p(20, f_v_3(20), 0), DOWN,
-        #                                                                 buff=0.0).scale(0.35)
-        # label_v_4_1 = MathTex(f'{f_v_4(20):.3g}', color=ORANGE).next_to(ejes_v.c2p(20, f_v_4(20), 0), UP,
-        #                                                                 buff=0.0).scale(0.35)
-        # label_v_4_2 = MathTex(f'{f_v_4(25):.3g}', color=ORANGE).next_to(ejes_v.c2p(25, f_v_4(25), 0), UP,
-        #                                                                 buff=0.0).scale(0.35)
-        # curva_m = ejes_m.plot(f_m, x_range=[0, 25, 0.05], color=BLUE_E)
-        # # curva_m_1 = ejes_m.plot(f_m_1, x_range=[0, 6], color=BLUE_E)
-        # # curva_m_2 = ejes_m.plot(f_m_2, x_range=[6, 10], color=BLUE_E)
-        # # curva_m_3 = ejes_m.plot(f_m_3, x_range=[10, 20, 0.1], color=BLUE_E)
-        # # curva_m_4 = ejes_m.plot(f_m_4, x_range=[20, 25], color=BLUE_E)
-        # label_m_1_1 = MathTex(f'{f_m_1(0):.3g}', color=ORANGE).next_to(ejes_m.c2p(0, f_m_1(0), 0), DOWN,
-        #                                                                buff=0.0).shift(
-        #     RIGHT * 0.2).scale(0.35)
-        # label_m_1_2 = MathTex(f'{f_m_1(6):.3g}', color=ORANGE).next_to(ejes_m.c2p(6, f_m_1(6), 0), UP, buff=0.0).scale(
-        #     0.35)
-        # # label_m_2_1 = MathTex(f'{f_m_2(6):.3g}', color=ORANGE).next_to(ejes_m.c2p(6, f_m_2(6), 0), DOWN,
-        # #                                                                buff=0.0).scale(
-        # #     0.35)
-        # label_m_2_2 = MathTex(f'{f_m_2(10):.3g}', color=ORANGE).next_to(ejes_m.c2p(10, f_m_2(10), 0), DOWN,
-        #                                                                 buff=0.0).scale(0.35)
-        # label_m_3_1 = MathTex(f'{f_m_3(15.0956521739130):.3g}', color=ORANGE).next_to(
-        #     ejes_m.c2p(15.0956521739130, f_m_3(15.0956521739130), 0), UP,
-        #     buff=0.0).scale(0.35)
-        # label_m_3_2 = MathTex(f'{f_m_3(20):.3g}', color=ORANGE).next_to(ejes_m.c2p(20, f_m_3(20), 0), DOWN,
-        #                                                                 buff=0.0).scale(0.35)
-        # # label_m_4_1 = MathTex(f'{f_m_4(20):.3g}', color=ORANGE).next_to(ejes_m.c2p(20, f_m_4(20), 0), UP,
-        # #                                                                 buff=0.0).scale(0.35)
-        # label_m_4_2 = MathTex(f'{f_m_4(25):.3g}', color=ORANGE).next_to(ejes_m.c2p(25, f_m_4(25), 0), UP,
-        #                                                                 buff=0.0).scale(0.35)
-        # self.play(Create(ejes_v), Write(titulos_ejes_v), Write(titulo_v), run_time=4)
-        # t_tracker_v = ValueTracker(0)
-        #
-        # def update_area_v_1():
-        #     t = t_tracker_v.get_value()
-        #     if t <= 0:
-        #         return VGroup()
-        #     return ejes_v.get_area(curva_v_1, x_range=(0, min(t, 6)), color=BLUE, opacity=0.3)
-        #
-        # area_1_dinamica_v = always_redraw(update_area_v_1)
-        #
-        # def update_area_v_2():
-        #     t = t_tracker_v.get_value()
-        #     if t <= 6:
-        #         return VGroup()
-        #     return ejes_v.get_area(curva_v_2, x_range=(6, min(t, 10)), color=BLUE, opacity=0.3)
-        #
-        # area_2_dinamica_v = always_redraw(update_area_v_2)
-        #
-        # def update_area_v_3():
-        #     t = t_tracker_v.get_value()
-        #     if t <= 10:
-        #         return VGroup()
-        #     return ejes_v.get_area(curva_v_3, x_range=(10, min(t, 20)), color=BLUE, opacity=0.3)
-        #
-        # area_3_dinamica_v = always_redraw(update_area_v_3)
-        #
-        # def update_area_v_4():
-        #     t = t_tracker_v.get_value()
-        #     if t <= 20:
-        #         return VGroup()
-        #     return ejes_v.get_area(curva_v_4, x_range=(20, min(t, 25)), color=BLUE, opacity=0.3)
-        #
-        # area_4_dinamica_v = always_redraw(update_area_v_4)
-        # self.add(area_1_dinamica_v, area_2_dinamica_v, area_3_dinamica_v, area_4_dinamica_v)
-        # self.play(Write(label_v_1_1))
-        # self.play(t_tracker_v.animate.set_value(6), run_time=4, rate_func=linear)
-        # self.play(Write(label_v_1_2))
-        # self.wait(0.5)
-        # self.play(Write(label_v_2_1))
-        # self.play(t_tracker_v.animate.set_value(10), run_time=4, rate_func=linear)
-        # self.play(Write(label_v_2_2))
-        # self.wait(0.5)
-        # self.play(Write(label_v_3_1))
-        # self.play(t_tracker_v.animate.set_value(20), run_time=4, rate_func=linear)
-        # self.play(Write(label_v_3_2))
-        # self.wait(0.5)
-        # self.play(Write(label_v_4_1))
-        # self.play(t_tracker_v.animate.set_value(25), run_time=4, rate_func=linear)
-        # self.play(Write(label_v_4_2))
-        # self.wait(2)
-        # self.play(
-        #     FadeOut(titulos_ejes_v, titulo_v, ejes_v, label_v_1_1, label_v_1_2, label_v_2_1, label_v_2_2, label_v_3_1,
-        #             label_v_3_2, label_v_4_1,
-        #             label_v_4_2, curva_v_1, curva_v_2, curva_v_3, curva_v_4, area_1_dinamica_v, area_2_dinamica_v,
-        #             area_3_dinamica_v, area_4_dinamica_v))
-        # tit = titulo("Diagrama de momento", size_titulo=36)
-        # self.play(Write(tit[0]))
-        # self.play(Create(tit[1]))
-        # self.wait(2)
-        # self.play(FadeOut(tit))
-        # self.play(Create(ejes_m), Write(titulos_ejes_m), Write(titulo_m), run_time=4)
-        # t_tracker_m = ValueTracker(0)
-        #
-        # def update_area_m():
-        #     t = t_tracker_m.get_value()
-        #     if t <= 0:
-        #         return VGroup()
-        #     return ejes_m.get_area(curva_m, x_range=(0, min(t, 25)), color=BLUE, opacity=0.3)
-        #
-        # area_dinamica_m = always_redraw(update_area_m)
-        #
-        # # def update_area_m_1():
-        # #     t = t_tracker_m.get_value()
-        # #     if t <= 0:
-        # #         return VGroup()
-        # #     return ejes_m.get_area(curva_m_1, x_range=(0, min(t, 10)), color=BLUE, opacity=0.3)
-        # #
-        # # area_1_dinamica_m = always_redraw(update_area_m_1)
-        # #
-        # # def update_area_m_2():
-        # #     t = t_tracker_m.get_value()
-        # #     if t <= 10:
-        # #         return VGroup()
-        # #     return ejes_m.get_area(curva_m_3, x_range=(10, min(t, 20)), color=BLUE, opacity=0.3)
-        # #
-        # # area_2_dinamica_m = always_redraw(update_area_m_2)
-        # #
-        # # def update_area_m_3():
-        # #     t = t_tracker_m.get_value()
-        # #     if t <= 20:
-        # #         return VGroup()
-        # #     return ejes_m.get_area(curva_m_4, x_range=(20, min(t, 25)), color=BLUE, opacity=0.3)
-        # #
-        # # area_3_dinamica_m = always_redraw(update_area_m_3)
-        #
-        # # def update_area_m_4():
-        # #     t = t_tracker_m.get_value()
-        # #     if t <= 20:
-        # #         return VGroup()
-        # #     return ejes_m.get_area(curva_m_4, x_range=(20, min(t, 25)), color=BLUE, opacity=0.3)
-        # #
-        # # area_4_dinamica_m = always_redraw(update_area_m_4)
-        # self.add(area_dinamica_m)
-        # self.play(Write(label_m_1_1))
-        # self.play(t_tracker_m.animate.set_value(6), run_time=4, rate_func=linear)
-        # self.play(Write(label_m_1_2))
-        # self.wait(0.5)
-        # # self.play(Write(label_m_2_1))
-        # self.play(t_tracker_m.animate.set_value(10), run_time=4, rate_func=linear)
-        # self.play(Write(label_m_2_2))
-        # self.wait(0.5)
-        # self.play(t_tracker_m.animate.set_value(15.0956521739130), run_time=4, rate_func=linear)
-        # self.play(Write(label_m_3_1))
-        # self.wait(0.5)
-        # self.play(t_tracker_m.animate.set_value(20), run_time=4, rate_func=linear)
-        # self.play(Write(label_m_3_2))
-        # self.wait(0.5)
-        # # self.play(Write(label_m_4_1))
-        # self.play(t_tracker_m.animate.set_value(25), run_time=4, rate_func=linear)
-        # self.play(Write(label_m_4_2))
-        # self.wait(2)
-        # self.play(
-        #     FadeOut(titulos_ejes_m, titulo_m, ejes_m, label_m_1_1, label_m_1_2, label_m_2_2, label_m_3_1, label_m_3_2,
-        #             label_m_4_2, curva_m, area_dinamica_m))
+        self.wait(2)
+        self.play(FadeOut(matriz_global))
+        tit = titulo("Matriz de rigidez goblal reducida", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+        self.play(FadeIn(matriz_global))
+        items_reducida = [1, 2]
+        elementos_reducida = list()
+        elementos_no_reducida = list()
+        for f in items_reducida:
+            for c, elem in enumerate(matriz_global[4].get_rows()[f]):
+                if c in items_reducida:
+                    elementos_reducida.append(elem)
+                else:
+                    elementos_no_reducida.append(elem)
+        self.play(ReplacementTransform(matriz_global[0].get_brackets(), matriz_global_reducida[0].get_brackets()),
+                  ReplacementTransform(matriz_global[4].get_brackets(), matriz_global_reducida[4].get_brackets()),
+                  ReplacementTransform(matriz_global[5].get_brackets(), matriz_global_reducida[5].get_brackets()),
+                  FadeOut(matriz_global[0].get_rows()[0], matriz_global[4].get_rows()[0],
+                          matriz_global[5].get_rows()[0]),
+                  FadeOut(matriz_global[0].get_rows()[3], matriz_global[4].get_rows()[3],
+                          matriz_global[5].get_rows()[3]),
+                  *[FadeOut(elem) for elem in elementos_no_reducida],
+                  ReplacementTransform(matriz_global[1:4], matriz_global_reducida[1:4]),
+                  ReplacementTransform(matriz_global[0].get_entries()[1], matriz_global_reducida[0].get_entries()[0]),
+                  ReplacementTransform(matriz_global[0].get_entries()[2], matriz_global_reducida[0].get_entries()[1]),
+                  ReplacementTransform(elementos_reducida[0], matriz_global_reducida[4].get_entries()[0]),
+                  ReplacementTransform(elementos_reducida[1], matriz_global_reducida[4].get_entries()[1]),
+                  ReplacementTransform(elementos_reducida[2], matriz_global_reducida[4].get_entries()[2]),
+                  ReplacementTransform(elementos_reducida[3], matriz_global_reducida[4].get_entries()[3]),
+                  ReplacementTransform(matriz_global[5].get_entries()[1], matriz_global_reducida[5].get_entries()[0]),
+                  ReplacementTransform(matriz_global[5].get_entries()[2], matriz_global_reducida[5].get_entries()[1]),
+                  run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(matriz_global_reducida[2], matriz_global_reducida_final[0]),
+                  ReplacementTransform(matriz_global_reducida[3], matriz_global_reducida_final[1]),
+                  ReplacementTransform(matriz_global_reducida[4], matriz_global_reducida_final[2]),
+                  ReplacementTransform(matriz_global_reducida[5], matriz_global_reducida_final[3]),
+                  FadeOut(matriz_global_reducida[0], matriz_global_reducida[1]), run_time=4)
+        self.play(FadeOut(matriz_global_reducida_final))
+        tit = titulo("Resolución de los desplazamientos desconocidos", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+        self.play(FadeIn(matriz_global_reducida_final))
+        self.wait(2)
+        self.play(ReplacementTransform(matriz_global_reducida_final[2], matriz_global_reducida_final_2[0][0]),
+                  ReplacementTransform(matriz_global_reducida_final[0], matriz_global_reducida_final_2[1]),
+                  # ReplacementTransform(matriz_global_reducida_final[2], matriz_global_reducida_final_2[0]),
+                  ReplacementTransform(matriz_global_reducida_final[1], matriz_global_reducida_final_2[2]),
+                  ReplacementTransform(matriz_global_reducida_final[3], matriz_global_reducida_final_2[3]),
+                  FadeIn(matriz_global_reducida_final_2[0][1]), run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(matriz_global_reducida_final_2[0][0].get_brackets(),
+                                       matriz_global_reducida_final_3[0].get_brackets()),
+                  ReplacementTransform(matriz_global_reducida_final_2[0][0].get_entries(),
+                                       matriz_global_reducida_final_3[0].get_entries()),
+                  # ReplacementTransform(matriz_global_reducida_final_2[0], matriz_global_reducida_final_3[0]),
+                  ReplacementTransform(matriz_global_reducida_final_2[1], matriz_global_reducida_final_3[1]),
+                  ReplacementTransform(matriz_global_reducida_final_2[2], matriz_global_reducida_final_3[2]),
+                  ReplacementTransform(matriz_global_reducida_final_2[3], matriz_global_reducida_final_3[3]),
+                  FadeOut(matriz_global_reducida_final_2[0][1]), run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(
+            VGroup(matriz_global_reducida_final_3[0].get_entries(), matriz_global_reducida_final_3[1].get_entries()),
+            matriz_global_reducida_final_4[0].get_entries()),
+            ReplacementTransform(matriz_global_reducida_final_3[0].get_brackets()[0],
+                                 matriz_global_reducida_final_4[0].get_brackets()[0]),
+            ReplacementTransform(matriz_global_reducida_final_3[1].get_brackets()[1],
+                                 matriz_global_reducida_final_4[0].get_brackets()[1]),
+            FadeOut(matriz_global_reducida_final_3[0].get_brackets()[1]),
+            FadeOut(matriz_global_reducida_final_3[1].get_brackets()[0]),
+            ReplacementTransform(matriz_global_reducida_final_3[2], matriz_global_reducida_final_4[1]),
+            ReplacementTransform(matriz_global_reducida_final_3[3], matriz_global_reducida_final_4[2]),
+            run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(matriz_global_reducida_final_4[0].get_entries()[0], sol_1[2]),
+                  ReplacementTransform(matriz_global_reducida_final_4[0].get_entries()[1], sol_2[2]),
+                  ReplacementTransform(matriz_global_reducida_final_4[1], VGroup(sol_1[1], sol_2[1])),
+                  ReplacementTransform(matriz_global_reducida_final_4[2].get_entries()[0], sol_1[0]),
+                  ReplacementTransform(matriz_global_reducida_final_4[2].get_entries()[1], sol_2[0]),
+                  FadeOut(matriz_global_reducida_final_4[0].get_brackets()),
+                  FadeOut(matriz_global_reducida_final_4[2].get_brackets()),
+                  run_time=4)
+        self.wait(2)
+        self.play(FadeOut(sol_1), FadeOut(sol_2))
+        tit = titulo("Resolución de las reacciones desconocidas", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+        self.play(FadeIn(matriz_global_final_2))
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(matriz_global_final_2[0:4]), VGroup(matriz_global_final_3[0:4])),
+                  ReplacementTransform(
+                      VGroup(matriz_global_final_2[4].get_entries(), matriz_global_final_2[5].get_entries()),
+                      VGroup(matriz_global_final_3[4].get_entries())),
+                  ReplacementTransform(matriz_global_final_2[4].get_brackets()[0],
+                                       matriz_global_final_3[4].get_brackets()[0]),
+                  ReplacementTransform(matriz_global_final_2[5].get_brackets()[1],
+                                       matriz_global_final_3[4].get_brackets()[1]),
+                  FadeOut(matriz_global_final_2[4].get_brackets()[1]),
+                  FadeOut(matriz_global_final_2[5].get_brackets()[0]),
+                  # FadeOut(matriz_global_final_2[2]),
+                  # ReplacementTransform(VGroup(matriz_global_final_2[5:7]), VGroup(matriz_global_final_3[3:5])),
+                  # FadeOut(matriz_global_final_2),
+                  run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(matriz_global_final_3[0], matriz_global_final_4[0]),
+                  ReplacementTransform(matriz_global_final_3[1], matriz_global_final_4[3]),
+                  ReplacementTransform(matriz_global_final_3[2], matriz_global_final_4[4]),
+                  ReplacementTransform(matriz_global_final_3[3], matriz_global_final_4[1]),
+                  ReplacementTransform(matriz_global_final_3[4], matriz_global_final_4[2]),
+                  run_time=4
+                  )
+        self.play(ReplacementTransform(VGroup(*matriz_global_final_4[0:2]), VGroup(*matriz_global_final_5[0:2])),
+                  ReplacementTransform(matriz_global_final_4[2].get_brackets()[0],
+                                       matriz_global_final_5[2].get_brackets()[0]),
+                  ReplacementTransform(matriz_global_final_4[4].get_brackets()[1],
+                                       matriz_global_final_5[2].get_brackets()[1]),
 
+                  ReplacementTransform(
+                      VGroup(matriz_global_final_4[2].get_entries(), matriz_global_final_4[4].get_entries()),
+                      VGroup(matriz_global_final_5[2].get_entries())),
+                  FadeOut(matriz_global_final_4[3]),
+                  FadeOut(matriz_global_final_4[2].get_brackets()[1]),
+                  FadeOut(matriz_global_final_4[4].get_brackets()[0]),
+                  run_time=4)
+        self.wait(2)
+        #
+        self.play(FadeOut(matriz_global_final_5))
+        tit = titulo("Matriz global solucionada", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+        self.play(FadeIn(matriz_global_final))
+        self.wait(5)
+        self.play(FadeOut(matriz_global_final))
+        ########################################
+        tit = titulo("Fuerzas internas del elemento 1", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+
+        self.play(FadeIn(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]), FadeIn(mr_elemento_1_2),
+                  FadeIn(f_internas_elemento_1))
+        self.play(
+            ReplacementTransform(mr_elemento_1_2[0], mr_elemento_1_2_1[0]),
+            ReplacementTransform(mr_elemento_1_2[1], mr_elemento_1_2_1[1]),
+            ReplacementTransform(mr_elemento_1_2[2], mr_elemento_1_2_1[2]),
+            ReplacementTransform(mr_elemento_1_2[3], mr_elemento_1_2_1[3]),
+            run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(mr_elemento_1_2_1[2].get_entries(), mr_elemento_1_2_1[3].get_entries()),
+                                       mr_elemento_1_2_2[2].get_entries()),
+                  ReplacementTransform(mr_elemento_1_2_1[2].get_brackets()[0],
+                                       mr_elemento_1_2_2[2].get_brackets()[0]),
+                  ReplacementTransform(mr_elemento_1_2_1[3].get_brackets()[1],
+                                       mr_elemento_1_2_2[2].get_brackets()[1]),
+                  ReplacementTransform(mr_elemento_1_2_1[0], mr_elemento_1_2_2[0]),
+                  ReplacementTransform(mr_elemento_1_2_1[1], mr_elemento_1_2_2[1]),
+                  FadeOut(mr_elemento_1_2_1[2].get_brackets()[1]),
+                  FadeOut(mr_elemento_1_2_1[3].get_brackets()[0]),
+                  run_time=4)
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_1_2_2),
+                  FadeOut(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]),
+                  FadeOut(f_internas_elemento_1))
+        self.wait(2)
+        mr_elemento_1_2_3.move_to(ORIGIN)
+        self.play(FadeIn(mr_elemento_1_2_3))
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_1_2_3))
+        ########################################
+        tit = titulo("Fuerzas internas del elemento 2", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+
+        self.play(FadeIn(elementos[1], nodos[1:3], label_elementos[1], label_nodos[1:3]), FadeIn(mr_elemento_2_2),
+                  FadeIn(f_internas_elemento_2))
+        self.play(
+            ReplacementTransform(mr_elemento_2_2[0], mr_elemento_2_2_1[0]),
+            ReplacementTransform(mr_elemento_2_2[1], mr_elemento_2_2_1[1]),
+            ReplacementTransform(mr_elemento_2_2[2], mr_elemento_2_2_1[2]),
+            ReplacementTransform(mr_elemento_2_2[3], mr_elemento_2_2_1[3]),
+            run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(mr_elemento_2_2_1[2].get_entries(), mr_elemento_2_2_1[3].get_entries()),
+                                       mr_elemento_2_2_2[2].get_entries()),
+                  ReplacementTransform(mr_elemento_2_2_1[2].get_brackets()[0],
+                                       mr_elemento_2_2_2[2].get_brackets()[0]),
+                  ReplacementTransform(mr_elemento_2_2_1[3].get_brackets()[1],
+                                       mr_elemento_2_2_2[2].get_brackets()[1]),
+                  ReplacementTransform(mr_elemento_2_2_1[0], mr_elemento_2_2_2[0]),
+                  ReplacementTransform(mr_elemento_2_2_1[1], mr_elemento_2_2_2[1]),
+                  FadeOut(mr_elemento_2_2_1[2].get_brackets()[1]),
+                  FadeOut(mr_elemento_2_2_1[3].get_brackets()[0]),
+                  run_time=4)
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_2_2_2),
+                  FadeOut(elementos[1], nodos[1:3], label_elementos[1], label_nodos[1:3]),
+                  FadeOut(f_internas_elemento_2))
+        self.wait(2)
+        mr_elemento_2_2_3.move_to(ORIGIN)
+        self.play(FadeIn(mr_elemento_2_2_3))
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_2_2_3))
+        # ####################################
+        ########################################
+        tit = titulo("Fuerzas internas del elemento 3", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+
+        self.play(FadeIn(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]), FadeIn(mr_elemento_3_2),
+                  FadeIn(f_internas_elemento_3))
+        self.play(
+            ReplacementTransform(mr_elemento_3_2[0], mr_elemento_3_2_1[0]),
+            ReplacementTransform(mr_elemento_3_2[1], mr_elemento_3_2_1[1]),
+            ReplacementTransform(mr_elemento_3_2[2], mr_elemento_3_2_1[2]),
+            ReplacementTransform(mr_elemento_3_2[3], mr_elemento_3_2_1[3]),
+            run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(mr_elemento_3_2_1[2].get_entries(), mr_elemento_3_2_1[3].get_entries()),
+                                       mr_elemento_3_2_2[2].get_entries()),
+                  ReplacementTransform(mr_elemento_3_2_1[2].get_brackets()[0],
+                                       mr_elemento_3_2_2[2].get_brackets()[0]),
+                  ReplacementTransform(mr_elemento_3_2_1[3].get_brackets()[1],
+                                       mr_elemento_3_2_2[2].get_brackets()[1]),
+                  ReplacementTransform(mr_elemento_3_2_1[0], mr_elemento_3_2_2[0]),
+                  ReplacementTransform(mr_elemento_3_2_1[1], mr_elemento_3_2_2[1]),
+                  FadeOut(mr_elemento_3_2_1[2].get_brackets()[1]),
+                  FadeOut(mr_elemento_3_2_1[3].get_brackets()[0]),
+                  run_time=4)
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_3_2_2),
+                  FadeOut(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]),
+                  FadeOut(f_internas_elemento_3))
+        self.wait(2)
+        mr_elemento_3_2_3.move_to(ORIGIN)
+        self.play(FadeIn(mr_elemento_3_2_3))
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_3_2_3))
 
 class pruebas(Scene):
     def construct(self) -> None:

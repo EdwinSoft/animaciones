@@ -136,8 +136,9 @@ class EnsambleAnimacion(Ensamble):
             etiquetas_fuerzas = etiquetas_fuerzas + np.array(['=', '=', '=', '=']) + np.char.mod(formato, fuerzas)
         return Matrix(np.array(etiquetas_fuerzas).reshape(-1, 1)
                       , left_bracket=r"\{", right_bracket=r"\}")
+
     def ecuacion_vector_etiquetas_fuerzas_internas_resorte(self, ele: Resorte, mostrar_valores: bool = False,
-                                                        formato: str = '%.3g') -> VMobject:
+                                                           formato: str = '%.3g') -> VMobject:
         etiquetas_fuerzas = ele._obtener_etiquetas_fuerzas()
         if mostrar_valores:
             fuerzas = (np.matmul(ele._k.k,
@@ -188,6 +189,23 @@ class EnsambleAnimacion(Ensamble):
         return ecuacion_array_a_matriz(np.array(self._union._k.obtener_fuerzas(reducida)), left_bracket=r"\{",
                                        right_bracket=r"\}", **kwargs)
 
+    def ecuacion_vector_fuerzas_externas_nodales(self, reducida: bool = False, **kwargs) -> VMobject:
+        f_externa = self.fuerzas_externas_nodales(reducida=reducida)
+        return ecuacion_array_a_matriz(f_externa, left_bracket=r"\{", right_bracket=r"\}", **kwargs)
+
+    def fuerzas_externas_nodales(self, reducida: bool = False) -> ndarray:
+        f_externa = list()
+        for n in self._lista_nodos:
+            for gl in n.grados_libertad.keys():
+                if reducida:
+                    if not n.grados_libertad[gl].valor:
+                        continue
+                if gl in n.fuerzas_externas:
+                    f_externa.append(n.fuerzas_externas[gl])
+                else:
+                    f_externa.append(0.0)
+        return np.array(f_externa).reshape(-1, 1)
+
     def ecuacion_matriz_rigidez_global(self, reducida: bool = False, **kwargs) -> VMobject:
         return ecuacion_array_a_matriz(np.array(self._union._k.obtener_matriz(reducida)), **kwargs)
 
@@ -203,6 +221,33 @@ class EnsambleAnimacion(Ensamble):
         else:
             return VGroup(vec_r_global, ecuacion_signo_igual(), vec_k_global, vec_d_global, ecuacion_signo_menos(),
                           vec_f_global)
+
+    def sistema_ecuaciones_matriz_rigidez_global_2(self, EI_cte: bool = False, reducida: bool = False,
+                                                   h_buff_k: float | int = 1.8,
+                                                   fuerza_elementos: bool = False) -> VMobject:
+        vec_r_global = self.ecuacion_vector_etiquetas_reacciones(reducida=reducida)
+        vec_f_global = self.ecuacion_vector_fuerzas_externas_nodales(reducida=reducida)
+        vec_k_global = self.ecuacion_matriz_rigidez_global(reducida=reducida, h_buff=h_buff_k)
+        vec_d_global = self.ecuacion_vector_etiquetas_desplazamientos(EI_cte=EI_cte, reducida=reducida)
+        if fuerza_elementos:
+            f_externa = np.array(self._union._k.obtener_fuerzas(reducida)) - self.fuerzas_externas_nodales(
+                reducida=reducida)
+            vec_f_ele_global = ecuacion_array_a_matriz(f_externa, left_bracket=r"\{", right_bracket=r"\}")
+            if EI_cte:
+                return VGroup(vec_r_global, ecuacion_signo_mas(), vec_f_global, ecuacion_signo_igual(), ecuacion_EI(),
+                              vec_k_global, vec_d_global,
+                              ecuacion_signo_menos(), vec_f_ele_global)
+            else:
+                return VGroup(vec_r_global, ecuacion_signo_mas(), vec_f_global, ecuacion_signo_igual(), vec_k_global,
+                              vec_d_global, ecuacion_signo_menos(),
+                              vec_f_global)
+        else:
+            if EI_cte:
+                return VGroup(vec_r_global, ecuacion_signo_mas(), vec_f_global, ecuacion_signo_igual(), ecuacion_EI(),
+                              vec_k_global, vec_d_global)
+            else:
+                return VGroup(vec_r_global, ecuacion_signo_mas(), vec_f_global, ecuacion_signo_igual(), vec_k_global,
+                              vec_d_global)
 
     def get_cargas_puntuales(self, longitud: float | int = 2.0, unidades: str = r"\,kN") -> VGroup:
         cargas = VGroup()
