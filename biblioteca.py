@@ -224,12 +224,12 @@ class EnsambleAnimacion(Ensamble):
 
     def sistema_ecuaciones_matriz_rigidez_global_2(self, EI_cte: bool = False, reducida: bool = False,
                                                    h_buff_k: float | int = 1.8,
-                                                   fuerza_elementos: bool = False) -> VMobject:
+                                                   carga_sobre_elementos: bool = False) -> VMobject:
         vec_r_global = self.ecuacion_vector_etiquetas_reacciones(reducida=reducida)
         vec_f_global = self.ecuacion_vector_fuerzas_externas_nodales(reducida=reducida)
         vec_k_global = self.ecuacion_matriz_rigidez_global(reducida=reducida, h_buff=h_buff_k)
         vec_d_global = self.ecuacion_vector_etiquetas_desplazamientos(EI_cte=EI_cte, reducida=reducida)
-        if fuerza_elementos:
+        if carga_sobre_elementos:
             f_externa = np.array(self._union._k.obtener_fuerzas(reducida)) - self.fuerzas_externas_nodales(
                 reducida=reducida)
             vec_f_ele_global = ecuacion_array_a_matriz(f_externa, left_bracket=r"\{", right_bracket=r"\}")

@@ -19,36 +19,38 @@ class EjemploVigasAnimacion(Scene):
         e_2.agregar_carga_distribuida(-24)
         mg = EnsambleAnimacion([e_1, e_2, e_3])
         ## Se guarda los objetos antes de la solución en mnspy
-        matriz_global_base = mg.sistema_ecuaciones_matriz_rigidez_global(EI_cte=True, reducida=False)
-        matriz_global = matriz_global_base.copy().scale(0.5).arrange(RIGHT)
-        matriz_global_reducida_inicial = mg.sistema_ecuaciones_matriz_rigidez_global(EI_cte=True, reducida=True)
-        matriz_global_reducida = matriz_global_reducida_inicial.copy().scale(0.5).arrange(RIGHT)
-        matriz_global_reducida_final = VGroup(matriz_global_reducida_inicial[6].copy(), ecuacion_signo_igual(),
-                                              ecuacion_EI(), matriz_global_reducida_inicial[3].copy(),
-                                              matriz_global_reducida_inicial[4].copy()).scale(0.5).arrange(RIGHT)
-        matriz = matriz_global_reducida_inicial[3].copy()
+        matriz_global_base = mg.sistema_ecuaciones_matriz_rigidez_global_2(EI_cte=True, reducida=False,
+                                                                           carga_sobre_elementos=True)
+        matriz_global = matriz_global_base.copy().scale(0.45).arrange(RIGHT)
+        matriz_global_reducida_inicial = mg.sistema_ecuaciones_matriz_rigidez_global_2(EI_cte=True, reducida=True,
+                                                                           carga_sobre_elementos=True)
+        matriz_global_reducida = matriz_global_reducida_inicial.copy().scale(0.45).arrange(RIGHT)
+        matriz_global_reducida_final = VGroup(matriz_global_reducida_inicial[8].copy(), ecuacion_signo_igual(),
+                                              ecuacion_EI(), matriz_global_reducida_inicial[5].copy(),
+                                              matriz_global_reducida_inicial[6].copy()).scale(0.45).arrange(RIGHT)
+        matriz = matriz_global_reducida_inicial[5].copy()
         vec_k_reduc_inverso = ecuacion_array_a_matriz(np.linalg.inv(np.array(mg._union._k.obtener_matriz(True))),
                                                       h_buff=2.8)
         sol = np.linalg.inv(np.array(mg._union._k.obtener_matriz(True))) @ np.array(mg._union._k.obtener_fuerzas(True))
         solucion_reducida = ecuacion_array_a_matriz(sol, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
         superindice = MathTex("-1").next_to(matriz, RIGHT, aligned_edge=UP, buff=0.1)
         matriz_global_reducida_final_2 = VGroup(ecuacion_EI_inv(),
-                                                VGroup(matriz_global_reducida_inicial[3].copy(), superindice),
-                                                matriz_global_reducida_inicial[6].copy(),
-                                                ecuacion_signo_igual(), matriz_global_reducida_inicial[4].copy()).scale(
-            0.5).arrange(RIGHT)
+                                                VGroup(matriz_global_reducida_inicial[5].copy(), superindice),
+                                                matriz_global_reducida_inicial[8].copy(),
+                                                ecuacion_signo_igual(), matriz_global_reducida_inicial[6].copy()).scale(
+            0.45).arrange(RIGHT)
         matriz_global_reducida_final_3 = VGroup(ecuacion_EI_inv(), vec_k_reduc_inverso,
-                                                matriz_global_reducida_inicial[6].copy(),
+                                                matriz_global_reducida_inicial[8].copy(),
                                                 ecuacion_signo_igual(),
-                                                matriz_global_reducida_inicial[4].copy()).scale(
-            0.5).arrange(RIGHT)
+                                                matriz_global_reducida_inicial[6].copy()).scale(
+            0.45).arrange(RIGHT)
         matriz_global_reducida_final_4 = VGroup(ecuacion_EI_inv(), solucion_reducida.copy(), ecuacion_signo_igual(),
-                                                matriz_global_reducida_inicial[4].copy()).scale(
-            0.5).arrange(RIGHT)
+                                                matriz_global_reducida_inicial[6].copy()).scale(
+            0.45).arrange(RIGHT)
         sol_1 = VGroup(MathTex(r'{\phi_2}').set_color(BLUE), ecuacion_signo_igual(),
-                       MathTex(r'\dfrac{' + f'{sol[0][0]:.8f}' + '}{EI}')).scale(0.5).arrange(RIGHT)
+                       MathTex(r'\dfrac{' + f'{sol[0][0]:.8f}' + '}{EI}')).scale(0.45).arrange(RIGHT)
         sol_2 = VGroup(MathTex(r'{\phi_3}').set_color(BLUE), ecuacion_signo_igual(),
-                       MathTex(r'\dfrac{' + f'{sol[1][0]:.8f}' + '}{EI}')).scale(0.5).arrange(RIGHT).next_to(sol_1,
+                       MathTex(r'\dfrac{' + f'{sol[1][0]:.8f}' + '}{EI}')).scale(0.45).arrange(RIGHT).next_to(sol_1,
                                                                                                              DOWN)
         ### Grados de libertad
         n_1_gdl = VGroup(mg.get_grados_libertad(n_1, 'y', offset=0.0, longitud=0.8),
@@ -75,23 +77,34 @@ class EjemploVigasAnimacion(Scene):
         sol_final_resta = sol_final - mg._union._k.obtener_fuerzas(False)
         solucion = ecuacion_array_a_matriz(sol_final, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
 
-        matriz_global_final_base = mg.sistema_ecuaciones_matriz_rigidez_global(EI_cte=True, reducida=False)
+        matriz_global_final_base = mg.sistema_ecuaciones_matriz_rigidez_global_2(EI_cte=True, reducida=False,
+                                                                                 carga_sobre_elementos=True)
         matriz_global_final = matriz_global_final_base.copy().scale(0.35).arrange(RIGHT)
         matriz_global_final_2 = matriz_global_final_base.copy()
         matriz_global_final_2[0] = matriz_global_base.copy()[0]
         matriz_global_final_2.scale(0.35).arrange(RIGHT)
+
         matriz_global_final_3 = matriz_global_final_base.copy()
         matriz_global_final_3[0] = matriz_global_base.copy()[0]
-        matriz_global_final_3.submobjects.pop(2)
-        matriz_global_final_3.submobjects.pop(2)
-        matriz_global_final_3[2] = solucion
+        matriz_global_final_3.submobjects.pop(1)
+        matriz_global_final_3.submobjects.pop(1)
+
         matriz_global_final_4 = matriz_global_final_3.copy()
+        matriz_global_final_4[0] = matriz_global_base.copy()[0]
+        matriz_global_final_4.submobjects.pop(2)
+        matriz_global_final_4.submobjects.pop(2)
+        matriz_global_final_4[2] = solucion
+
+        matriz_global_final_5 = matriz_global_final_3.copy()
         matriz_global_final_3.scale(0.35).arrange(RIGHT)
-        matriz_global_final_4.submobjects.pop(2)
-        matriz_global_final_4.submobjects.pop(2)
-        matriz_global_final_4[2] = ecuacion_array_a_matriz(sol_final_resta, formato_num='{x:.8f}', left_bracket=r"\{",
-                                                           right_bracket=r"\}")
         matriz_global_final_4.scale(0.35).arrange(RIGHT)
+        matriz_global_final_5.submobjects.pop(2)
+        matriz_global_final_5.submobjects.pop(2)
+        matriz_global_final_5.submobjects.pop(3)
+        matriz_global_final_5.submobjects.pop(3)
+        matriz_global_final_5[2] = ecuacion_array_a_matriz(sol_final_resta, formato_num='{x:.8f}', left_bracket=r"\{",
+                                                           right_bracket=r"\}")
+        matriz_global_final_5.scale(0.35).arrange(RIGHT)
 
         ############
         cargas_puntuales = mg.get_cargas_puntuales(longitud=2.0)
@@ -667,75 +680,78 @@ class EjemploVigasAnimacion(Scene):
                                  matriz_global[0].get_entries()[4:6]),
             ReplacementTransform(m_3[0].get_entries()[2:], matriz_global[0].get_entries()[6:]),
             runtime=4)
+        self.wait(2)
+        self.play(FadeIn(matriz_global[1:3]), runtime=4)
         self.play(
-            ReplacementTransform(VGroup(m_1[1], m_2[1], m_3[1]), matriz_global[1]),
-            ReplacementTransform(VGroup(m_1[2], m_2[2], m_3[2]), matriz_global[2]),
+            ReplacementTransform(VGroup(m_1[1], m_2[1], m_3[1]), matriz_global[3]),
+            ReplacementTransform(VGroup(m_1[2], m_2[2], m_3[2]), matriz_global[4]),
             runtime=4)
         self.play(
             ReplacementTransform(VGroup(m_1[3].get_brackets()[0], m_2[3].get_brackets()[0], m_3[3].get_brackets()[0]),
-                                 matriz_global[3].get_brackets()[0]),
+                                 matriz_global[5].get_brackets()[0]),
             ReplacementTransform(VGroup(m_1[3].get_brackets()[1], m_2[3].get_brackets()[1], m_3[3].get_brackets()[1]),
-                                 matriz_global[3].get_brackets()[1]),
-            m_1[4:].animate.next_to(matriz_global[3], RIGHT, buff=0.5).align_to(m_1[4:], UP),
-            m_2[4:].animate.next_to(matriz_global[3], RIGHT, buff=0.5).align_to(m_2[4:], UP),
-            m_3[4:].animate.next_to(matriz_global[3], RIGHT, buff=0.5).align_to(m_3[4:], UP),
+                                 matriz_global[5].get_brackets()[1]),
+            m_1[4:].animate.next_to(matriz_global[5], RIGHT, buff=0.5).align_to(m_1[4:], UP),
+            m_2[4:].animate.next_to(matriz_global[5], RIGHT, buff=0.5).align_to(m_2[4:], UP),
+            m_3[4:].animate.next_to(matriz_global[5], RIGHT, buff=0.5).align_to(m_3[4:], UP),
             runtime=4)
+        self.wait(2)
         self.play(
-            ReplacementTransform(m_1[3].get_entries()[0:4], matriz_global[3].get_entries()[0:4]),
-            ReplacementTransform(m_1[3].get_entries()[4:8], matriz_global[3].get_entries()[8:12]),
-            ReplacementTransform(m_1[3].get_entries()[8:10], matriz_global[3].get_entries()[16:18]),
-            ReplacementTransform(m_1[3].get_entries()[12:14], matriz_global[3].get_entries()[24:26]),
+            ReplacementTransform(m_1[3].get_entries()[0:4], matriz_global[5].get_entries()[0:4]),
+            ReplacementTransform(m_1[3].get_entries()[4:8], matriz_global[5].get_entries()[8:12]),
+            ReplacementTransform(m_1[3].get_entries()[8:10], matriz_global[5].get_entries()[16:18]),
+            ReplacementTransform(m_1[3].get_entries()[12:14], matriz_global[5].get_entries()[24:26]),
             ReplacementTransform(
                 VGroup(m_1[3].get_entries()[10:12], m_1[3].get_entries()[14:16], m_2[3].get_entries()[:2],
                        m_2[3].get_entries()[4:6]),
-                VGroup(matriz_global[3].get_entries()[18:20], matriz_global[3].get_entries()[26:28])),
-            ReplacementTransform(m_2[3].get_entries()[2:4], matriz_global[3].get_entries()[20:22]),
-            ReplacementTransform(m_2[3].get_entries()[6:8], matriz_global[3].get_entries()[28:30]),
-            ReplacementTransform(m_2[3].get_entries()[8:10], matriz_global[3].get_entries()[34:36]),
-            ReplacementTransform(m_2[3].get_entries()[12:14], matriz_global[3].get_entries()[42:44]),
+                VGroup(matriz_global[5].get_entries()[18:20], matriz_global[5].get_entries()[26:28])),
+            ReplacementTransform(m_2[3].get_entries()[2:4], matriz_global[5].get_entries()[20:22]),
+            ReplacementTransform(m_2[3].get_entries()[6:8], matriz_global[5].get_entries()[28:30]),
+            ReplacementTransform(m_2[3].get_entries()[8:10], matriz_global[5].get_entries()[34:36]),
+            ReplacementTransform(m_2[3].get_entries()[12:14], matriz_global[5].get_entries()[42:44]),
             ReplacementTransform(
                 VGroup(m_2[3].get_entries()[10:12], m_2[3].get_entries()[14:16], m_3[3].get_entries()[:2],
                        m_3[3].get_entries()[4:6]),
-                VGroup(matriz_global[3].get_entries()[36:38], matriz_global[3].get_entries()[44:46])),
-            ReplacementTransform(m_3[3].get_entries()[2:4], matriz_global[3].get_entries()[38:40]),
-            ReplacementTransform(m_3[3].get_entries()[6:8], matriz_global[3].get_entries()[46:48]),
-            ReplacementTransform(m_3[3].get_entries()[8:12], matriz_global[3].get_entries()[52:56]),
-            ReplacementTransform(m_3[3].get_entries()[12:16], matriz_global[3].get_entries()[60:64]),
+                VGroup(matriz_global[5].get_entries()[36:38], matriz_global[5].get_entries()[44:46])),
+            ReplacementTransform(m_3[3].get_entries()[2:4], matriz_global[5].get_entries()[38:40]),
+            ReplacementTransform(m_3[3].get_entries()[6:8], matriz_global[5].get_entries()[46:48]),
+            ReplacementTransform(m_3[3].get_entries()[8:12], matriz_global[5].get_entries()[52:56]),
+            ReplacementTransform(m_3[3].get_entries()[12:16], matriz_global[5].get_entries()[60:64]),
             runtime=4)
         self.play(
-            FadeIn(matriz_global[3].get_entries()[4:8]),
-            FadeIn(matriz_global[3].get_entries()[12:16]),
-            FadeIn(matriz_global[3].get_entries()[22:24]),
-            FadeIn(matriz_global[3].get_entries()[30:32]),
-            FadeIn(matriz_global[3].get_entries()[32:34]),
-            FadeIn(matriz_global[3].get_entries()[40:42]),
-            FadeIn(matriz_global[3].get_entries()[48:52]),
-            FadeIn(matriz_global[3].get_entries()[56:60]),
+            FadeIn(matriz_global[5].get_entries()[4:8]),
+            FadeIn(matriz_global[5].get_entries()[12:16]),
+            FadeIn(matriz_global[5].get_entries()[22:24]),
+            FadeIn(matriz_global[5].get_entries()[30:32]),
+            FadeIn(matriz_global[5].get_entries()[32:34]),
+            FadeIn(matriz_global[5].get_entries()[40:42]),
+            FadeIn(matriz_global[5].get_entries()[48:52]),
+            FadeIn(matriz_global[5].get_entries()[56:60]),
             runtime=4)
         self.play(
             ReplacementTransform(VGroup(m_1[4].get_brackets()[0], m_2[4].get_brackets()[0], m_3[4].get_brackets()[0]),
-                                 matriz_global[4].get_brackets()[0]),
+                                 matriz_global[6].get_brackets()[0]),
             ReplacementTransform(VGroup(m_1[4].get_brackets()[1], m_2[4].get_brackets()[1], m_3[4].get_brackets()[1]),
-                                 matriz_global[4].get_brackets()[1]),
-            ReplacementTransform(m_1[4].get_entries()[:2], matriz_global[4].get_entries()[:2]),
+                                 matriz_global[6].get_brackets()[1]),
+            ReplacementTransform(m_1[4].get_entries()[:2], matriz_global[6].get_entries()[:2]),
             ReplacementTransform(VGroup(m_1[4].get_entries()[2:], m_2[4].get_entries()[:2]),
-                                 matriz_global[4].get_entries()[2:4]),
+                                 matriz_global[6].get_entries()[2:4]),
             ReplacementTransform(VGroup(m_2[4].get_entries()[2:], m_3[4].get_entries()[:2]),
-                                 matriz_global[4].get_entries()[4:6]),
-            ReplacementTransform(m_3[4].get_entries()[2:], matriz_global[4].get_entries()[6:]),
+                                 matriz_global[6].get_entries()[4:6]),
+            ReplacementTransform(m_3[4].get_entries()[2:], matriz_global[6].get_entries()[6:]),
             runtime=4)
         self.play(
             ReplacementTransform(VGroup(m_1[6].get_brackets()[0], m_2[6].get_brackets()[0], m_3[6].get_brackets()[0]),
-                                 matriz_global[6].get_brackets()[0]),
+                                 matriz_global[8].get_brackets()[0]),
             ReplacementTransform(VGroup(m_1[6].get_brackets()[1], m_2[6].get_brackets()[1], m_3[6].get_brackets()[1]),
-                                 matriz_global[6].get_brackets()[1]),
-            ReplacementTransform(m_1[6].get_entries()[:2], matriz_global[6].get_entries()[:2]),
+                                 matriz_global[8].get_brackets()[1]),
+            ReplacementTransform(m_1[6].get_entries()[:2], matriz_global[8].get_entries()[:2]),
             ReplacementTransform(VGroup(m_1[6].get_entries()[2:], m_2[6].get_entries()[:2]),
-                                 matriz_global[6].get_entries()[2:4]),
+                                 matriz_global[8].get_entries()[2:4]),
             ReplacementTransform(VGroup(m_2[6].get_entries()[2:], m_3[6].get_entries()[:2]),
-                                 matriz_global[6].get_entries()[4:6]),
-            ReplacementTransform(m_3[6].get_entries()[2:], matriz_global[6].get_entries()[6:]),
-            ReplacementTransform(VGroup(m_1[5], m_2[5], m_3[5]), matriz_global[5]),
+                                 matriz_global[8].get_entries()[4:6]),
+            ReplacementTransform(m_3[6].get_entries()[2:], matriz_global[8].get_entries()[6:]),
+            ReplacementTransform(VGroup(m_1[5], m_2[5], m_3[5]), matriz_global[7]),
             runtime=4)
         self.wait(5)
         self.play(FadeOut(matriz_global))
@@ -749,37 +765,38 @@ class EjemploVigasAnimacion(Scene):
         elementos_reducida = list()
         elementos_no_reducida = list()
         for f in items_reducida:
-            for c, elem in enumerate(matriz_global[3].get_rows()[f]):
+            for c, elem in enumerate(matriz_global[5].get_rows()[f]):
                 if c in items_reducida:
                     elementos_reducida.append(elem)
                 else:
                     elementos_no_reducida.append(elem)
         self.play(ReplacementTransform(matriz_global[0].get_brackets(), matriz_global_reducida[0].get_brackets()),
-                  ReplacementTransform(matriz_global[3].get_brackets(), matriz_global_reducida[3].get_brackets()),
-                  ReplacementTransform(matriz_global[4].get_brackets(), matriz_global_reducida[4].get_brackets()),
+                  ReplacementTransform(matriz_global[5].get_brackets(), matriz_global_reducida[5].get_brackets()),
                   ReplacementTransform(matriz_global[6].get_brackets(), matriz_global_reducida[6].get_brackets()),
-                  FadeOut(matriz_global[0].get_rows()[:3], matriz_global[3].get_rows()[:3],
-                          matriz_global[4].get_rows()[:3], matriz_global[6].get_rows()[:3]),
-                  FadeOut(matriz_global[0].get_rows()[4], matriz_global[3].get_rows()[4],
-                          matriz_global[4].get_rows()[4],
-                          matriz_global[6].get_rows()[4]),
-                  FadeOut(matriz_global[0].get_rows()[6:], matriz_global[3].get_rows()[6:],
-                          matriz_global[4].get_rows()[6:],
-                          matriz_global[6].get_rows()[6:]),
+                  ReplacementTransform(matriz_global[8].get_brackets(), matriz_global_reducida[8].get_brackets()),
+                  FadeOut(matriz_global[0].get_rows()[:3], matriz_global[5].get_rows()[:3],
+                          matriz_global[6].get_rows()[:3], matriz_global[8].get_rows()[:3]),
+                  FadeOut(matriz_global[0].get_rows()[4], matriz_global[5].get_rows()[4],
+                          matriz_global[6].get_rows()[4],
+                          matriz_global[8].get_rows()[4]),
+                  FadeOut(matriz_global[0].get_rows()[6:], matriz_global[5].get_rows()[6:],
+                          matriz_global[6].get_rows()[6:],
+                          matriz_global[8].get_rows()[6:]),
                   *[FadeOut(elem) for elem in elementos_no_reducida],
-                  ReplacementTransform(matriz_global[1], matriz_global_reducida[1]),
-                  ReplacementTransform(matriz_global[2], matriz_global_reducida[2]),
-                  ReplacementTransform(matriz_global[5], matriz_global_reducida[5]),
+                  ReplacementTransform(matriz_global[1:3], matriz_global_reducida[1:3]),
+                  ReplacementTransform(matriz_global[3], matriz_global_reducida[3]),
+                  ReplacementTransform(matriz_global[4], matriz_global_reducida[4]),
+                  ReplacementTransform(matriz_global[7], matriz_global_reducida[7]),
                   ReplacementTransform(matriz_global[0].get_entries()[3], matriz_global_reducida[0].get_entries()[0]),
                   ReplacementTransform(matriz_global[0].get_entries()[5], matriz_global_reducida[0].get_entries()[1]),
-                  ReplacementTransform(elementos_reducida[0], matriz_global_reducida[3].get_entries()[0]),
-                  ReplacementTransform(elementos_reducida[1], matriz_global_reducida[3].get_entries()[1]),
-                  ReplacementTransform(elementos_reducida[2], matriz_global_reducida[3].get_entries()[2]),
-                  ReplacementTransform(elementos_reducida[3], matriz_global_reducida[3].get_entries()[3]),
-                  ReplacementTransform(matriz_global[4].get_entries()[3], matriz_global_reducida[4].get_entries()[0]),
-                  ReplacementTransform(matriz_global[4].get_entries()[5], matriz_global_reducida[4].get_entries()[1]),
+                  ReplacementTransform(elementos_reducida[0], matriz_global_reducida[5].get_entries()[0]),
+                  ReplacementTransform(elementos_reducida[1], matriz_global_reducida[5].get_entries()[1]),
+                  ReplacementTransform(elementos_reducida[2], matriz_global_reducida[5].get_entries()[2]),
+                  ReplacementTransform(elementos_reducida[3], matriz_global_reducida[5].get_entries()[3]),
                   ReplacementTransform(matriz_global[6].get_entries()[3], matriz_global_reducida[6].get_entries()[0]),
                   ReplacementTransform(matriz_global[6].get_entries()[5], matriz_global_reducida[6].get_entries()[1]),
+                  ReplacementTransform(matriz_global[8].get_entries()[3], matriz_global_reducida[8].get_entries()[0]),
+                  ReplacementTransform(matriz_global[8].get_entries()[5], matriz_global_reducida[8].get_entries()[1]),
                   run_time=4)
         self.wait(2)
         self.play(FadeOut(matriz_global_reducida))
@@ -790,12 +807,12 @@ class EjemploVigasAnimacion(Scene):
         self.play(FadeOut(tit))
         self.play(FadeIn(matriz_global_reducida))
 
-        self.play(ReplacementTransform(matriz_global_reducida[6], matriz_global_reducida_final[0]),
-                  ReplacementTransform(matriz_global_reducida[1], matriz_global_reducida_final[1]),
-                  ReplacementTransform(matriz_global_reducida[2], matriz_global_reducida_final[2]),
-                  ReplacementTransform(matriz_global_reducida[3], matriz_global_reducida_final[3]),
-                  ReplacementTransform(matriz_global_reducida[4], matriz_global_reducida_final[4]),
-                  FadeOut(matriz_global_reducida[0], matriz_global_reducida[5]), run_time=4)
+        self.play(ReplacementTransform(matriz_global_reducida[8], matriz_global_reducida_final[0]),
+                  ReplacementTransform(matriz_global_reducida[3], matriz_global_reducida_final[1]),
+                  ReplacementTransform(matriz_global_reducida[4], matriz_global_reducida_final[2]),
+                  ReplacementTransform(matriz_global_reducida[5], matriz_global_reducida_final[3]),
+                  ReplacementTransform(matriz_global_reducida[6], matriz_global_reducida_final[4]),
+                  FadeOut(matriz_global_reducida[0:3], matriz_global_reducida[7]), run_time=4)
         self.wait(2)
         self.play(ReplacementTransform(matriz_global_reducida_final[3], matriz_global_reducida_final_2[1][0]),
                   ReplacementTransform(matriz_global_reducida_final[0], matriz_global_reducida_final_2[2]),
@@ -850,38 +867,48 @@ class EjemploVigasAnimacion(Scene):
         self.play(FadeOut(tit))
         self.play(FadeIn(matriz_global_final_2))
         self.wait(2)
-        self.play(ReplacementTransform(VGroup(matriz_global_final_2[0:2]), VGroup(matriz_global_final_3[0:2])),
-                  ReplacementTransform(
-                      VGroup(matriz_global_final_2[3].get_entries(), matriz_global_final_2[4].get_entries()),
-                      VGroup(matriz_global_final_3[2].get_entries())),
-                  # ReplacementTransform(VGroup(matriz_global_final_2[2:5]), VGroup(matriz_global_final_3[2])),
-                  ReplacementTransform(matriz_global_final_2[3].get_brackets()[0],
-                                       matriz_global_final_3[2].get_brackets()[0]),
-                  ReplacementTransform(matriz_global_final_2[4].get_brackets()[1],
-                                       matriz_global_final_3[2].get_brackets()[1]),
-                  FadeOut(matriz_global_final_2[3].get_brackets()[1]),
-                  FadeOut(matriz_global_final_2[4].get_brackets()[0]),
-                  FadeOut(matriz_global_final_2[2]),
-                  ReplacementTransform(VGroup(matriz_global_final_2[5:7]), VGroup(matriz_global_final_3[3:5])),
-                  # FadeOut(matriz_global_final_2),
+        self.play(ReplacementTransform(matriz_global_final_2[0], matriz_global_final_3[0]),
+                  ReplacementTransform(matriz_global_final_2[3], matriz_global_final_3[1]),
+                  ReplacementTransform(matriz_global_final_2[4], matriz_global_final_3[2]),
+                  ReplacementTransform(matriz_global_final_2[5], matriz_global_final_3[3]),
+                  ReplacementTransform(matriz_global_final_2[6], matriz_global_final_3[4]),
+                  ReplacementTransform(matriz_global_final_2[7], matriz_global_final_3[5]),
+                  ReplacementTransform(matriz_global_final_2[8], matriz_global_final_3[6]),
+                  FadeOut(matriz_global_final_2[1:3]),
                   run_time=4)
         self.wait(2)
         self.play(ReplacementTransform(VGroup(matriz_global_final_3[0:2]), VGroup(matriz_global_final_4[0:2])),
-                  ReplacementTransform(matriz_global_final_3[2].get_brackets()[0],
+                  ReplacementTransform(
+                      VGroup(matriz_global_final_3[3].get_entries(), matriz_global_final_3[4].get_entries()),
+                      VGroup(matriz_global_final_4[2].get_entries())),
+                  # ReplacementTransform(VGroup(matriz_global_final_2[2:5]), VGroup(matriz_global_final_3[2])),
+                  ReplacementTransform(matriz_global_final_3[3].get_brackets()[0],
                                        matriz_global_final_4[2].get_brackets()[0]),
                   ReplacementTransform(matriz_global_final_3[4].get_brackets()[1],
                                        matriz_global_final_4[2].get_brackets()[1]),
+                  FadeOut(matriz_global_final_3[3].get_brackets()[1]),
+                  FadeOut(matriz_global_final_3[4].get_brackets()[0]),
+                  FadeOut(matriz_global_final_3[2]),
+                  ReplacementTransform(VGroup(matriz_global_final_3[5:7]), VGroup(matriz_global_final_4[3:5])),
+                  # FadeOut(matriz_global_final_2),
+                  run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(matriz_global_final_4[0:2]), VGroup(matriz_global_final_5[0:2])),
+                  ReplacementTransform(matriz_global_final_4[2].get_brackets()[0],
+                                       matriz_global_final_5[2].get_brackets()[0]),
+                  ReplacementTransform(matriz_global_final_4[4].get_brackets()[1],
+                                       matriz_global_final_5[2].get_brackets()[1]),
 
                   ReplacementTransform(
-                      VGroup(matriz_global_final_3[2].get_entries(), matriz_global_final_3[4].get_entries()),
-                      VGroup(matriz_global_final_4[2].get_entries())),
-                  FadeOut(matriz_global_final_3[3]),
-                  FadeOut(matriz_global_final_3[2].get_brackets()[1]),
-                  FadeOut(matriz_global_final_3[4].get_brackets()[0]),
+                      VGroup(matriz_global_final_4[2].get_entries(), matriz_global_final_4[4].get_entries()),
+                      VGroup(matriz_global_final_5[2].get_entries())),
+                  FadeOut(matriz_global_final_4[3]),
+                  FadeOut(matriz_global_final_4[2].get_brackets()[1]),
+                  FadeOut(matriz_global_final_4[4].get_brackets()[0]),
                   run_time=4)
         self.wait(2)
 
-        self.play(FadeOut(matriz_global_final_4))
+        self.play(FadeOut(matriz_global_final_5))
         tit = titulo("Matriz global solucionada", size_titulo=36)
         self.play(Write(tit[0]))
         self.play(Create(tit[1]))
@@ -1392,7 +1419,7 @@ class EjemploResorteAnimacion(Scene):
         #                                matriz_global_final_3[2].copy())
         matriz_global_final_4 = matriz_global_final_3.copy()
         matriz_global_final_4[1], matriz_global_final_4[2], matriz_global_final_4[3], matriz_global_final_4[4] = \
-        matriz_global_final_4[3], matriz_global_final_4[4], ecuacion_signo_menos(), matriz_global_final_4[2]
+            matriz_global_final_4[3], matriz_global_final_4[4], ecuacion_signo_menos(), matriz_global_final_4[2]
         matriz_global_final_5 = matriz_global_final_4.copy()
         matriz_global_final_4.scale(0.35).arrange(RIGHT)
         matriz_global_final_3.scale(0.35).arrange(RIGHT)
@@ -2217,6 +2244,7 @@ class EjemploResorteAnimacion(Scene):
         self.play(FadeIn(mr_elemento_3_2_3))
         self.wait(2)
         self.play(FadeOut(mr_elemento_3_2_3))
+
 
 class pruebas(Scene):
     def construct(self) -> None:
