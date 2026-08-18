@@ -23,7 +23,7 @@ class EjemploVigasAnimacion(Scene):
                                                                            carga_sobre_elementos=True)
         matriz_global = matriz_global_base.copy().scale(0.45).arrange(RIGHT)
         matriz_global_reducida_inicial = mg.sistema_ecuaciones_matriz_rigidez_global_2(EI_cte=True, reducida=True,
-                                                                           carga_sobre_elementos=True)
+                                                                                       carga_sobre_elementos=True)
         matriz_global_reducida = matriz_global_reducida_inicial.copy().scale(0.45).arrange(RIGHT)
         matriz_global_reducida_final = VGroup(matriz_global_reducida_inicial[8].copy(), ecuacion_signo_igual(),
                                               ecuacion_EI(), matriz_global_reducida_inicial[5].copy(),
@@ -51,7 +51,7 @@ class EjemploVigasAnimacion(Scene):
                        MathTex(r'\dfrac{' + f'{sol[0][0]:.8f}' + '}{EI}')).scale(0.45).arrange(RIGHT)
         sol_2 = VGroup(MathTex(r'{\phi_3}').set_color(BLUE), ecuacion_signo_igual(),
                        MathTex(r'\dfrac{' + f'{sol[1][0]:.8f}' + '}{EI}')).scale(0.45).arrange(RIGHT).next_to(sol_1,
-                                                                                                             DOWN)
+                                                                                                              DOWN)
         ### Grados de libertad
         n_1_gdl = VGroup(mg.get_grados_libertad(n_1, 'y', offset=0.0, longitud=0.8),
                          mg.get_grados_libertad(n_1, 'eje_z', longitud=1, offset=90))
@@ -1337,9 +1337,9 @@ class EjemploResorteAnimacion(Scene):
         n_3 = Nodo('3', grados_libertad={'x': True})
         n_4 = Nodo('4', grados_libertad={'x': True})
         #### Creación de los Elementos
-        e_1 = Resorte('1', n_1, n_3, k=200)
-        e_2 = Resorte('2', n_3, n_4, k=400)
-        e_3 = Resorte('3', n_4, n_2, k=600)
+        e_1 = resorte('1', n_1, n_3, k=200)
+        e_2 = resorte('2', n_3, n_4, k=400)
+        e_3 = resorte('3', n_4, n_2, k=600)
         mg = EnsambleAnimacion([e_1, e_2, e_3])
         #### Cargas
         n_4.agregar_fuerza_externa(25000, 'x')
@@ -2246,6 +2246,417 @@ class EjemploResorteAnimacion(Scene):
         self.play(FadeOut(mr_elemento_3_2_3))
 
 
+class matrizResorteAnimacion(Scene):
+    def construct(self) -> None:
+        punto_a_1 = 2 * LEFT
+        punto_b_1 = 2 * RIGHT
+        punto_a_2 = 2 * LEFT
+        punto_b_2 = 2 * RIGHT
+        punto_a_final = 3 * LEFT
+        punto_b_final = 3 * RIGHT
+
+        # Instanciamos nuestro objeto personalizado
+        mi_resorte = resorte(punto_a_1, punto_b_1, n=40)
+        # porc_h= 0.1 por defecto, se cambia para que no aumente el d del resorte visualmente
+        mi_resorte_2 = resorte(punto_a_final, punto_b_final, n=40, porc_h=2 / 30)
+        n_a_1 = Dot(punto_a_1, radius=0.05, color=GRAY)
+        n_b_1 = Dot(punto_b_1, radius=0.05, color=GRAY)
+        n_a_2 = Dot(punto_a_2, radius=0.05, color=RED_D).set_z_index(1)
+        n_b_2 = Dot(punto_b_2, radius=0.05, color=RED_D).set_z_index(1)
+
+        label_1 = LabeledDot(MathTex('1', color=WHITE), color=BLUE, stroke_color=BLUE, stroke_width=1,
+                             fill_opacity=0.8).next_to(punto_a_1, UP, buff=-0.1).scale(0.35)
+        label_2 = LabeledDot(MathTex('2', color=WHITE), color=BLUE, stroke_color=BLUE, stroke_width=1,
+                             fill_opacity=0.8).next_to(punto_b_1, UP, buff=-0.1).scale(0.35)
+        T_1 = Arrow(
+            start=punto_a_1,
+            end=punto_a_1 + LEFT,
+            buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+            color=RED,
+            stroke_width=4,  # Grosor de la línea
+            tip_shape=StealthTip,  # Aquí cambias la forma
+            max_tip_length_to_length_ratio=0.15  # Controla el tamaño de la punta
+        )
+        T_2 = Arrow(
+            start=punto_b_1,
+            end=punto_b_1 + RIGHT,
+            buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+            color=RED,
+            stroke_width=4,  # Grosor de la línea
+            tip_shape=StealthTip,  # Aquí cambias la forma
+            max_tip_length_to_length_ratio=0.15  # Controla el tamaño de la punta
+        )
+        label_T_1 = MathTex('T', color=RED).next_to(punto_a_1 + LEFT, LEFT, buff=0).scale(0.5)
+        label_T_2 = MathTex('T', color=RED).next_to(punto_b_1 + RIGHT, RIGHT, buff=0).scale(0.5)
+        cota_L = crear_cota(punto_a_1 + DOWN, punto_b_1 + DOWN, 'L', color=GRAY_A)
+        cota_1 = crear_cota(punto_a_1 + DOWN, punto_a_final + DOWN, 'u_1', color=GRAY_A)
+        cota_2 = crear_cota(punto_b_1 + DOWN, punto_b_final + DOWN, 'u_2', color=GRAY_A)
+        eje_x = elemento_direccion_eje(UP, 0.5, ang=0.0, color=WHITE)
+        eje_u_1 = elemento_direccion_eje(punto_a_1 + UP, 0.5, ang=0.0, color=WHITE)
+        eje_u_2 = elemento_direccion_eje(punto_b_1 + UP, 0.5, ang=0.0, color=WHITE)
+        label_dir_x = MathTex('x,u', color=WHITE).next_to(eje_x, RIGHT, buff=0).scale(0.5)
+        label_dir_u_1 = MathTex('f_{1x},u_1', color=WHITE).next_to(eje_u_1, RIGHT, buff=0).scale(0.5)
+        label_dir_u_2 = MathTex('f_{2x},u_2', color=WHITE).next_to(eje_u_2, RIGHT, buff=0).scale(0.5)
+        dir_u_1 = VGroup(eje_u_1, label_dir_u_1)
+        dir_u_2 = VGroup(eje_u_2, label_dir_u_2)
+        dir_x = VGroup(eje_x, label_dir_x)
+        ecuacion_delta = VGroup(MathTex(r'\delta'), ecuacion_signo_igual(), MathTex('u_2'), ecuacion_signo_menos(),
+                                MathTex('u_1')).arrange(RIGHT)
+        ecuacion_T = VGroup(MathTex('T'), ecuacion_signo_igual(), MathTex('k'), MathTex(r'\delta')).arrange(RIGHT)
+        ecuacion_T_2 = VGroup(MathTex('T'), ecuacion_signo_igual(), MathTex('k'), MathTex('('), MathTex('u_2'),
+                              ecuacion_signo_menos(),
+                              MathTex('u_1'), MathTex(')')).arrange(RIGHT).scale(0.5)
+        ecuacion_f_1_1 = VGroup(MathTex('f_{1x}'), ecuacion_signo_igual(), ecuacion_signo_menos(),
+                                MathTex('T')).arrange(RIGHT)
+        ecuacion_f_1_2 = VGroup(MathTex('f_{1x}'), ecuacion_signo_igual(), ecuacion_signo_menos(), MathTex('k'),
+                                MathTex('('), MathTex('u_2'), ecuacion_signo_menos(),
+                                MathTex('u_1'), MathTex(')')).arrange(RIGHT).scale(0.5)
+        ecuacion_f_1_3 = VGroup(MathTex('f_{1x}'), ecuacion_signo_igual(), MathTex('k'), MathTex('('), MathTex('u_1'),
+                                ecuacion_signo_menos(),
+                                MathTex('u_2'), MathTex(')')).arrange(RIGHT).scale(0.5)
+        ecuacion_f_1_4 = VGroup(MathTex('f_{1x}'), ecuacion_signo_igual(), MathTex('('), MathTex('k'), MathTex('u_1'),
+                                ecuacion_signo_menos(), MathTex('k'), MathTex('u_2'), MathTex(')')).arrange(
+            RIGHT).scale(0.5)
+        ecuacion_f_2_1 = VGroup(MathTex('f_{2x}'), ecuacion_signo_igual(), MathTex('T')).arrange(RIGHT)
+        ecuacion_f_2_2 = VGroup(MathTex('f_{2x}'), ecuacion_signo_igual(), MathTex('k'), MathTex('('), MathTex('u_2'),
+                                ecuacion_signo_menos(),
+                                MathTex('u_1'), MathTex(')')).arrange(RIGHT).scale(0.5)
+        ecuacion_f_2_3 = VGroup(MathTex('f_{2x}'), ecuacion_signo_igual(), ecuacion_signo_menos(), MathTex('k'),
+                                MathTex('('), MathTex('u_1'), ecuacion_signo_menos(),
+                                MathTex('u_2'), MathTex(')')).arrange(RIGHT).scale(0.5)
+        ecuacion_f_2_4 = VGroup(MathTex('f_{2x}'), ecuacion_signo_igual(), MathTex('('), ecuacion_signo_menos(),
+                                MathTex('k'), MathTex('u_1'), ecuacion_signo_mas(), MathTex('k'),
+                                MathTex('u_2'), MathTex(')')).arrange(RIGHT).scale(0.5)
+        ecuacion_local_resorte_1 = VGroup(Matrix([['f_{1x}'], ['f_{2x}']], left_bracket=r"\{", right_bracket=r"\}"),
+                                          ecuacion_signo_igual(),
+                                          Matrix([['k', '-k'], ['-k', 'k']]),
+                                          Matrix([['u_1'], ['u_2']], left_bracket=r"\{", right_bracket=r"\}")
+                                          ).arrange(RIGHT).scale(0.5).move_to(DOWN * 3.2)
+        ecuacion_local_resorte_2 = VGroup(Matrix([['f']], left_bracket=r"\{", right_bracket=r"\}"),
+                                          ecuacion_signo_igual(),
+                                          Matrix([['k']]), Matrix([['d']], left_bracket=r"\{", right_bracket=r"\}")
+                                          ).arrange(RIGHT).scale(0.5).move_to(DOWN * 3)
+        grupo_ecuaciones_1 = VGroup(ecuacion_delta, ecuacion_T, ecuacion_f_1_1, ecuacion_f_2_1).arrange(DOWN,
+                                                                                                        buff=0.2).scale(
+            0.5).move_to(DOWN * 2)
+        ecuacion_T_2.move_to(grupo_ecuaciones_1[1])
+        ecuacion_f_1_2.move_to(grupo_ecuaciones_1[2])
+        ecuacion_f_1_3.move_to(grupo_ecuaciones_1[2])
+        ecuacion_f_1_4.move_to(grupo_ecuaciones_1[2])
+        ecuacion_f_2_2.move_to(grupo_ecuaciones_1[3])
+        ecuacion_f_2_3.move_to(grupo_ecuaciones_1[3])
+        ecuacion_f_2_4.move_to(grupo_ecuaciones_1[3])
+        # Animamos su aparición
+        self.play(FadeIn(mi_resorte, n_a_1, n_b_1, n_a_2, n_b_2, label_1, label_2, cota_L), run_time=3)
+        self.wait(2)
+        self.play(FadeIn(T_1, T_2, label_T_1, label_T_2, dir_x, dir_u_1, dir_u_2), run_time=3)
+        self.wait(2)
+        self.play(ReplacementTransform(mi_resorte, mi_resorte_2),
+                  n_a_2.animate.move_to(punto_a_final),
+                  n_b_2.animate.move_to(punto_b_final),
+                  label_1.animate.move_to(label_1.get_center() + LEFT),
+                  label_2.animate.move_to(label_2.get_center() + RIGHT),
+                  T_1.animate.move_to(punto_a_final + 0.5 * LEFT),
+                  T_2.animate.move_to(punto_b_final + 0.5 * RIGHT),
+                  label_T_1.animate.move_to(label_T_1.get_center() + LEFT),
+                  label_T_2.animate.move_to(label_T_2.get_center() + RIGHT),
+                  run_time=4)
+        self.play(FadeIn(cota_1, cota_2), run_time=2)
+        self.wait(2)
+        self.play(FadeOut(n_a_1, n_b_1), run_time=1)
+        self.wait(1)
+        self.play(FadeIn(grupo_ecuaciones_1[0]), run_time=2)
+        self.wait(2)
+        self.play(FadeIn(grupo_ecuaciones_1[1]), run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(grupo_ecuaciones_1[1][0], ecuacion_T_2[0]),
+                  ReplacementTransform(grupo_ecuaciones_1[1][1], ecuacion_T_2[1]),
+                  ReplacementTransform(grupo_ecuaciones_1[1][2], ecuacion_T_2[2]),
+                  ReplacementTransform(grupo_ecuaciones_1[0][2], ecuacion_T_2[4]),
+                  ReplacementTransform(grupo_ecuaciones_1[0][3], ecuacion_T_2[5]),
+                  ReplacementTransform(grupo_ecuaciones_1[0][4], ecuacion_T_2[6]),
+                  FadeIn(ecuacion_T_2[3], ecuacion_T_2[7]),
+                  FadeOut(grupo_ecuaciones_1[0][0:2], grupo_ecuaciones_1[1][3]),
+                  run_time=4)
+        self.wait(2)
+        self.play(FadeIn(grupo_ecuaciones_1[2:]))
+        self.wait(2)
+        self.play(ReplacementTransform(ecuacion_T_2[2:].copy(), ecuacion_f_1_2[3:]),
+                  ReplacementTransform(ecuacion_T_2[2:], ecuacion_f_2_2[2:]),
+                  ReplacementTransform(grupo_ecuaciones_1[2][:3], ecuacion_f_1_2[:3]),
+                  ReplacementTransform(grupo_ecuaciones_1[3][:2], ecuacion_f_2_2[:2]),
+                  FadeOut(ecuacion_T_2[:2], grupo_ecuaciones_1[2][3], grupo_ecuaciones_1[3][2]),
+                  run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(ecuacion_f_1_2[:2], ecuacion_f_1_3[:2]),
+                  ReplacementTransform(ecuacion_f_1_2[3], ecuacion_f_1_3[2]),
+                  ReplacementTransform(ecuacion_f_1_2[4], ecuacion_f_1_3[3]),
+                  ReplacementTransform(ecuacion_f_1_2[5], ecuacion_f_1_3[6]),
+                  ReplacementTransform(ecuacion_f_1_2[6], ecuacion_f_1_3[5]),
+                  ReplacementTransform(ecuacion_f_1_2[7], ecuacion_f_1_3[4]),
+                  ReplacementTransform(ecuacion_f_1_2[8], ecuacion_f_1_3[7]),
+
+                  ReplacementTransform(ecuacion_f_2_2[:2], ecuacion_f_2_3[:2]),
+                  ReplacementTransform(ecuacion_f_2_2[2], ecuacion_f_2_3[3]),
+                  ReplacementTransform(ecuacion_f_2_2[3], ecuacion_f_2_3[4]),
+                  ReplacementTransform(ecuacion_f_2_2[4], ecuacion_f_2_3[7]),
+                  ReplacementTransform(ecuacion_f_2_2[5], ecuacion_f_2_3[6]),
+                  ReplacementTransform(ecuacion_f_2_2[6], ecuacion_f_2_3[5]),
+                  ReplacementTransform(ecuacion_f_2_2[7], ecuacion_f_2_3[8]),
+                  FadeOut(ecuacion_f_1_2[2]),
+                  FadeIn(ecuacion_f_2_3[2]),
+                  run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(ecuacion_f_1_3[:2], ecuacion_f_1_4[:2]),
+                  ReplacementTransform(ecuacion_f_1_3[2].copy(), ecuacion_f_1_4[3]),
+                  ReplacementTransform(ecuacion_f_1_3[2], ecuacion_f_1_4[6]),
+                  ReplacementTransform(ecuacion_f_1_3[3], ecuacion_f_1_4[2]),
+                  ReplacementTransform(ecuacion_f_1_3[4], ecuacion_f_1_4[4]),
+                  ReplacementTransform(ecuacion_f_1_3[5], ecuacion_f_1_4[5]),
+                  ReplacementTransform(ecuacion_f_1_3[6], ecuacion_f_1_4[7]),
+                  ReplacementTransform(ecuacion_f_1_3[7], ecuacion_f_1_4[8]),
+
+                  ReplacementTransform(ecuacion_f_2_3[:2], ecuacion_f_2_4[:2]),
+                  ReplacementTransform(ecuacion_f_2_3[2:4].copy(), ecuacion_f_2_4[3:5]),
+                  ReplacementTransform(VGroup(ecuacion_f_2_3[2], ecuacion_f_2_3[6]), ecuacion_f_2_4[6]),
+                  ReplacementTransform(ecuacion_f_2_3[3], ecuacion_f_2_4[7]),
+                  ReplacementTransform(ecuacion_f_2_3[4], ecuacion_f_2_4[2]),
+                  ReplacementTransform(ecuacion_f_2_3[5], ecuacion_f_2_4[5]),
+                  ReplacementTransform(ecuacion_f_2_3[7], ecuacion_f_2_4[8]),
+                  ReplacementTransform(ecuacion_f_2_3[8], ecuacion_f_2_4[9]),
+                  run_time=4)
+        self.wait(2)
+        self.play(FadeIn(ecuacion_local_resorte_1[0].get_brackets(), ecuacion_local_resorte_1[1],
+                         ecuacion_local_resorte_1[2].get_brackets(), ecuacion_local_resorte_1[3].get_brackets()),
+                  run_time=2)
+        self.play(ReplacementTransform(ecuacion_f_1_4[0], ecuacion_local_resorte_1[0].get_entries()[0]),
+                  ReplacementTransform(ecuacion_f_2_4[0], ecuacion_local_resorte_1[0].get_entries()[1]),
+                  run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(ecuacion_f_1_4[3], ecuacion_local_resorte_1[2].get_entries()[0]),
+                  ReplacementTransform(ecuacion_f_1_4[5], ecuacion_local_resorte_1[2].get_entries()[1][0][0]),
+                  ReplacementTransform(ecuacion_f_1_4[6], ecuacion_local_resorte_1[2].get_entries()[1][0][1]),
+                  ReplacementTransform(ecuacion_f_2_4[3], ecuacion_local_resorte_1[2].get_entries()[2][0][0]),
+                  ReplacementTransform(ecuacion_f_2_4[4], ecuacion_local_resorte_1[2].get_entries()[2][0][1]),
+                  ReplacementTransform(ecuacion_f_2_4[7], ecuacion_local_resorte_1[2].get_entries()[3]),
+                  FadeOut(ecuacion_f_2_4[6]),
+                  run_time=2)
+        self.play(ReplacementTransform(VGroup(ecuacion_f_1_4[4], ecuacion_f_2_4[5]),
+                                       ecuacion_local_resorte_1[3].get_entries()[0]),
+                  ReplacementTransform(VGroup(ecuacion_f_1_4[7], ecuacion_f_2_4[8]),
+                                       ecuacion_local_resorte_1[3].get_entries()[1]),
+                  FadeOut(ecuacion_f_1_4[1:3], ecuacion_f_1_4[8]),
+                  FadeOut(ecuacion_f_2_4[1:3], ecuacion_f_2_4[9]),
+                  run_time=2)
+        self.wait(2)
+        self.play(ecuacion_local_resorte_1.animate.move_to(DOWN * 2),
+                  run_time=2)
+        self.wait(2)
+        self.play(Write(ecuacion_local_resorte_2),
+                  run_time=2)
+        self.wait(2)
+
+
+class matrizBarraAnimacion(Scene):
+    def construct(self) -> None:
+        punto_a_1 = 2 * LEFT
+        punto_b_1 = 2 * RIGHT
+        punto_a_2 = 2 * LEFT
+        punto_b_2 = 2 * RIGHT
+        punto_a_final = 3 * LEFT
+        punto_b_final = 3 * RIGHT
+
+        # Instanciamos nuestro objeto personalizado
+        barra_incial = crear_barra(punto_a_1, punto_b_1, 0.25)
+        barra_final = crear_barra(punto_a_final, punto_b_final, 0.25)
+        n_a_1 = Dot(punto_a_1, radius=0.05, color=GRAY)
+        n_b_1 = Dot(punto_b_1, radius=0.05, color=GRAY)
+        n_a_2 = Dot(punto_a_2, radius=0.05, color=RED_D).set_z_index(1)
+        n_b_2 = Dot(punto_b_2, radius=0.05, color=RED_D).set_z_index(1)
+
+        label_1 = LabeledDot(MathTex('1', color=WHITE), color=BLUE, stroke_color=BLUE, stroke_width=1,
+                             fill_opacity=0.8).next_to(punto_a_1, UP, buff=-0.1).scale(0.35)
+        label_2 = LabeledDot(MathTex('2', color=WHITE), color=BLUE, stroke_color=BLUE, stroke_width=1,
+                             fill_opacity=0.8).next_to(punto_b_1, UP, buff=-0.1).scale(0.35)
+        T_1 = Arrow(
+            start=punto_a_1,
+            end=punto_a_1 + LEFT,
+            buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+            color=RED,
+            stroke_width=4,  # Grosor de la línea
+            tip_shape=StealthTip,  # Aquí cambias la forma
+            max_tip_length_to_length_ratio=0.15  # Controla el tamaño de la punta
+        )
+        T_2 = Arrow(
+            start=punto_b_1,
+            end=punto_b_1 + RIGHT,
+            buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+            color=RED,
+            stroke_width=4,  # Grosor de la línea
+            tip_shape=StealthTip,  # Aquí cambias la forma
+            max_tip_length_to_length_ratio=0.15  # Controla el tamaño de la punta
+        )
+        label_T_1 = MathTex('T', color=RED).next_to(punto_a_1 + LEFT, LEFT, buff=0).scale(0.5)
+        label_T_2 = MathTex('T', color=RED).next_to(punto_b_1 + RIGHT, RIGHT, buff=0).scale(0.5)
+        cota_L = crear_cota(punto_a_1 + DOWN, punto_b_1 + DOWN, 'L', color=GRAY_A)
+        cota_1 = crear_cota(punto_a_1 + DOWN, punto_a_final + DOWN, 'u_1', color=GRAY_A)
+        cota_2 = crear_cota(punto_b_1 + DOWN, punto_b_final + DOWN, 'u_2', color=GRAY_A)
+        eje_x = elemento_direccion_eje(UP, 0.5, ang=0.0, color=WHITE)
+        eje_u_1 = elemento_direccion_eje(punto_a_1 + UP, 0.5, ang=0.0, color=WHITE)
+        eje_u_2 = elemento_direccion_eje(punto_b_1 + UP, 0.5, ang=0.0, color=WHITE)
+        label_dir_x = MathTex('x,u', color=WHITE).next_to(eje_x, RIGHT, buff=0).scale(0.5)
+        label_dir_u_1 = MathTex('f_{1x},u_1', color=WHITE).next_to(eje_u_1, RIGHT, buff=0).scale(0.5)
+        label_dir_u_2 = MathTex('f_{2x},u_2', color=WHITE).next_to(eje_u_2, RIGHT, buff=0).scale(0.5)
+        dir_u_1 = VGroup(eje_u_1, label_dir_u_1)
+        dir_u_2 = VGroup(eje_u_2, label_dir_u_2)
+        dir_x = VGroup(eje_x, label_dir_x)
+        ecuacion_deformacion = MathTex(r'\varepsilon_x', '=', r'\frac{', 'u_2', '-', 'u_1', '}{', 'L', '}')
+        ecuacion_esfuerzo = MathTex(r'\sigma_x', '=', 'E', r'\varepsilon_x')
+        ecuacion_T = MathTex('T', '=', 'A', r'\sigma_x')
+        ecuacion_T_2 = MathTex('T', '=', 'A', 'E', r'\varepsilon_x').scale(0.5)
+        ecuacion_T_3 = MathTex('T', '=', 'A', 'E', r'\left(', r'\frac{', 'u_2', '-', 'u_1', '}{', 'L', '}', r'\right)').scale(0.5)
+        ecuacion_T_4 = MathTex('T', '=', r'\frac{', 'A', 'E', '}{', 'L', '}', r'\left(', 'u_2', '-', 'u_1', r'\right)').scale(0.5)
+
+        ecuacion_f_1_1 = MathTex('f_{1x}','=', '-','T').scale(0.5)
+        ecuacion_f_1_2 = MathTex('f_{1x}', '=', '-', r'\frac{', 'A', 'E', '}{', 'L', '}', r'\left(', 'u_2', '-', 'u_1', r'\right)').scale(0.5)
+        ecuacion_f_1_3 = MathTex('f_{1x}', '=', r'\frac{', 'A', 'E', '}{', 'L', '}', r'\left(', 'u_1', '-', 'u_2',
+                                 r'\right)').scale(0.5)
+
+        ecuacion_f_2_1 = MathTex('f_{2x}', '=', 'T').scale(0.5)
+        ecuacion_f_2_2 = MathTex('f_{2x}', '=', r'\frac{', 'A', 'E', '}{', 'L', '}', r'\left(', 'u_2', '-', 'u_1',
+                                 r'\right)').scale(0.5)
+        ecuacion_f_2_3 = MathTex('f_{2x}', '=', '-', r'\frac{', 'A', 'E', '}{', 'L', '}', r'\left(', 'u_1', '-', 'u_2',
+                                 r'\right)').scale(0.5)
+        ecuacion_f_2_4 = MathTex('f_{2x}', '=', r'\frac{', 'A', 'E', '}{', 'L', '}', r'\left(', '-', 'u_1', '+', 'u_2',
+                                 r'\right)').scale(0.5)
+        ecuacion_local_barra_1 = VGroup(Matrix([['f_{1x}'], ['f_{2x}']], left_bracket=r"\{", right_bracket=r"\}"),
+                                          ecuacion_signo_igual(),MathTex(r'\frac{', 'A', 'E', '}{', 'L', '}'),
+                                          Matrix([['1', '-1'], ['-1', '1']]),
+                                          Matrix([['u_1'], ['u_2']], left_bracket=r"\{", right_bracket=r"\}")
+                                          ).arrange(RIGHT).scale(0.5).move_to(DOWN * 3.2)
+        ecuacion_local_barra_2 = VGroup(Matrix([['f']], left_bracket=r"\{", right_bracket=r"\}"),
+                                          ecuacion_signo_igual(),
+                                          Matrix([['k']]), Matrix([['d']], left_bracket=r"\{", right_bracket=r"\}")
+                                          ).arrange(RIGHT).scale(0.5).move_to(DOWN * 3)
+        grupo_ecuaciones_1 = VGroup(ecuacion_deformacion, ecuacion_esfuerzo, ecuacion_T).scale(0.5).arrange(DOWN,
+                                                                                                            buff=0.2).move_to(
+            2 * DOWN)
+
+        # grupo_ecuaciones_1 = VGroup(ecuacion_delta, ecuacion_T, ecuacion_f_1_1, ecuacion_f_2_1).arrange(DOWN,
+        #                                                                                                buff=0.2).scale(
+        #    0.5).move_to(DOWN * 2)
+        ecuacion_T_2.move_to(grupo_ecuaciones_1[2])
+        ecuacion_T_3.move_to(grupo_ecuaciones_1[2])
+        ecuacion_T_4.move_to(grupo_ecuaciones_1[2])
+        ecuacion_f_1_1.next_to(grupo_ecuaciones_1,DOWN, buff=0.3)
+
+        # Animamos su aparición
+        self.play(FadeIn(barra_incial, n_a_1, n_b_1, n_a_2, n_b_2, label_1, label_2, cota_L), run_time=3)
+        self.wait(2)
+        self.play(FadeIn(T_1, T_2, label_T_1, label_T_2, dir_x, dir_u_1, dir_u_2), run_time=3)
+        self.wait(2)
+        self.play(ReplacementTransform(barra_incial, barra_final),
+                  n_a_2.animate.move_to(punto_a_final),
+                  n_b_2.animate.move_to(punto_b_final),
+                  label_1.animate.move_to(label_1.get_center() + LEFT),
+                  label_2.animate.move_to(label_2.get_center() + RIGHT),
+                  T_1.animate.move_to(punto_a_final + 0.5 * LEFT),
+                  T_2.animate.move_to(punto_b_final + 0.5 * RIGHT),
+                  label_T_1.animate.move_to(label_T_1.get_center() + LEFT),
+                  label_T_2.animate.move_to(label_T_2.get_center() + RIGHT),
+                  run_time=4)
+        self.play(FadeIn(cota_1, cota_2), run_time=2)
+        self.wait(2)
+        self.play(FadeOut(n_a_1, n_b_1), run_time=1)
+        self.wait(1)
+
+        self.play(FadeIn(grupo_ecuaciones_1[0]), run_time=2)
+        self.wait(2)
+        self.play(FadeIn(grupo_ecuaciones_1[1]), run_time=2)
+        self.wait(2)
+        self.play(FadeIn(grupo_ecuaciones_1[2]), run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(grupo_ecuaciones_1[2][0:3], ecuacion_T_2[0:3]),
+                  ReplacementTransform(grupo_ecuaciones_1[1][2:], ecuacion_T_2[3:]),
+                  FadeOut(grupo_ecuaciones_1[1][0:2],grupo_ecuaciones_1[2][3]),
+                  run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(ecuacion_T_2[0:4], ecuacion_T_3[0:4]),
+                  ReplacementTransform(grupo_ecuaciones_1[0][2:9], ecuacion_T_3[5:12]),
+                  FadeOut(grupo_ecuaciones_1[0][0:2],ecuacion_T_2[4]),
+                  FadeIn(ecuacion_T_3[4], ecuacion_T_3[12]),
+                  run_time=2)
+        self.wait(2)
+        self.play(TransformMatchingTex(ecuacion_T_3, ecuacion_T_4),
+                  run_time=2)
+        self.wait(2)
+        self.play(ecuacion_T_4.animate.move_to(2*DOWN), run_time=2)
+        ecuacion_f_1_1.next_to(ecuacion_T_4, DOWN, buff=0.4)
+        ecuacion_f_1_2.move_to(ecuacion_f_1_1)
+        ecuacion_f_1_3.move_to(ecuacion_f_1_1)
+
+        ecuacion_f_2_1.next_to(ecuacion_f_1_1, DOWN, buff=0.4)
+        ecuacion_f_2_2.move_to(ecuacion_f_2_1)
+        ecuacion_f_2_3.move_to(ecuacion_f_2_1)
+        ecuacion_f_2_4.move_to(ecuacion_f_2_1)
+        self.play(FadeIn(ecuacion_f_1_1,ecuacion_f_2_1), run_time=2)
+        self.play(ReplacementTransform(ecuacion_T_4[2:], ecuacion_f_1_2[3:]),
+                  ReplacementTransform(ecuacion_T_4[2:].copy(), ecuacion_f_2_2[2:]),
+                  ReplacementTransform(ecuacion_f_1_1[:3], ecuacion_f_1_2[:3]),
+                  ReplacementTransform(ecuacion_f_2_1[:2], ecuacion_f_2_2[:2]),
+                  FadeOut(ecuacion_f_1_1[3],ecuacion_f_2_1[2],ecuacion_T_4[0:2]),
+                  #FadeIn(ecuacion_T_3[4], ecuacion_T_3[12]),
+                  run_time=2)
+        self.wait(2)
+        self.play(TransformMatchingTex(ecuacion_f_1_2, ecuacion_f_1_3),
+                  TransformMatchingTex(ecuacion_f_2_2, ecuacion_f_2_3),
+                  run_time=2)
+        self.wait(2)
+        self.play(TransformMatchingTex(ecuacion_f_2_3, ecuacion_f_2_4),
+                  run_time=2)
+        self.wait(2)
+        self.play(ecuacion_f_1_3.animate.shift(1.2 * UP),
+                  ecuacion_f_2_4.animate.shift(1.2 * UP),run_time=2)
+        self.wait(2)
+        self.play(FadeIn(ecuacion_local_barra_1[0].get_brackets(), ecuacion_local_barra_1[1],
+                         ecuacion_local_barra_1[3].get_brackets(), ecuacion_local_barra_1[4].get_brackets()),
+                  run_time=2)
+        self.play(ReplacementTransform(ecuacion_f_1_3[0], ecuacion_local_barra_1[0].get_entries()[0]),
+                  ReplacementTransform(ecuacion_f_2_4[0], ecuacion_local_barra_1[0].get_entries()[1]),
+                  run_time=2)
+        self.wait(2)
+        # self.play(TransformMatchingTex(VGroup(*ecuacion_f_1_3[2:8],*ecuacion_f_2_4[2:8]), ecuacion_local_barra_1[2]),
+        #           #FadeOut(ecuacion_f_2_4[2:8]),
+        #           run_time=2)
+        copia = ecuacion_local_barra_1[2].copy().set_opacity(0)
+        self.play(ReplacementTransform(ecuacion_f_1_3[2:8], ecuacion_local_barra_1[2]),
+                  ReplacementTransform(ecuacion_f_2_4[2:8], copia),
+                  FadeOut(copia),
+                  run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(ecuacion_f_1_3[9].copy(), ecuacion_local_barra_1[3].get_entries()[0]),
+                  ReplacementTransform(ecuacion_f_1_3[10], ecuacion_local_barra_1[3].get_entries()[1]),
+                  ReplacementTransform(ecuacion_f_2_4[9], ecuacion_local_barra_1[3].get_entries()[2]),
+                  ReplacementTransform(ecuacion_f_2_4[11].copy(), ecuacion_local_barra_1[3].get_entries()[3]),
+                  FadeOut(ecuacion_f_2_4[11]),
+                  run_time=2)
+        self.play(ReplacementTransform(VGroup(ecuacion_f_1_3[9], ecuacion_f_2_4[10]),
+                                       ecuacion_local_barra_1[4].get_entries()[0]),
+                  ReplacementTransform(VGroup(ecuacion_f_1_3[11], ecuacion_f_2_4[12]),
+                                       ecuacion_local_barra_1[4].get_entries()[1]),
+                  FadeOut(ecuacion_f_1_3[1], ecuacion_f_1_3[8], ecuacion_f_1_3[12]),
+                  FadeOut(ecuacion_f_2_4[1], ecuacion_f_2_4[8], ecuacion_f_2_4[13]),
+                  run_time=2)
+        self.wait(2)
+        self.play(ecuacion_local_barra_1.animate.move_to(DOWN * 2),
+                  run_time=2)
+        self.wait(2)
+        self.play(Write(ecuacion_local_barra_2),
+                  run_time=2)
+        self.wait(2)
+
+
+
 class pruebas(Scene):
     def construct(self) -> None:
         # etiquetas = [MathTex('Nodo'), MathTex('x[m]'), MathTex('GL[y]'), MathTex(r'GL[\phi]')]
@@ -2275,9 +2686,9 @@ class pruebas(Scene):
         punto_b_final = 3 * RIGHT
 
         # Instanciamos nuestro objeto personalizado
-        mi_resorte = Resorte(punto_a_1, punto_b_1, n=40)
+        mi_resorte = resorte(punto_a_1, punto_b_1, n=40)
         # porc_h= 0.1 por defecto, se cambia para que no aumente el d del resorte visualmente
-        mi_resorte_2 = Resorte(punto_a_final, punto_b_final, n=40, porc_h=2 / 30)
+        mi_resorte_2 = resorte(punto_a_final, punto_b_final, n=40, porc_h=2 / 30)
         n_a_1 = Dot(punto_a_1, radius=0.05, color=GRAY)
         n_b_1 = Dot(punto_b_1, radius=0.05, color=GRAY)
         n_a_2 = Dot(punto_a_2, radius=0.05, color=RED_D).set_z_index(1)
@@ -2482,5 +2893,5 @@ class pruebas2(Scene):
         punto_b_1 = 2 * RIGHT
 
         # Instanciamos nuestro objeto personalizado
-        mi_resorte = Resorte(punto_a_1, punto_b_1, n=40)
+        mi_resorte = resorte(punto_a_1, punto_b_1, n=40)
         self.add(mi_resorte)

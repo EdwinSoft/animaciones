@@ -137,7 +137,7 @@ class EnsambleAnimacion(Ensamble):
         return Matrix(np.array(etiquetas_fuerzas).reshape(-1, 1)
                       , left_bracket=r"\{", right_bracket=r"\}")
 
-    def ecuacion_vector_etiquetas_fuerzas_internas_resorte(self, ele: Resorte, mostrar_valores: bool = False,
+    def ecuacion_vector_etiquetas_fuerzas_internas_resorte(self, ele: resorte, mostrar_valores: bool = False,
                                                            formato: str = '%.3g') -> VMobject:
         etiquetas_fuerzas = ele._obtener_etiquetas_fuerzas()
         if mostrar_valores:
@@ -626,7 +626,7 @@ class EnsambleAnimacion(Ensamble):
         fuerzas_internas.add(VGroup(label_f_1, label_f_2, label_m_1, label_m_2))
         return fuerzas_internas
 
-    def elemento_fuerza_interna_resorte(self, ele: Resorte, unidades: str | None = None,
+    def elemento_fuerza_interna_resorte(self, ele: resorte, unidades: str | None = None,
                                         mostrar_valores: bool = False) -> VMobject:
         if unidades is None:
             unidades = r"\,kN"
@@ -657,7 +657,7 @@ class EnsambleAnimacion(Ensamble):
 def elemento_resorte(nodo_i: tuple[float, float], nodo_j: tuple[float, float], ejes: Axes) -> VMobject:
     coord_i = ejes.c2p(*nodo_i)
     coord_j = ejes.c2p(*nodo_j)
-    resorte = Resorte(coord_i, coord_j, n=40)
+    resorte = resorte(coord_i, coord_j, n=40)
     return resorte
 
 
@@ -667,10 +667,15 @@ def elemento_viga(x_i: float, x_f: float, h: float | int, ejes: Axes) -> VMobjec
     centro = (coord_i + coord_j) / 2
     L = np.linalg.norm(coord_j - coord_i)
     viga = Rectangle(height=h, width=L, color=BLUE, fill_color=BLUE, fill_opacity=0.5, stroke_width=1).move_to(centro)
-    # nodo_i = Dot(coord_i, color=RED)
-    # nodo_j = Dot(coord_j, color=RED)
-    # return VGroup(viga, nodo_i, nodo_j)
     return viga
+
+def elemento_barra(x_i: float, x_f: float, h: float | int, ejes: Axes) -> VMobject:
+    coord_i = ejes.c2p((x_i, 0))
+    coord_j = ejes.c2p((x_f, 0))
+    centro = (coord_i + coord_j) / 2
+    L = np.linalg.norm(coord_j - coord_i)
+    barra = Rectangle(height=h, width=L, color=BLUE, fill_color=BLUE, fill_opacity=0.5, stroke_width=1).move_to(centro)
+    return barra
 
 
 def elemento_armadura(nodo_i: tuple[float, float], nodo_j: tuple[float, float], h: float | int, ejes: Axes) -> VMobject:
@@ -1222,6 +1227,13 @@ def animacion_titulo(titulo: str, subtitulo: str = '') -> VMobject:
         todo = VGroup(titulo, caja).move_to(ORIGIN)
     return todo
 
+def crear_barra(p_i: np.ndarray, p_f: np.ndarray, h: float | int) -> VMobject:
+    coord_i = p_i
+    coord_j = p_f
+    centro = (coord_i + coord_j) / 2
+    L = np.linalg.norm(coord_j - coord_i)
+    barra = Rectangle(height=h, width=L, color=BLUE, fill_color=BLUE, fill_opacity=0.5, stroke_width=1).move_to(centro)
+    return barra
 
 def elemento_tabla(encabezado: list, datos: list, color_tabla: ManimColor = TEAL_C,
                    color_encabezado: ManimColor = TEAL_C) -> VMobject:
@@ -1295,7 +1307,7 @@ class SegmentoResorte(VMobject):
         self.add_cubic_bezier_curve_to(v6, v7, v8)
 
 
-class Resorte(VGroup):
+class resorte(VGroup):
     """Objeto Manim que genera un resorte completo."""
 
     def __init__(self, p_1, p_2, n=30, porc_h: float = 0.1, **kwargs):
