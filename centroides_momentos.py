@@ -35,36 +35,36 @@ class CentroideAnimacion(Scene):
         # Definir elementos para DrawBorderThenFill
         placa = Polygon(
             ejes.c2p(0, 0), ejes.c2p(18, 0), ejes.c2p(12, 10), ejes.c2p(0, 10),
-            fill_color=BLUE, fill_opacity=0.5, stroke_width=4, stroke_color=BLUE
+            fill_color=BLUE, fill_opacity=0.5, stroke_width=0, stroke_color=BLUE
         )
         hueco_rectangular = Rectangle(
             width=2 * scale_factor, height=4 * scale_factor,
-            fill_color=BLACK, fill_opacity=1, stroke_width=4, stroke_color=BLACK
+            fill_color=BLACK, fill_opacity=1, stroke_width=0, stroke_color=BLACK
         ).move_to(ejes.c2p(12, 4))
         
         semicirculo = Arc(
             radius=3 * scale_factor, start_angle=0, angle=PI,
-            fill_color=BLACK, fill_opacity=1, stroke_width=4, stroke_color=BLACK
+            fill_color=BLACK, fill_opacity=1, stroke_width=0, stroke_color=BLACK
         ).move_to(ejes.c2p(6, 0), aligned_edge=DOWN)
 
         # 2. Puntos polígono
-        pts_poligono = VGroup(*[Dot(ejes.c2p(x, y), color=RED, radius=0.04) for x, y in [(0, 0), (18, 0), (12, 10), (0, 10)]])
+        pts_poligono = VGroup(*[Dot(ejes.c2p(x, y), color=RED, radius=0.04, z_index= 1) for x, y in [(0, 0), (18, 0), (12, 10), (0, 10)]])
         self.play(LaggedStart(*[GrowFromCenter(p) for p in pts_poligono], lag_ratio=0.2))
         
         # 3. Polígono
-        self.play(DrawBorderThenFill(placa))
+        self.play(DrawBorderThenFill(placa), run_time=4)
         
         # 4. Puntos semicírculo
-        pts_semi = VGroup(*[Dot(ejes.c2p(x, y), color=RED, radius=0.04) for x, y in [(3, 0), (6, 0), (9, 0)]])
+        pts_semi = VGroup(*[Dot(ejes.c2p(x, y), color=RED, radius=0.04, z_index= 1) for x, y in [(3, 0), (6, 0), (9, 0)]])
         self.play(LaggedStart(*[GrowFromCenter(p) for p in pts_semi], lag_ratio=0.2))
         
         # 5. Semicírculo
-        self.play(DrawBorderThenFill(semicirculo))
+        self.play(DrawBorderThenFill(semicirculo), run_time=8)
         
         # 6. Puntos rectángulo
-        pts_rect = VGroup(*[Dot(ejes.c2p(x, y), color=RED, radius=0.04) for x, y in [(11, 2), (13, 6)]])
+        pts_rect = VGroup(*[Dot(ejes.c2p(x, y), color=RED, radius=0.04, z_index= 1) for x, y in [(11, 2), (13, 6)]])
         self.play(LaggedStart(*[GrowFromCenter(p) for p in pts_rect], lag_ratio=0.2))
         
         # 7. Rectángulo
-        self.play(DrawBorderThenFill(hueco_rectangular))
+        self.play(DrawBorderThenFill(hueco_rectangular), run_time=8)
         self.wait(2)
