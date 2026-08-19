@@ -231,7 +231,6 @@ class FalsaPosicionAnimacion(MovingCameraScene):
         self.wait(1)
 
         a, b, r = fp._tabla['x_min'][0], fp._tabla['x_max'][0], fp._tabla['x'][0]
-        # m=(a+b)/2
         pos_a = ValueTracker(a)
         pos_b = ValueTracker(b)
         pos_r = ValueTracker(r)
@@ -272,9 +271,10 @@ class FalsaPosicionAnimacion(MovingCameraScene):
         )
         # dot_a.add_updater
         self.play(FadeIn(dot_a, dot_b), run_time=1.5)
-        self.play(
-            FadeIn(dot_r), run_time=1.5
-        )
+        dot_r.set_opacity(0)
+        # self.play(
+        #     FadeIn(dot_r), run_time=1.5
+        # )
         rows = list()
         for i in range(len(fp._tabla['x'])):
             rows.append((str('{:' + fp._fmt['iter'] + '}').format(i + 1),
@@ -321,9 +321,9 @@ class FalsaPosicionAnimacion(MovingCameraScene):
             label_b = MathTex(f"b_{{{i + 1}}}").scale(1 * escala).next_to(dot_b,
                                                                           UP * escala if f(b) < 0 else DOWN * escala,
                                                                           buff=0.05)
-            label_r = MathTex(f"m_{{{i + 1}}}").scale(1 * escala).next_to(dot_r,
-                                                                          UP * escala if f(r) < 0 else DOWN * escala,
-                                                                          buff=0.05)
+            # label_r = MathTex(f"m_{{{i + 1}}}").scale(1 * escala).next_to(dot_r,
+            #                                                               UP * escala if f(r) < 0 else DOWN * escala,
+            #                                                               buff=0.05)
             self.play(
                 self.camera.frame.animate.set_height(escala * config.frame_height).move_to(coord_centro),
                 run_time=1.5
@@ -365,8 +365,6 @@ class FalsaPosicionAnimacion(MovingCameraScene):
                     fila_pasada.set_color(GRAY_B)
 
             tabla.get_rows()[-1].set_color(YELLOW)
-            # --- SOLUCIÓN AL ERROR ---
-            # 3. Agrupamos las líneas horizontales y verticales de la tabla
             cuadricula = VGroup(
                 tabla.get_horizontal_lines(),
                 tabla.get_vertical_lines()
@@ -400,19 +398,26 @@ class FalsaPosicionAnimacion(MovingCameraScene):
                 break
             self.play(FadeOut(tabla, fondo_encabezado), FadeIn(grafica), run_time=2)
             #####################
-            self.play(Create(line_a), Create(line_b), Create(line_r), Create(line_fp), FadeIn(label_a), FadeIn(label_b),
-                      FadeIn(label_r))
+            self.play(Create(line_a), Create(line_b), Create(line_fp), FadeIn(label_a), FadeIn(label_b))
+            self.wait(1)
+            dot_r.set_opacity(1)
+            self.play(pos_r.animate.set_value(fp._tabla['x'][i]), run_time=2)
+            self.wait(1)
+            label_r = MathTex(f"r_{{{i + 1}}}").scale(1 * escala).next_to(dot_r,
+                                                                          UP * escala if f(r) < 0 else DOWN * escala,
+                                                                          buff=0.05)
+            self.play(Create(line_r), FadeIn(label_r), run_time=2)
             self.wait(1)
             if f(a) * f(r) < 0:
                 self.play(pos_b.animate.set_value(r), run_time=2)
-                self.play(pos_r.animate.set_value(fp._tabla['x'][i + 1]), run_time=2)
+                # self.play(pos_r.animate.set_value(fp._tabla['x'][i+1]), run_time=2)
                 self.play(
                     FadeOut(line_a), FadeOut(line_b), FadeOut(line_r), FadeOut(line_fp), FadeOut(label_a),
                     FadeOut(label_b), FadeOut(label_r)
                 )
             else:
                 self.play(pos_a.animate.set_value(r), run_time=2)
-                self.play(pos_r.animate.set_value(fp._tabla['x'][i + 1]), run_time=2)
+                # self.play(pos_r.animate.set_value(fp._tabla['x'][i+1]), run_time=2)
                 self.play(
                     FadeOut(line_a), FadeOut(line_b), FadeOut(line_r), FadeOut(line_fp), FadeOut(label_a),
                     FadeOut(label_b), FadeOut(label_r)
@@ -439,9 +444,13 @@ class PuntoFijoAnimacion(MovingCameraScene):
         labels = axes.get_axis_labels(x_label="x", y_label="f(x)")
         graph = axes.plot(f, color=BLUE_D, x_range=[-1, 1.5])
         graph_2 = axes.plot(lambda x: x, color=WHITE, x_range=[-1, 1.5])
-        graph_label = axes.get_graph_label(graph, label=r"g\left(x\right)=\sin(\cos(e^x))+x\\g\left(x\right)=x",
+        label_g_1 = axes.get_graph_label(graph, label=r"g\left(x\right)=\sin(\cos(e^x))+x",
                                            x_val=-1.5, buff=3.2,
                                            direction=UL).scale(0.7)
+        label_g_2 = axes.get_graph_label(graph_2, label=r"y\left(x\right)=x",
+                                           x_val=1.5,
+                                           direction=UL).scale(0.7)
+        graph_label=VGroup(label_g_1, label_g_2)
 
         self.play(Create(axes), Write(labels), run_time=3)
         self.play(Create(graph), Create(graph_2), Write(graph_label), run_time=3)
@@ -549,7 +558,7 @@ class PuntoFijoAnimacion(MovingCameraScene):
             self.play(Create(line_a), run_time=1)
             self.play(Create(line_pf), run_time=1)
             self.play(pos_r.animate.set_value(pf._tabla['x'][i]), run_time=2)
-            label_r = MathTex(f"m_{{{i + 1}}}").scale(0.7 * escala).next_to(dot_r,
+            label_r = MathTex(f"r_{{{i + 1}}}").scale(0.7 * escala).next_to(dot_r,
                                                                             UP * escala if f(r) > 0 else DOWN * escala,
                                                                             buff=0.05)
             self.play(FadeIn(label_r))
@@ -760,7 +769,7 @@ class NewtonRaphsonAnimacion(MovingCameraScene):
             self.play(Create(line_a), run_time=2)
             self.play(Create(line_nr), run_time=2)
             self.play(pos_r.animate.set_value(nr._tabla['x'][i]), run_time=2)
-            label_r = MathTex(f"m_{{{i + 1}}}").scale(0.7 * escala).next_to(dot_r,
+            label_r = MathTex(f"r_{{{i + 1}}}").scale(0.7 * escala).next_to(dot_r,
                                                                             UP * escala if f(r) < 0 else DOWN * escala,
                                                                             buff=0.05)
             self.play(FadeIn(label_r), run_time=2)
@@ -894,9 +903,9 @@ class SecanteAnimacion(MovingCameraScene):
                                   color=YELLOW
                               )
                               )
-        dot_r=Dot(
+        dot_r = Dot(
             point=axes.c2p(r, 0),  # Tu coordenada fija o variable
-            radius=0.08 ,   color=RED
+            radius=0.08, color=RED
         ).set_opacity(0)
         self.add(dot_r)
 
@@ -966,7 +975,7 @@ class SecanteAnimacion(MovingCameraScene):
                 run_time=1.5
             )
             self.wait(1)
-            self.play(Create(line_a),Create(line_b), run_time=2)
+            self.play(Create(line_a), Create(line_b), run_time=2)
             self.play(Create(line_sc), run_time=2)
             if i == 0:
                 dot_r.scale(escala)

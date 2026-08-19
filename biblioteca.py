@@ -657,7 +657,7 @@ class EnsambleAnimacion(Ensamble):
 def elemento_resorte(nodo_i: tuple[float, float], nodo_j: tuple[float, float], ejes: Axes) -> VMobject:
     coord_i = ejes.c2p(*nodo_i)
     coord_j = ejes.c2p(*nodo_j)
-    resorte = resorte(coord_i, coord_j, n=40)
+    resorte = ResorteManim(coord_i, coord_j, n=40)
     return resorte
 
 
@@ -1307,7 +1307,7 @@ class SegmentoResorte(VMobject):
         self.add_cubic_bezier_curve_to(v6, v7, v8)
 
 
-class resorte(VGroup):
+class ResorteManim(VGroup):
     """Objeto Manim que genera un resorte completo."""
 
     def __init__(self, p_1, p_2, n=30, porc_h: float = 0.1, **kwargs):
