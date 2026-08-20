@@ -19,11 +19,11 @@ class EjemploVigasAnimacion(Scene):
         e_2.agregar_carga_distribuida(-24)
         mg = EnsambleAnimacion([e_1, e_2, e_3])
         ## Se guarda los objetos antes de la solución en mnspy
-        matriz_global_base = mg.sistema_ecuaciones_matriz_rigidez_global_2(EI_cte=True, reducida=False,
-                                                                           carga_sobre_elementos=True)
+        matriz_global_base = mg.sistema_ecuaciones_matriz_rigidez_global(EI_cte=True, reducida=False,
+                                                                         carga_sobre_elementos=True)
         matriz_global = matriz_global_base.copy().scale(0.45).arrange(RIGHT)
-        matriz_global_reducida_inicial = mg.sistema_ecuaciones_matriz_rigidez_global_2(EI_cte=True, reducida=True,
-                                                                                       carga_sobre_elementos=True)
+        matriz_global_reducida_inicial = mg.sistema_ecuaciones_matriz_rigidez_global(EI_cte=True, reducida=True,
+                                                                                     carga_sobre_elementos=True)
         matriz_global_reducida = matriz_global_reducida_inicial.copy().scale(0.45).arrange(RIGHT)
         matriz_global_reducida_final = VGroup(matriz_global_reducida_inicial[8].copy(), ecuacion_signo_igual(),
                                               ecuacion_EI(), matriz_global_reducida_inicial[5].copy(),
@@ -77,8 +77,8 @@ class EjemploVigasAnimacion(Scene):
         sol_final_resta = sol_final - mg._union._k.obtener_fuerzas(False)
         solucion = ecuacion_array_a_matriz(sol_final, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
 
-        matriz_global_final_base = mg.sistema_ecuaciones_matriz_rigidez_global_2(EI_cte=True, reducida=False,
-                                                                                 carga_sobre_elementos=True)
+        matriz_global_final_base = mg.sistema_ecuaciones_matriz_rigidez_global(EI_cte=True, reducida=False,
+                                                                               carga_sobre_elementos=True)
         matriz_global_final = matriz_global_final_base.copy().scale(0.35).arrange(RIGHT)
         matriz_global_final_2 = matriz_global_final_base.copy()
         matriz_global_final_2[0] = matriz_global_base.copy()[0]
@@ -1337,16 +1337,16 @@ class EjemploResorteAnimacion(Scene):
         n_3 = Nodo('3', grados_libertad={'x': True})
         n_4 = Nodo('4', grados_libertad={'x': True})
         #### Creación de los Elementos
-        e_1 = resorte('1', n_1, n_3, k=200)
-        e_2 = resorte('2', n_3, n_4, k=400)
-        e_3 = resorte('3', n_4, n_2, k=600)
+        e_1 = Resorte('1', n_1, n_3, k=200)
+        e_2 = Resorte('2', n_3, n_4, k=400)
+        e_3 = Resorte('3', n_4, n_2, k=600)
         mg = EnsambleAnimacion([e_1, e_2, e_3])
         #### Cargas
         n_4.agregar_fuerza_externa(25000, 'x')
         ## Se guarda los objetos antes de la solución en mnspy
-        matriz_global_base = mg.sistema_ecuaciones_matriz_rigidez_global_2(reducida=False)
+        matriz_global_base = mg.sistema_ecuaciones_matriz_rigidez_global(reducida=False)
         matriz_global = matriz_global_base.copy().scale(0.5).arrange(RIGHT)
-        matriz_global_reducida_inicial = mg.sistema_ecuaciones_matriz_rigidez_global_2(reducida=True)
+        matriz_global_reducida_inicial = mg.sistema_ecuaciones_matriz_rigidez_global(reducida=True)
         matriz_global_reducida = matriz_global_reducida_inicial.copy().scale(0.5).arrange(RIGHT)
         # matriz_global_reducida_final = VGroup(matriz_global_reducida_inicial[5].copy(), ecuacion_signo_igual(),
         #                                       matriz_global_reducida_inicial[2].copy(),
@@ -1404,7 +1404,7 @@ class EjemploResorteAnimacion(Scene):
         sol_final_resta = sol_final - mg._union._k.obtener_fuerzas(False)
         solucion = ecuacion_array_a_matriz(sol_final, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
 
-        matriz_global_final_base = mg.sistema_ecuaciones_matriz_rigidez_global_2(reducida=False)
+        matriz_global_final_base = mg.sistema_ecuaciones_matriz_rigidez_global(reducida=False)
         matriz_global_final = matriz_global_final_base.copy().scale(0.35).arrange(RIGHT)
         matriz_global_final_2 = matriz_global_final_base.copy()
         matriz_global_final_2[0] = matriz_global_base.copy()[0]
@@ -2245,6 +2245,932 @@ class EjemploResorteAnimacion(Scene):
         self.wait(2)
         self.play(FadeOut(mr_elemento_3_2_3))
 
+class EjemploBarraAnimacion(Scene):
+    def construct(self):
+        # Solución del ejercicio con mnspy
+        n_1 = Nodo('1', 0, grados_libertad={'x': False})
+        n_2 = Nodo('2', 0.6, grados_libertad={'x': True})
+        n_3 = Nodo('3', 1.2, grados_libertad={'x': True})
+        n_4 = Nodo('4', 1.8, grados_libertad={'x': False})
+        #### Creación de los Elementos
+        e_1 = Barra('1', n_1, n_2, A=6E-4, E=2E11)
+        e_2 = Barra('2', n_2, n_3, A=6E-4, E=2E11)
+        e_3 = Barra('3', n_3, n_4, A=12E-4, E=1E11)
+        #### Cargas
+        n_2.agregar_fuerza_externa(15000, 'x')
+        mg = EnsambleAnimacion([e_1, e_2, e_3])
+        ## Se guarda los objetos antes de la solución en mnspy
+        matriz_global_base = mg.sistema_ecuaciones_matriz_rigidez_global(reducida=False)
+        mat_k = ecuacion_array_a_matriz(np.array(mg._union._k.obtener_matriz(False))/2e8)
+        matriz_global_base[4]=VGroup(MathTex(r'2\times10^8'), mat_k).arrange(RIGHT)
+        matriz_global = matriz_global_base.copy().scale(0.5).arrange(RIGHT)
+        matriz_global_reducida_inicial = mg.sistema_ecuaciones_matriz_rigidez_global(reducida=True)
+        mat_k = ecuacion_array_a_matriz(np.array(mg._union._k.obtener_matriz(True)) / 2e8)
+        matriz_global_reducida_inicial[4] = VGroup(MathTex(r'2\times10^8'), mat_k).arrange(RIGHT)
+        matriz_global_reducida = matriz_global_reducida_inicial.copy().scale(0.5).arrange(RIGHT)
+
+        matriz_global_reducida_final = matriz_global_reducida_inicial[2:].copy().scale(0.5).arrange(RIGHT)
+        matriz = matriz_global_reducida_inicial[4].copy()
+        vec_k_reduc_inverso = ecuacion_array_a_matriz(np.linalg.inv(np.array(mg._union._k.obtener_matriz(True))),
+                                                      h_buff=2.8)
+
+        sol = np.linalg.inv(np.array(mg._union._k.obtener_matriz(True))) @ np.array(mg._union._k.obtener_fuerzas(True))
+        solucion_reducida = ecuacion_array_a_matriz(sol, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
+        superindice = MathTex("-1").next_to(matriz, RIGHT, aligned_edge=UP, buff=0.1)
+        matriz_global_reducida_final_2 = VGroup(VGroup(matriz_global_reducida_inicial[4].copy(), superindice),
+                                                matriz_global_reducida_inicial[2].copy(),
+                                                ecuacion_signo_igual(), matriz_global_reducida_inicial[5].copy()).scale(
+            0.5).arrange(RIGHT)
+        matriz_global_reducida_final_3 = VGroup(vec_k_reduc_inverso,
+                                                matriz_global_reducida_inicial[2].copy(),
+                                                ecuacion_signo_igual(),
+                                                matriz_global_reducida_inicial[5].copy()).scale(
+            0.5).arrange(RIGHT)
+        matriz_global_reducida_final_4 = VGroup(solucion_reducida.copy(), ecuacion_signo_igual(),
+                                                matriz_global_reducida_inicial[5].copy()).scale(
+            0.5).arrange(RIGHT)
+
+        sol_1 = VGroup(MathTex(r'{u_2}').set_color(BLUE), ecuacion_signo_igual(),
+                       MathTex(f'{sol[0][0]:.8f}')).scale(0.5).arrange(RIGHT)
+        sol_2 = VGroup(MathTex(r'{u_3}').set_color(BLUE), ecuacion_signo_igual(),
+                       MathTex(f'{sol[1][0]:.8f}')).scale(0.5).arrange(RIGHT).next_to(sol_1, DOWN)
+
+        ### Grados de libertad
+        n_1_gdl = VGroup(mg.get_grados_libertad(n_1, 'x', offset=0.0, longitud=0.8))
+        n_1_labels_gdl = elemento_label_grados_libertad(n_1).scale(0.5)
+        n_2_gdl = VGroup(mg.get_grados_libertad(n_2, 'x', offset=0.0, longitud=0.8))
+        n_2_labels_gdl = elemento_label_grados_libertad(n_2).scale(0.5)
+        n_3_gdl = VGroup(mg.get_grados_libertad(n_3, 'x', offset=0.0, longitud=0.8))
+        n_3_labels_gdl = elemento_label_grados_libertad(n_3).scale(0.5)
+        n_4_gdl = VGroup(mg.get_grados_libertad(n_4, 'x', offset=0.0, longitud=0.8))
+        n_4_labels_gdl = elemento_label_grados_libertad(n_4).scale(0.5)
+        vector_desplazamientos_el_1_modificado = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_1,
+                                                                                                       reducida=False)
+        vector_desplazamientos_el_2_modificado = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_2,
+                                                                                                       reducida=False)
+        vector_desplazamientos_el_3_modificado = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_3,
+                                                                                                       reducida=False)
+        ## Se soluciona por mnspy
+        mg.solucionar_por_gauss_y_calcular_reacciones()
+        sol_final = np.array(mg._union._k.obtener_matriz(False)) @ np.array(mg._union._k.obtener_desplazamientos(False))
+        sol_final_resta = sol_final - mg._union._k.obtener_fuerzas(False)
+        solucion = ecuacion_array_a_matriz(sol_final, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
+
+        matriz_global_final_base = mg.sistema_ecuaciones_matriz_rigidez_global(reducida=False)
+        matriz_global_final = matriz_global_final_base.copy().scale(0.35).arrange(RIGHT)
+        matriz_global_final_2 = matriz_global_final_base.copy()
+        matriz_global_final_2[0] = matriz_global_base.copy()[0]
+        matriz_global_final_2.scale(0.35).arrange(RIGHT)
+        matriz_global_final_3 = matriz_global_final_base.copy()
+        matriz_global_final_3[0] = matriz_global_base.copy()[0]
+        matriz_global_final_3.submobjects.pop(4)
+        matriz_global_final_3[4] = solucion
+
+        # matriz_global_final_4 = VGroup(matriz_global_final_3[0].copy(), matriz_global_final_3[3].copy(),
+        #                                matriz_global_final_3[4].copy(), matriz_global_final_3[1].copy(),
+        #                                matriz_global_final_3[2].copy())
+        matriz_global_final_4 = matriz_global_final_3.copy()
+        matriz_global_final_4[1], matriz_global_final_4[2], matriz_global_final_4[3], matriz_global_final_4[4] = \
+            matriz_global_final_4[3], matriz_global_final_4[4], ecuacion_signo_menos(), matriz_global_final_4[2]
+        matriz_global_final_5 = matriz_global_final_4.copy()
+        matriz_global_final_4.scale(0.35).arrange(RIGHT)
+        matriz_global_final_3.scale(0.35).arrange(RIGHT)
+        matriz_global_final_5.submobjects.pop(3)
+        matriz_global_final_5.submobjects.pop(3)
+        matriz_global_final_5[2] = ecuacion_array_a_matriz(sol_final_resta, formato_num='{x:.8f}', left_bracket=r"\{",
+                                                           right_bracket=r"\}")
+        matriz_global_final_5.scale(0.35).arrange(RIGHT)
+
+        # ############
+        cargas_puntuales = mg.get_cargas_puntuales_nodales(longitud=1.0, unidades=r"\,N").set_color(RED_D)
+        # cargas_puntuales[1].add_background_rectangle(
+        #     color=BLACK,  # Color del recuadro
+        #     opacity=0.9,  # Opacidad (0 es invisible, 1 es sólido)
+        #     buff=0.04  # Margen/espacio entre el texto y el borde
+        # )
+        # ############
+        nodos, label_nodos, soportes = mg.get_nodos_y_soportes()
+        nodos.set_color(RED)
+        # ############
+
+        elementos, label_elementos = mg.get_elementos()
+
+        label_elementos.shift(0.4 * DOWN)
+        # k_1 = MathTex(r'k_1=200\,N/mm', color=WHITE).scale(0.7).next_to(elementos[0], UP)
+        # k_2 = MathTex(r'k_2=400\,N/mm', color=WHITE).scale(0.7).next_to(elementos[1], UP)
+        # k_3 = MathTex(r'k_3=600\,N/mm', color=WHITE).scale(0.7).next_to(elementos[2], UP)
+
+        enunciado = Tex(
+            r"Para el ensamblaje de tres barras mostrado en la Figura, determine\\",
+            r"(a) la matriz de rigidez global, (b) los desplazamientos de los nodos 2 y 3, y \\",
+            r"(c) las reacciones en los nodos 1 y 4. Se aplica una fuerza de 15,000 N \\",
+            r"een la dirección $x$ en el nodo 2. La longitud de cada elemento  es de 0.6 m.\\"
+            r"Sea $E = 2.0 \times 10^{11}$ Pa y $A = 6 \times 10^{-4} \text{ m}^2$ para los elementos 1 y 2, y sea $E = 1 \times 10^{11}$ Pa y $A = 12 \times 10^{-4} \text{ m}^2$ para el elemento 3. Los nodos 1 y 4 están fijos.",
+            tex_environment="flushleft",  # Esto alinea el texto a la izquierda
+            font_size=36
+        ).to_edge(UP + LEFT)
+        # ############
+
+        # Ecuaciones generales del resorte
+        ecuacion_local_resorte = VGroup(Matrix([['f']], left_bracket=r"\{", right_bracket=r"\}"),
+                                        ecuacion_signo_igual().copy(), Matrix([['k']]),
+                                        Matrix([['d']], left_bracket=r"\{", right_bracket=r"\}")).arrange(
+            RIGHT).move_to(DOWN * 2)
+        matrix_rigidez = Matrix(
+            [['1', '-1'],
+             ['-1', '1']]
+        )
+        matrix_rigidez = VGroup(MathTex(r'\frac{AE}{L}'),Matrix(
+            [['1', '-1'],
+             ['-1', '1']]
+        )).arrange(RIGHT)
+        ## Ecuaciones Elemento 1
+        ecuacion_local_resorte_1 = ecuacion_local_resorte.copy()
+        matriz_k_1 = ecuacion_vector_fuerza_resorte('1', '1', '3')
+        ### Cargas en elemento 1
+        ### Grados de libertad en elemento 1
+        grados_el_1 = VGroup(*n_1_gdl.copy(), *n_3_gdl.copy()).set_z_index(1)
+        label_etiquetas_grados_el_1 = VGroup(*n_1_labels_gdl.copy(), *n_3_labels_gdl.copy())
+        label_etiquetas_grados_el_1[0].next_to(grados_el_1[0], UP, buff=0.1)
+        label_etiquetas_grados_el_1[1].next_to(grados_el_1[1], RIGHT, buff=0.1)
+        #######################################################################################################
+        ### Escena elemento 1
+        escena_elemento_1 = VGroup(elementos[0], nodos[0:2], soportes[0:1], label_elementos[0], label_nodos[0:2])
+        matrix_rigidez_1_1 = Matrix(
+            [['200', '-200'],
+             ['-200', '200']]
+        )
+        matrix_rigidez_1_1 = VGroup(MathTex(r'2\times 10^8'), Matrix(
+            [['1', '-1'],
+             ['-1', '1']]
+        )).arrange(RIGHT)
+        matrix_rigidez_1_2 = matrix_rigidez_1_1.copy()
+        matrix_rigidez_1_3 = matrix_rigidez_1_1.copy()
+        vector_desplazamientos_el_1 = ecuacion_vector_desplazamiento_resorte('1', '3')
+        vector_desplazamientos_modificado_1_3 = vector_desplazamientos_el_1_modificado.copy()
+        mr_elemento_1 = VGroup(matriz_k_1.copy(), ecuacion_signo_igual().copy(), matrix_rigidez.copy(),
+                               vector_desplazamientos_el_1.copy()).arrange(RIGHT, buff=0.2)
+        mr_elemento_1.to_edge(DOWN).scale(0.5)
+        mr_elemento_1_1 = VGroup(matriz_k_1.copy(), ecuacion_signo_igual().copy(),
+                                 matrix_rigidez_1_2, vector_desplazamientos_el_1.copy()).arrange(RIGHT,
+                                                                                                 buff=0.2)
+        mr_elemento_1_1.to_edge(DOWN).scale(0.5)
+        mr_elemento_1_2 = VGroup(matriz_k_1.copy(), ecuacion_signo_igual().copy(),
+                                 matrix_rigidez_1_3, vector_desplazamientos_modificado_1_3, ).arrange(RIGHT, buff=0.2)
+        mr_elemento_1_2.to_edge(DOWN).scale(0.5)
+        mr_elemento_1_2_1 = mr_elemento_1_2.copy()
+        mr_elemento_1_2_1[3] = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_1, reducida=False).scale(0.5)
+        mr_elemento_1_2_1.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_1_2_2 = mr_elemento_1_2_1.copy()
+        mr_elemento_1_2_2.submobjects.pop(3)
+        sol_el_1_1 = np.array(e_1._k.obtener_matriz(False)) @ np.array(e_1._k.obtener_desplazamientos(False))
+        mr_elemento_1_2_2[2] = ecuacion_array_a_matriz(sol_el_1_1, formato_num='{x:.8f}', left_bracket=r"\{",
+                                                       right_bracket=r"\}").scale(0.5)
+        mr_elemento_1_2_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_1_2_3 = mr_elemento_1_2_1.copy()
+        mr_elemento_1_2_3[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_resorte(e_1, mostrar_valores=True,
+                                                                                     formato='%.8g').scale(0.5)
+        mr_elemento_1_2_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        f_internas_elemento_1 = mg.elemento_fuerza_interna_resorte(e_1, unidades='')
+        #######################################################################################################
+        ## Ecuaciones Elemento 2
+        ecuacion_local_resorte_2 = ecuacion_local_resorte.copy()
+        matriz_k_2 = ecuacion_vector_fuerza_resorte('2', '3', '4')
+        ### Cargas en elemento 2
+        ### Grados de libertad en elemento 2
+        grados_el_2 = VGroup(*n_3_gdl.copy(), *n_4_gdl.copy()).set_z_index(1)
+        label_etiquetas_grados_el_2 = VGroup(*n_3_labels_gdl.copy(), *n_4_labels_gdl.copy())
+        label_etiquetas_grados_el_2[0].next_to(grados_el_2[0], LEFT, buff=0.1)
+        label_etiquetas_grados_el_2[1].next_to(grados_el_2[1], RIGHT, buff=0.1)
+
+        ### Escena elemento 2
+        escena_elemento_2 = VGroup(elementos[1], nodos[1:3],
+                                   # soportes[0:1],
+                                   label_elementos[1], label_nodos[1:3])
+        matrix_rigidez_2_1 = Matrix(
+            [['400', '-400'],
+             ['-400', '400']]
+        )
+        matrix_rigidez_2_1 = VGroup(MathTex(r'2\times 10^8'), Matrix(
+            [['1', '-1'],
+             ['-1', '1']]
+        )).arrange(RIGHT)
+        matrix_rigidez_2_2 = matrix_rigidez_2_1.copy()
+        matrix_rigidez_2_3 = matrix_rigidez_2_1.copy()
+        vector_desplazamientos_el_2 = ecuacion_vector_desplazamiento_resorte('3', '4')
+        vector_desplazamientos_modificado_2_3 = vector_desplazamientos_el_2_modificado.copy()
+        mr_elemento_2 = VGroup(matriz_k_2.copy(), ecuacion_signo_igual().copy(), matrix_rigidez.copy(),
+                               vector_desplazamientos_el_2.copy()).arrange(RIGHT, buff=0.2)
+        mr_elemento_2.to_edge(DOWN).scale(0.5)
+        mr_elemento_2_1 = VGroup(matriz_k_2.copy(), ecuacion_signo_igual().copy(),
+                                 matrix_rigidez_2_2, vector_desplazamientos_el_2.copy()).arrange(RIGHT,
+                                                                                                 buff=0.2)
+        mr_elemento_2_1.to_edge(DOWN).scale(0.5)
+        mr_elemento_2_2 = VGroup(matriz_k_2.copy(), ecuacion_signo_igual().copy(),
+                                 matrix_rigidez_2_3, vector_desplazamientos_modificado_2_3, ).arrange(RIGHT, buff=0.2)
+        mr_elemento_2_2.to_edge(DOWN).scale(0.5)
+        mr_elemento_2_2_1 = mr_elemento_2_2.copy()
+        mr_elemento_2_2_1[3] = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_2, reducida=False).scale(0.5)
+        mr_elemento_2_2_1.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_2_2_2 = mr_elemento_2_2_1.copy()
+        mr_elemento_2_2_2.submobjects.pop(3)
+        sol_el_2_1 = np.array(e_2._k.obtener_matriz(False)) @ np.array(e_2._k.obtener_desplazamientos(False))
+        mr_elemento_2_2_2[2] = ecuacion_array_a_matriz(sol_el_2_1, formato_num='{x:.8f}', left_bracket=r"\{",
+                                                       right_bracket=r"\}").scale(0.5)
+        mr_elemento_2_2_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_2_2_3 = mr_elemento_2_2_1.copy()
+        mr_elemento_2_2_3[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_resorte(e_2, mostrar_valores=True,
+                                                                                     formato='%.8g').scale(0.5)
+        mr_elemento_2_2_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        f_internas_elemento_2 = mg.elemento_fuerza_interna_resorte(e_2, unidades='')
+        #######################################################################################################
+        ## Ecuaciones Elemento 3
+        ecuacion_local_resorte_3 = ecuacion_local_resorte.copy()
+        matriz_k_3 = ecuacion_vector_fuerza_resorte('3', '4', '2')
+        ### Cargas en elemento 3
+        ### Grados de libertad en elemento 3
+        grados_el_3 = VGroup(*n_4_gdl.copy(), *n_2_gdl.copy()).set_z_index(1)
+        label_etiquetas_grados_el_3 = VGroup(*n_4_labels_gdl.copy(), *n_2_labels_gdl.copy())
+        label_etiquetas_grados_el_3[0].next_to(grados_el_3[0], LEFT, buff=0.1)
+        label_etiquetas_grados_el_3[1].next_to(grados_el_3[1], UP, buff=0.1)
+
+        ### Escena elemento 3
+        escena_elemento_3 = VGroup(elementos[2], nodos[2:4], soportes[1], label_elementos[2], label_nodos[2:4])
+        matrix_rigidez_3_1 = Matrix(
+            [['600', '-600'],
+             ['-600', '600']]
+        )
+        matrix_rigidez_3_1 = VGroup(MathTex(r'2\times 10^8'), Matrix(
+            [['1', '-1'],
+             ['-1', '1']]
+        )).arrange(RIGHT)
+        matrix_rigidez_3_2 = matrix_rigidez_3_1.copy()
+        matrix_rigidez_3_3 = matrix_rigidez_3_1.copy()
+        vector_desplazamientos_el_3 = ecuacion_vector_desplazamiento_resorte('4', '2')
+        vector_desplazamientos_modificado_3_3 = vector_desplazamientos_el_3_modificado.copy()
+        mr_elemento_3 = VGroup(matriz_k_3.copy(), ecuacion_signo_igual().copy(), matrix_rigidez.copy(),
+                               vector_desplazamientos_el_3.copy()).arrange(RIGHT, buff=0.2)
+        mr_elemento_3.to_edge(DOWN).scale(0.5)
+        mr_elemento_3_1 = VGroup(matriz_k_3.copy(), ecuacion_signo_igual().copy(),
+                                 matrix_rigidez_3_2, vector_desplazamientos_el_3.copy()).arrange(RIGHT,
+                                                                                                 buff=0.2)
+        mr_elemento_3_1.to_edge(DOWN).scale(0.5)
+        mr_elemento_3_2 = VGroup(matriz_k_3.copy(), ecuacion_signo_igual().copy(),
+                                 matrix_rigidez_3_3, vector_desplazamientos_modificado_3_3, ).arrange(RIGHT, buff=0.2)
+        mr_elemento_3_2.to_edge(DOWN).scale(0.5)
+        mr_elemento_3_2_1 = mr_elemento_3_2.copy()
+        mr_elemento_3_2_1[3] = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_3, reducida=False).scale(0.5)
+        mr_elemento_3_2_1.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_3_2_2 = mr_elemento_3_2_1.copy()
+        mr_elemento_3_2_2.submobjects.pop(3)
+        sol_el_3_1 = np.array(e_3._k.obtener_matriz(False)) @ np.array(e_3._k.obtener_desplazamientos(False))
+        mr_elemento_3_2_2[2] = ecuacion_array_a_matriz(sol_el_3_1, formato_num='{x:.8f}', left_bracket=r"\{",
+                                                       right_bracket=r"\}").scale(0.5)
+        mr_elemento_3_2_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        mr_elemento_3_2_3 = mr_elemento_3_2_1.copy()
+        mr_elemento_3_2_3[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_resorte(e_3, mostrar_valores=True,
+                                                                                     formato='%.8g').scale(0.5)
+        mr_elemento_3_2_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        f_internas_elemento_3 = mg.elemento_fuerza_interna_resorte(e_3, unidades='')
+        f_internas_elemento_3[0][1].shift(LEFT)
+        f_internas_elemento_3[1][1].next_to(f_internas_elemento_3[0][1], UP, buff=0.0).shift(0.5 * RIGHT)
+        # #######################################################################################################
+        # ### Escena elemento 2
+        # escena_elemento_2 = VGroup(elementos[1], nodos[1:3], soportes[1:3], label_elementos[1], label_nodos[1:3],
+        #                            cargas[2:5])
+        # factor_matrix_rigidez_2_1 = MathTex(r'\dfrac{EI}{1000}')
+        # factor_matrix_rigidez_2_2 = MathTex('EI')
+        # factor_matrix_rigidez_2_3 = factor_matrix_rigidez_2_2.copy()
+        # factor_matrix_rigidez_2_4 = factor_matrix_rigidez_2_2.copy()
+        #
+        # matrix_rigidez_2_1 = Matrix(
+        #     [['12', '60', '-12', '60'],
+        #      ['60', '400', '-60', '200'],
+        #      ['-12', '-60', '12', '-60'],
+        #      ['60', '200', '-60', '400']]
+        # )
+        # matrix_rigidez_2_2 = Matrix(
+        #     [['0.012', '0.06', '-0.012', '0.06'],
+        #      ['0.06', '0.4', '-0.06', '0.2'],
+        #      ['-0.012', '-0.06', '0.012', '-0.06'],
+        #      ['0.06', '0.2', '-0.060', '0.4']],
+        #     h_buff=1.8
+        # )
+        # matrix_rigidez_2_3 = matrix_rigidez_2_2.copy()
+        # matrix_rigidez_2_4 = matrix_rigidez_2_2.copy()
+        # vector_desplazamientos_el_2 = ecuacion_vector_desplazamiento_viga(2, 3)
+        # vector_desplazamientos_modificado_2_3 = vector_desplazamientos_el_2_modificado.copy()
+        # vector_desplazamientos_modificado_2_4 = vector_desplazamientos_el_2_modificado.copy()
+        # vector_fuerza_nodal_equivalente_viga_2 = ecuacion_array_a_matriz(e_2._obtener_fuerzas(), left_bracket=r"\{",
+        #                                                                  right_bracket=r"\}")
+        # mr_elemento_2 = VGroup(matriz_k_2.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez.copy(),
+        #                        matrix_rigidez.copy(),
+        #                        vector_desplazamientos_el_2.copy(), ecuacion_signo_menos().copy(),
+        #                        ecuacion_vector_fuerza_nodal_equivalente_viga(2, 3).copy()).arrange(RIGHT, buff=0.2)
+        # mr_elemento_2.to_edge(DOWN).scale(0.5)
+        # mr_elemento_2_1 = VGroup(matriz_k_2.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_2_1,
+        #                          matrix_rigidez_2_1, vector_desplazamientos_el_2.copy(), ecuacion_signo_menos().copy(),
+        #                          ecuacion_vector_fuerza_nodal_equivalente_viga(2, 3).copy()).arrange(RIGHT, buff=0.2)
+        # mr_elemento_2_1.to_edge(DOWN).scale(0.5)
+        # mr_elemento_2_2 = VGroup(matriz_k_2.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_2_2,
+        #                          matrix_rigidez_2_2, vector_desplazamientos_el_2.copy(), ecuacion_signo_menos().copy(),
+        #                          ecuacion_vector_fuerza_nodal_equivalente_viga(2, 3).copy()).arrange(RIGHT,
+        #                                                                                              buff=0.2)
+        # mr_elemento_2_2.to_edge(DOWN).scale(0.5)
+        # mr_elemento_2_3 = VGroup(matriz_k_2.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_2_3,
+        #                          matrix_rigidez_2_3, vector_desplazamientos_modificado_2_3,
+        #                          ecuacion_signo_menos().copy(),
+        #                          ecuacion_vector_fuerza_nodal_equivalente_viga(2, 3).copy()).arrange(RIGHT,
+        #                                                                                              buff=0.2)
+        # mr_elemento_2_3.to_edge(DOWN).scale(0.5)
+        # mr_elemento_2_4 = VGroup(matriz_k_2.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_2_4,
+        #                          matrix_rigidez_2_4, vector_desplazamientos_modificado_2_4,
+        #                          ecuacion_signo_menos().copy(),
+        #                          vector_fuerza_nodal_equivalente_viga_2).arrange(RIGHT,
+        #                                                                          buff=0.2)
+        # mr_elemento_2_4.to_edge(DOWN).scale(0.5)
+        # mr_elemento_2_4_1 = mr_elemento_2_4.copy()
+        # mr_elemento_2_4_1[4] = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_2, EI_cte=True,
+        #                                                                              reducida=False).scale(0.5)
+        # mr_elemento_2_4_1.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        # mr_elemento_2_4_2 = mr_elemento_2_4_1.copy()
+        # mr_elemento_2_4_2.submobjects.pop(2)
+        # mr_elemento_2_4_2.submobjects.pop(2)
+        # sol_el_2_1 = np.array(e_2._k.obtener_matriz(False)) @ np.array(e_2._k.obtener_desplazamientos(False))
+        # sol_el_2_2 = sol_el_2_1 - e_2._obtener_fuerzas()
+        # mr_elemento_2_4_2[2] = ecuacion_array_a_matriz(sol_el_2_1, formato_num='{x:.8f}', left_bracket=r"\{",
+        #                                                right_bracket=r"\}").scale(0.5)
+        # mr_elemento_2_4_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        # mr_elemento_2_4_3 = mr_elemento_2_4_2.copy()
+        # mr_elemento_2_4_3.submobjects.pop(2)
+        # mr_elemento_2_4_3.submobjects.pop(2)
+        # mr_elemento_2_4_3[2] = ecuacion_array_a_matriz(sol_el_2_2, formato_num='{x:.8f}', left_bracket=r"\{",
+        #                                                right_bracket=r"\}").scale(0.5)
+        # mr_elemento_2_4_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        # mr_elemento_2_4_4 = mr_elemento_2_4_1.copy()
+        # mr_elemento_2_4_4[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_viga(e_1, mostrar_valores=True,
+        #                                                                           formato='%.8g').scale(0.5)
+        # mr_elemento_2_4_4.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        # ecuacion_v_e_2 = MathTex(sp.latex(e_2.ecuacion_de_cortante()), color=BLUE_A)
+        # ecuacion_m_e_2 = MathTex(sp.latex(e_2.ecuacion_de_momento()), color=GREEN_A)
+        # ec_e_2 = VGroup(ecuacion_v_e_2, ecuacion_m_e_2).arrange(DOWN, buff=0.2).scale(0.5).to_corner(DR, buff=0.5)
+        #
+        # ## Ecuaciones Elemento 3
+        # ecuacion_local_viga_3 = ecuacion_local_viga.copy()
+        # matriz_k_3 = ecuacion_vector_fuerza_viga(3, 3, 4)
+        # ### Cargas nodales equivalentes
+        # # Ninguna
+        # ### Cargas en elemento 3
+        # # Ninguna
+        # ### Grados de libertad en elemento 3
+        # grados_el_3 = VGroup(*n_3_gdl.copy(), *n_4_gdl.copy()).set_z_index(1)
+        # label_etiquetas_grados_el_3 = VGroup(*n_3_labels_gdl.copy(), *n_4_labels_gdl.copy())
+        # label_etiquetas_grados_el_3[0].next_to(grados_el_3[0], DOWN, buff=0.02).scale(0.5)
+        # label_etiquetas_grados_el_3[1].next_to(grados_el_3[1], UR, buff=-0.25).scale(0.5)
+        # label_etiquetas_grados_el_3[2].next_to(grados_el_3[2], UP, buff=0.02).scale(0.5)
+        # label_etiquetas_grados_el_3[3].next_to(grados_el_3[3], DOWN, buff=0.0).scale(0.5)
+        #
+        # f_internas_elemento_2 = mg.elemento_fuerza_interna_viga(e_2, unidades=['', ''])
+        # #######################################################################################################
+        # ### Escena elemento 3
+        # escena_elemento_3 = VGroup(elementos[2], nodos[2:4], soportes[2:4], label_elementos[2], label_nodos[2:4])
+        # factor_matrix_rigidez_3_1 = MathTex(r'\dfrac{EI}{125}')
+        # factor_matrix_rigidez_3_2 = MathTex('EI')
+        # factor_matrix_rigidez_3_3 = factor_matrix_rigidez_3_2.copy()
+        # factor_matrix_rigidez_3_4 = factor_matrix_rigidez_3_2.copy()
+        # matrix_rigidez_3_1 = Matrix(
+        #     [['12', '30', '-12', '30'],
+        #      ['30', '100', '-30', '50'],
+        #      ['-12', '-30', '12', '-30'],
+        #      ['63', '50', '-30', '100']]
+        # )
+        #
+        # matrix_rigidez_3_2 = ecuacion_array_a_matriz(e_3.get_matriz_rigidez(), h_buff=1.8)
+        # matrix_rigidez_3_3 = matrix_rigidez_3_2.copy()
+        # matrix_rigidez_3_4 = matrix_rigidez_3_2.copy()
+        # vector_desplazamientos_el_3 = ecuacion_vector_desplazamiento_viga(3, 4)
+        # vector_desplazamientos_modificado_3_3 = vector_desplazamientos_el_3_modificado.copy()
+        # vector_desplazamientos_modificado_3_4 = vector_desplazamientos_el_3_modificado.copy()
+        # vector_fuerza_nodal_equivalente_viga_3 = ecuacion_array_a_matriz(e_3._obtener_fuerzas(), left_bracket=r"\{",
+        #                                                                  right_bracket=r"\}")
+        # mr_elemento_3 = VGroup(matriz_k_3.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez.copy(),
+        #                        matrix_rigidez.copy(),
+        #                        vector_desplazamientos_el_3.copy(), ecuacion_signo_menos().copy(),
+        #                        ecuacion_vector_fuerza_nodal_equivalente_viga(3, 4).copy()).arrange(RIGHT, buff=0.2)
+        # mr_elemento_3.to_edge(DOWN).scale(0.5)
+        # mr_elemento_3_1 = VGroup(matriz_k_3.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_3_1,
+        #                          matrix_rigidez_3_1, vector_desplazamientos_el_3.copy(), ecuacion_signo_menos().copy(),
+        #                          ecuacion_vector_fuerza_nodal_equivalente_viga(3, 4).copy()).arrange(RIGHT, buff=0.2)
+        # mr_elemento_3_1.to_edge(DOWN).scale(0.5)
+        # mr_elemento_3_2 = VGroup(matriz_k_3.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_3_2,
+        #                          matrix_rigidez_3_2, vector_desplazamientos_el_3.copy(), ecuacion_signo_menos().copy(),
+        #                          ecuacion_vector_fuerza_nodal_equivalente_viga(3, 4).copy()).arrange(RIGHT,
+        #                                                                                              buff=0.2)
+        # mr_elemento_3_2.to_edge(DOWN).scale(0.5)
+        # mr_elemento_3_3 = VGroup(matriz_k_3.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_3_3,
+        #                          matrix_rigidez_3_3, vector_desplazamientos_modificado_3_3,
+        #                          ecuacion_signo_menos().copy(),
+        #                          ecuacion_vector_fuerza_nodal_equivalente_viga(3, 4).copy()).arrange(RIGHT,
+        #                                                                                              buff=0.2)
+        # mr_elemento_3_3.to_edge(DOWN).scale(0.5)
+        # mr_elemento_3_4 = VGroup(matriz_k_3.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_3_4,
+        #                          matrix_rigidez_3_4, vector_desplazamientos_modificado_3_4,
+        #                          ecuacion_signo_menos().copy(),
+        #                          vector_fuerza_nodal_equivalente_viga_3).arrange(RIGHT,
+        #                                                                          buff=0.2)
+        # mr_elemento_3_4.to_edge(DOWN).scale(0.5)
+        # mr_elemento_3_4_1 = mr_elemento_3_4.copy()
+        # mr_elemento_3_4_1[4] = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_3, EI_cte=True,
+        #                                                                              reducida=False).scale(0.5)
+        # mr_elemento_3_4_1.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        # mr_elemento_3_4_2 = mr_elemento_3_4_1.copy()
+        # mr_elemento_3_4_2.submobjects.pop(2)
+        # mr_elemento_3_4_2.submobjects.pop(2)
+        # sol_el_3_1 = np.array(e_3._k.obtener_matriz(False)) @ np.array(e_3._k.obtener_desplazamientos(False))
+        # sol_el_3_2 = sol_el_3_1 - e_3._obtener_fuerzas()
+        # mr_elemento_3_4_2[2] = ecuacion_array_a_matriz(sol_el_3_1, formato_num='{x:.8f}', left_bracket=r"\{",
+        #                                                right_bracket=r"\}").scale(0.5)
+        # mr_elemento_3_4_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        # mr_elemento_3_4_3 = mr_elemento_3_4_2.copy()
+        # mr_elemento_3_4_3.submobjects.pop(2)
+        # mr_elemento_3_4_3.submobjects.pop(2)
+        # mr_elemento_3_4_3[2] = ecuacion_array_a_matriz(sol_el_3_2, formato_num='{x:.8f}', left_bracket=r"\{",
+        #                                                right_bracket=r"\}").scale(0.5)
+        # mr_elemento_3_4_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        # mr_elemento_3_4_4 = mr_elemento_3_4_1.copy()
+        # mr_elemento_3_4_4[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_viga(e_3, mostrar_valores=True,
+        #                                                                           formato='%.8g').scale(0.5)
+        # mr_elemento_3_4_4.arrange(RIGHT, buff=0.2).to_edge(DOWN)
+        # ecuacion_v_e_3 = MathTex(sp.latex(e_3.ecuacion_de_cortante()), color=BLUE_A)
+        # ecuacion_m_e_3 = MathTex(sp.latex(e_3.ecuacion_de_momento()), color=GREEN_A)
+        # ec_e_3 = VGroup(ecuacion_v_e_3, ecuacion_m_e_3).arrange(DOWN, buff=0.2).scale(0.5).to_corner(DR, buff=0.5)
+        #
+        # f_internas_elemento_3 = mg.elemento_fuerza_interna_viga(e_3, unidades=['', ''])
+        # ## Elementos intermedios
+        ## Diagrama resorte inicial
+        escena_inicial = VGroup(elementos, soportes, cargas_puntuales, label_nodos, label_elementos)
+        escena_inicial.save_state()
+        escena_inicial.to_edge(DOWN + LEFT)
+        escena = VGroup(nodos, elementos, soportes, label_elementos, label_nodos, cargas_puntuales)
+
+        # Animaciones
+        tit = titulo("Método de Elementos Finitos", "Análisis de un ensamble de barras")
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.play(FadeIn(tit[2], shift=UP))  # Sube ligeramente al aparecer
+        self.wait(2)
+        self.play(FadeOut(tit))
+
+        ## Enunciado
+        self.play(Write(enunciado), run_time=5)
+        ## Diagrama de los resortes
+        self.play(FadeIn(escena_inicial), run_time=2)
+        self.wait(5)
+        self.play(FadeOut(enunciado), run_time=2)
+        self.play(Restore(escena_inicial), run_time=2)
+        self.wait(5)
+        self.play(FadeOut(escena_inicial))
+        self.wait(0.5)
+        tit = titulo("Discretización del ensamble", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+        self.play(Restore(escena_inicial))
+        self.wait(2)
+        ## Discretización del ensamble
+        # self.play(Create(mg.ejes), run_time=2)
+        # self.play(FadeOut(viga), run_time=2)
+        self.play(DrawBorderThenFill(nodos), run_time=2)
+        # self.play(Write(label_nodos), Write(label_elementos), run_time=2)
+        etiquetas = [MathTex('Nodo'), MathTex('x[m]'), MathTex('GL[x]')]
+        rows = [[1, 0.0, 'Restringido'],
+                [2, 0.6, 'Libre'],
+                [3, 1.2, 'Libre'],
+                [4, 1.8, 'Restringido']]
+        tab_nodos = elemento_tabla(etiquetas, rows).scale(0.5).to_edge(DOWN, buff=0.5)
+        etiquetas = [MathTex('Elemento'), MathTex(r'Nodo_i'), MathTex(r'Nodo_j'), MathTex('L[m]'), MathTex('E[Pa]'), MathTex('A[m^2]')]
+        rows = [[1, 1, 2, 0.6, r'2.0\times 10 ^{11}', r'6.0\times 10 ^{-4}'],
+                [2, 2, 3, 0.6, r'2.0\times 10 ^{11}', r'6.0\times 10 ^{-4}'],
+                [3, 3, 4, 0.6, r'1.0\times 10 ^{11}', r'12.0\times 10 ^{-4}']]
+        tab_elementos = elemento_tabla(etiquetas, rows).scale(0.5).to_edge(DOWN, buff=0.5)
+        VGroup(tab_nodos, tab_elementos).arrange(RIGHT, buff=1).to_edge(DOWN, buff=0.5)
+        self.play(Create(tab_nodos[1]), Create(tab_nodos[2]), run_time=1)
+        self.play(FadeIn(tab_nodos[0].get_rows()))
+        self.wait(2)
+        self.play(Create(tab_elementos[1]), Create(tab_elementos[2]), run_time=1)
+        self.play(FadeIn(tab_elementos[0].get_rows()))
+        self.wait(5)
+        self.play(FadeOut(tab_nodos, tab_elementos), FadeOut(escena), run_time=2)
+        # #######################################################################################################
+        ## Análisis Elemento 1
+        tit = titulo("Matriz de rigidez del elemento 1", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+        self.play(FadeIn(escena_elemento_1), run_time=2)
+        self.wait(1)
+        self.play(Write(ecuacion_local_resorte_1), run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(ecuacion_local_resorte_1, mr_elemento_1), run_time=2)
+        self.play(ReplacementTransform(mr_elemento_1, mr_elemento_1_1), run_time=2)
+        self.wait(2)
+        self.play(FadeOut(soportes[0:1]), run_time=2)
+        self.play(FadeIn(grados_el_1), run_time=2)
+        self.play(Write(label_etiquetas_grados_el_1), run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(mr_elemento_1_1[3].get_brackets(), mr_elemento_1_2[3].get_brackets()),
+                  ReplacementTransform(mr_elemento_1_1[0:3], mr_elemento_1_2[0:3]),
+                  FadeOut(mr_elemento_1_1[3].get_entries()),
+                  ReplacementTransform(label_etiquetas_grados_el_1[0], mr_elemento_1_2[3].get_entries()[0]),
+                  ReplacementTransform(label_etiquetas_grados_el_1[1], mr_elemento_1_2[3].get_entries()[1]),
+                  Unwrite(grados_el_1), run_time=2)
+        self.wait(1)
+        self.play(FadeIn(f_internas_elemento_1))
+        self.wait(2)
+        self.play(FadeOut(f_internas_elemento_1))
+        self.play(FadeOut(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]), FadeOut(mr_elemento_1_2))
+        # #######################################################################################################
+        ## Análisis Elemento 2
+        tit = titulo("Matriz de rigidez del elemento 2", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+        self.play(FadeIn(escena_elemento_2), run_time=2)
+        self.wait(1)
+        self.play(Write(ecuacion_local_resorte_2), run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(ecuacion_local_resorte_2, mr_elemento_2), run_time=2)
+        self.play(ReplacementTransform(mr_elemento_2, mr_elemento_2_1), run_time=2)
+        self.wait(2)
+        # self.play(FadeOut(soportes[0:1]), run_time=2)
+        self.play(FadeIn(grados_el_2), run_time=2)
+        self.play(Write(label_etiquetas_grados_el_2), run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(mr_elemento_2_1[3].get_brackets(), mr_elemento_2_2[3].get_brackets()),
+                  ReplacementTransform(mr_elemento_2_1[0:3], mr_elemento_2_2[0:3]),
+                  FadeOut(mr_elemento_2_1[3].get_entries()),
+                  ReplacementTransform(label_etiquetas_grados_el_2[0], mr_elemento_2_2[3].get_entries()[0]),
+                  ReplacementTransform(label_etiquetas_grados_el_2[1], mr_elemento_2_2[3].get_entries()[1]),
+                  Unwrite(grados_el_2), run_time=2)
+        self.wait(1)
+        self.play(FadeIn(f_internas_elemento_2))
+        self.wait(2)
+        self.play(FadeOut(f_internas_elemento_2))
+        self.play(FadeOut(elementos[1], nodos[1:3], label_elementos[1], label_nodos[1:3]), FadeOut(mr_elemento_2_2))
+        # #######################################################################################################
+        ## Análisis Elemento 3
+        tit = titulo("Matriz de rigidez del elemento 3", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+        self.play(FadeIn(escena_elemento_3), run_time=2)
+        self.wait(1)
+        self.play(Write(ecuacion_local_resorte_3), run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(ecuacion_local_resorte_3, mr_elemento_3), run_time=2)
+        self.play(ReplacementTransform(mr_elemento_3, mr_elemento_3_1), run_time=2)
+        self.wait(2)
+        self.play(FadeOut(soportes[1]), run_time=2)
+        self.play(FadeIn(grados_el_3), run_time=2)
+        self.play(Write(label_etiquetas_grados_el_3), run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(mr_elemento_3_1[3].get_brackets(), mr_elemento_3_2[3].get_brackets()),
+                  ReplacementTransform(mr_elemento_3_1[0:3], mr_elemento_3_2[0:3]),
+                  FadeOut(mr_elemento_3_1[3].get_entries()),
+                  ReplacementTransform(label_etiquetas_grados_el_3[0], mr_elemento_3_2[3].get_entries()[0]),
+                  ReplacementTransform(label_etiquetas_grados_el_3[1], mr_elemento_3_2[3].get_entries()[1]),
+                  Unwrite(grados_el_3), run_time=2)
+        self.wait(1)
+        self.play(FadeIn(f_internas_elemento_3))
+        self.wait(2)
+        self.play(FadeOut(f_internas_elemento_3))
+        self.play(FadeOut(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]), FadeOut(mr_elemento_3_2))
+        tit = titulo("Matriz de rigidez goblal (Ensamblaje)", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+        m_1 = mr_elemento_1_2.copy()
+        m_2 = mr_elemento_2_2.copy()
+        m_3 = mr_elemento_3_2.copy()
+        self.play(FadeIn(m_1.to_edge(UP)), FadeIn(m_2.move_to(ORIGIN)), FadeIn(m_3.to_edge(DOWN)))
+        self.wait(2)
+        self.play(
+            ReplacementTransform(VGroup(m_1[0].get_brackets()[0], m_2[0].get_brackets()[0], m_3[0].get_brackets()[0]),
+                                 matriz_global[0].get_brackets()[0]),
+            ReplacementTransform(VGroup(m_1[0].get_brackets()[1], m_2[0].get_brackets()[1], m_3[0].get_brackets()[1]),
+                                 matriz_global[0].get_brackets()[1]),
+            runtime=4)
+
+        self.play(
+            ReplacementTransform(m_1[0].get_entries()[0], matriz_global[0].get_entries()[0]),
+            ReplacementTransform(VGroup(m_1[0].get_entries()[1], m_2[0].get_entries()[0]),
+                                 matriz_global[0].get_entries()[1]),
+            ReplacementTransform(VGroup(m_2[0].get_entries()[1], m_3[0].get_entries()[0]),
+                                 matriz_global[0].get_entries()[2]),
+            ReplacementTransform(m_3[0].get_entries()[1], matriz_global[0].get_entries()[3]),
+            runtime=4)
+        self.wait(2)
+        self.play(FadeIn(matriz_global[1:3]), runtime=4)
+        self.wait(2)
+        self.play(
+            ReplacementTransform(VGroup(m_1[1], m_2[1], m_3[1]), matriz_global[3]),
+            runtime=4)
+        self.play(
+            ReplacementTransform(VGroup(m_1[2][1].get_brackets()[0], m_2[2][1].get_brackets()[0], m_3[2][1].get_brackets()[0]),
+                                 matriz_global[4][1].get_brackets()[0]),
+            ReplacementTransform(VGroup(m_1[2][1].get_brackets()[1], m_2[2][1].get_brackets()[1], m_3[2][1].get_brackets()[1]),
+                                 matriz_global[4][1].get_brackets()[1]),
+            m_1[3].animate.next_to(matriz_global[4][1], RIGHT, buff=0.5).align_to(m_1[3], UP),
+            m_2[3].animate.next_to(matriz_global[4][1], RIGHT, buff=0.5).align_to(m_2[3], UP),
+            m_3[3].animate.next_to(matriz_global[4][1], RIGHT, buff=0.5).align_to(m_3[3], UP),
+            runtime=4)
+        self.play(
+            ReplacementTransform(m_1[2][1].get_entries()[0:2], matriz_global[4][1].get_entries()[0:2]),
+            ReplacementTransform(m_1[2][1].get_entries()[2], matriz_global[4][1].get_entries()[4]),
+            ReplacementTransform(m_2[2][1].get_entries()[1], matriz_global[4][1].get_entries()[6]),
+            ReplacementTransform(m_2[2][1].get_entries()[2], matriz_global[4][1].get_entries()[9]),
+            ReplacementTransform(m_3[2][1].get_entries()[1], matriz_global[4][1].get_entries()[11]),
+            ReplacementTransform(m_3[2][1].get_entries()[2:], matriz_global[4][1].get_entries()[14:]),
+            ReplacementTransform(
+                VGroup(m_1[2][1].get_entries()[3], m_2[2][1].get_entries()[0]),
+                matriz_global[4][1].get_entries()[5]),
+            ReplacementTransform(
+                VGroup(m_2[2][1].get_entries()[3], m_3[2][1].get_entries()[0]),
+                matriz_global[4][1].get_entries()[10]),
+            runtime=4)
+        self.play(
+            FadeIn(matriz_global[4][1].get_entries()[2:4]),
+            FadeIn(matriz_global[4][1].get_entries()[7:9]),
+            FadeIn(matriz_global[4][1].get_entries()[12:14]),
+            runtime=4)
+        self.play(
+            ReplacementTransform(VGroup(m_1[3].get_brackets()[0], m_2[3].get_brackets()[0], m_3[3].get_brackets()[0]),
+                                 matriz_global[5].get_brackets()[0]),
+            ReplacementTransform(VGroup(m_1[3].get_brackets()[1], m_2[3].get_brackets()[1], m_3[3].get_brackets()[1]),
+                                 matriz_global[5].get_brackets()[1]),
+            ReplacementTransform(m_1[3].get_entries()[0], matriz_global[5].get_entries()[0]),
+            ReplacementTransform(VGroup(m_1[3].get_entries()[1], m_2[3].get_entries()[0]),
+                                 matriz_global[5].get_entries()[1]),
+            ReplacementTransform(VGroup(m_2[3].get_entries()[1], m_3[3].get_entries()[0]),
+                                 matriz_global[5].get_entries()[2]),
+            ReplacementTransform(m_3[3].get_entries()[1], matriz_global[5].get_entries()[3]),
+            runtime=4)
+        self.wait(2)
+        self.play(FadeOut(matriz_global))
+        tit = titulo("Matriz de rigidez goblal reducida", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+        self.play(FadeIn(matriz_global))
+        items_reducida = [1, 2]
+        elementos_reducida = list()
+        elementos_no_reducida = list()
+        for f in items_reducida:
+            for c, elem in enumerate(matriz_global[4][1].get_rows()[f]):
+                if c in items_reducida:
+                    elementos_reducida.append(elem)
+                else:
+                    elementos_no_reducida.append(elem)
+        self.play(ReplacementTransform(matriz_global[0].get_brackets(), matriz_global_reducida[0].get_brackets()),
+                  ReplacementTransform(matriz_global[4][1].get_brackets(), matriz_global_reducida[4][1].get_brackets()),
+                  ReplacementTransform(matriz_global[5].get_brackets(), matriz_global_reducida[5].get_brackets()),
+                  FadeOut(matriz_global[0].get_rows()[0], matriz_global[4][1].get_rows()[0],
+                          matriz_global[5].get_rows()[0]),
+                  FadeOut(matriz_global[0].get_rows()[3], matriz_global[4][1].get_rows()[3],
+                          matriz_global[5].get_rows()[3]),
+                  *[FadeOut(elem) for elem in elementos_no_reducida],
+                  ReplacementTransform(matriz_global[1:4], matriz_global_reducida[1:4]),
+                  ReplacementTransform(matriz_global[0].get_entries()[1], matriz_global_reducida[0].get_entries()[0]),
+                  ReplacementTransform(matriz_global[0].get_entries()[2], matriz_global_reducida[0].get_entries()[1]),
+                  ReplacementTransform(elementos_reducida[0], matriz_global_reducida[4][1].get_entries()[0]),
+                  ReplacementTransform(elementos_reducida[1], matriz_global_reducida[4][1].get_entries()[1]),
+                  ReplacementTransform(elementos_reducida[2], matriz_global_reducida[4][1].get_entries()[2]),
+                  ReplacementTransform(elementos_reducida[3], matriz_global_reducida[4][1].get_entries()[3]),
+                  ReplacementTransform(matriz_global[5].get_entries()[1], matriz_global_reducida[5].get_entries()[0]),
+                  ReplacementTransform(matriz_global[5].get_entries()[2], matriz_global_reducida[5].get_entries()[1]),
+                  run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(matriz_global_reducida[2], matriz_global_reducida_final[0]),
+                  ReplacementTransform(matriz_global_reducida[3], matriz_global_reducida_final[1]),
+                  ReplacementTransform(matriz_global_reducida[4][1], matriz_global_reducida_final[2]),
+                  ReplacementTransform(matriz_global_reducida[5], matriz_global_reducida_final[3]),
+                  FadeOut(matriz_global_reducida[0], matriz_global_reducida[1]), run_time=4)
+        self.play(FadeOut(matriz_global_reducida_final))
+        tit = titulo("Resolución de los desplazamientos desconocidos", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+        self.play(FadeIn(matriz_global_reducida_final))
+        self.wait(2)
+        self.play(ReplacementTransform(matriz_global_reducida_final[2], matriz_global_reducida_final_2[0][0]),
+                  ReplacementTransform(matriz_global_reducida_final[0], matriz_global_reducida_final_2[1]),
+                  # ReplacementTransform(matriz_global_reducida_final[2], matriz_global_reducida_final_2[0]),
+                  ReplacementTransform(matriz_global_reducida_final[1], matriz_global_reducida_final_2[2]),
+                  ReplacementTransform(matriz_global_reducida_final[3], matriz_global_reducida_final_2[3]),
+                  FadeIn(matriz_global_reducida_final_2[0][1]), run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(matriz_global_reducida_final_2[0][0][1].get_brackets(),
+                                       matriz_global_reducida_final_3[0].get_brackets()),
+                  ReplacementTransform(matriz_global_reducida_final_2[0][0][1].get_entries(),
+                                       matriz_global_reducida_final_3[0].get_entries()),
+                  # ReplacementTransform(matriz_global_reducida_final_2[0], matriz_global_reducida_final_3[0]),
+                  ReplacementTransform(matriz_global_reducida_final_2[1], matriz_global_reducida_final_3[1]),
+                  ReplacementTransform(matriz_global_reducida_final_2[2], matriz_global_reducida_final_3[2]),
+                  ReplacementTransform(matriz_global_reducida_final_2[3], matriz_global_reducida_final_3[3]),
+                  FadeOut(matriz_global_reducida_final_2[0][1]), run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(
+            VGroup(matriz_global_reducida_final_3[0].get_entries(), matriz_global_reducida_final_3[1].get_entries()),
+            matriz_global_reducida_final_4[0].get_entries()),
+            ReplacementTransform(matriz_global_reducida_final_3[0].get_brackets()[0],
+                                 matriz_global_reducida_final_4[0].get_brackets()[0]),
+            ReplacementTransform(matriz_global_reducida_final_3[1].get_brackets()[1],
+                                 matriz_global_reducida_final_4[0].get_brackets()[1]),
+            FadeOut(matriz_global_reducida_final_3[0].get_brackets()[1]),
+            FadeOut(matriz_global_reducida_final_3[1].get_brackets()[0]),
+            ReplacementTransform(matriz_global_reducida_final_3[2], matriz_global_reducida_final_4[1]),
+            ReplacementTransform(matriz_global_reducida_final_3[3], matriz_global_reducida_final_4[2]),
+            run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(matriz_global_reducida_final_4[0].get_entries()[0], sol_1[2]),
+                  ReplacementTransform(matriz_global_reducida_final_4[0].get_entries()[1], sol_2[2]),
+                  ReplacementTransform(matriz_global_reducida_final_4[1], VGroup(sol_1[1], sol_2[1])),
+                  ReplacementTransform(matriz_global_reducida_final_4[2].get_entries()[0], sol_1[0]),
+                  ReplacementTransform(matriz_global_reducida_final_4[2].get_entries()[1], sol_2[0]),
+                  FadeOut(matriz_global_reducida_final_4[0].get_brackets()),
+                  FadeOut(matriz_global_reducida_final_4[2].get_brackets()),
+                  run_time=4)
+        self.wait(2)
+        self.play(FadeOut(sol_1), FadeOut(sol_2))
+        tit = titulo("Resolución de las reacciones desconocidas", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+        self.play(FadeIn(matriz_global_final_2))
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(matriz_global_final_2[0:4]), VGroup(matriz_global_final_3[0:4])),
+                  ReplacementTransform(
+                      VGroup(matriz_global_final_2[4].get_entries(), matriz_global_final_2[5].get_entries()),
+                      VGroup(matriz_global_final_3[4].get_entries())),
+                  ReplacementTransform(matriz_global_final_2[4].get_brackets()[0],
+                                       matriz_global_final_3[4].get_brackets()[0]),
+                  ReplacementTransform(matriz_global_final_2[5].get_brackets()[1],
+                                       matriz_global_final_3[4].get_brackets()[1]),
+                  FadeOut(matriz_global_final_2[4].get_brackets()[1]),
+                  FadeOut(matriz_global_final_2[5].get_brackets()[0]),
+                  # FadeOut(matriz_global_final_2[2]),
+                  # ReplacementTransform(VGroup(matriz_global_final_2[5:7]), VGroup(matriz_global_final_3[3:5])),
+                  # FadeOut(matriz_global_final_2),
+                  run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(matriz_global_final_3[0], matriz_global_final_4[0]),
+                  ReplacementTransform(matriz_global_final_3[1], matriz_global_final_4[3]),
+                  ReplacementTransform(matriz_global_final_3[2], matriz_global_final_4[4]),
+                  ReplacementTransform(matriz_global_final_3[3], matriz_global_final_4[1]),
+                  ReplacementTransform(matriz_global_final_3[4], matriz_global_final_4[2]),
+                  run_time=4
+                  )
+        self.play(ReplacementTransform(VGroup(*matriz_global_final_4[0:2]), VGroup(*matriz_global_final_5[0:2])),
+                  ReplacementTransform(matriz_global_final_4[2].get_brackets()[0],
+                                       matriz_global_final_5[2].get_brackets()[0]),
+                  ReplacementTransform(matriz_global_final_4[4].get_brackets()[1],
+                                       matriz_global_final_5[2].get_brackets()[1]),
+
+                  ReplacementTransform(
+                      VGroup(matriz_global_final_4[2].get_entries(), matriz_global_final_4[4].get_entries()),
+                      VGroup(matriz_global_final_5[2].get_entries())),
+                  FadeOut(matriz_global_final_4[3]),
+                  FadeOut(matriz_global_final_4[2].get_brackets()[1]),
+                  FadeOut(matriz_global_final_4[4].get_brackets()[0]),
+                  run_time=4)
+        self.wait(2)
+        #
+        self.play(FadeOut(matriz_global_final_5))
+        tit = titulo("Matriz global solucionada", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+        self.play(FadeIn(matriz_global_final))
+        self.wait(5)
+        self.play(FadeOut(matriz_global_final))
+        ########################################
+        tit = titulo("Fuerzas internas del elemento 1", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+
+        self.play(FadeIn(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]), FadeIn(mr_elemento_1_2),
+                  FadeIn(f_internas_elemento_1))
+        self.play(
+            ReplacementTransform(mr_elemento_1_2[0], mr_elemento_1_2_1[0]),
+            ReplacementTransform(mr_elemento_1_2[1], mr_elemento_1_2_1[1]),
+            ReplacementTransform(mr_elemento_1_2[2], mr_elemento_1_2_1[2]),
+            ReplacementTransform(mr_elemento_1_2[3], mr_elemento_1_2_1[3]),
+            run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(mr_elemento_1_2_1[2][1].get_entries(), mr_elemento_1_2_1[3].get_entries()),
+                                       mr_elemento_1_2_2[2].get_entries()),
+                  ReplacementTransform(mr_elemento_1_2_1[2][1].get_brackets()[0],
+                                       mr_elemento_1_2_2[2].get_brackets()[0]),
+                  ReplacementTransform(mr_elemento_1_2_1[3].get_brackets()[1],
+                                       mr_elemento_1_2_2[2].get_brackets()[1]),
+                  ReplacementTransform(mr_elemento_1_2_1[0], mr_elemento_1_2_2[0]),
+                  ReplacementTransform(mr_elemento_1_2_1[1], mr_elemento_1_2_2[1]),
+                  FadeOut(mr_elemento_1_2_1[2][1].get_brackets()[1]),
+                  FadeOut(mr_elemento_1_2_1[3].get_brackets()[0]),
+                  run_time=4)
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_1_2_2),
+                  FadeOut(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]),
+                  FadeOut(f_internas_elemento_1))
+        self.wait(2)
+        mr_elemento_1_2_3.move_to(ORIGIN)
+        self.play(FadeIn(mr_elemento_1_2_3))
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_1_2_3))
+        ########################################
+        tit = titulo("Fuerzas internas del elemento 2", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+
+        self.play(FadeIn(elementos[1], nodos[1:3], label_elementos[1], label_nodos[1:3]), FadeIn(mr_elemento_2_2),
+                  FadeIn(f_internas_elemento_2))
+        self.play(
+            ReplacementTransform(mr_elemento_2_2[0], mr_elemento_2_2_1[0]),
+            ReplacementTransform(mr_elemento_2_2[1], mr_elemento_2_2_1[1]),
+            ReplacementTransform(mr_elemento_2_2[2], mr_elemento_2_2_1[2]),
+            ReplacementTransform(mr_elemento_2_2[3], mr_elemento_2_2_1[3]),
+            run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(mr_elemento_2_2_1[2][1].get_entries(), mr_elemento_2_2_1[3].get_entries()),
+                                       mr_elemento_2_2_2[2].get_entries()),
+                  ReplacementTransform(mr_elemento_2_2_1[2][1].get_brackets()[0],
+                                       mr_elemento_2_2_2[2].get_brackets()[0]),
+                  ReplacementTransform(mr_elemento_2_2_1[3].get_brackets()[1],
+                                       mr_elemento_2_2_2[2].get_brackets()[1]),
+                  ReplacementTransform(mr_elemento_2_2_1[0], mr_elemento_2_2_2[0]),
+                  ReplacementTransform(mr_elemento_2_2_1[1], mr_elemento_2_2_2[1]),
+                  FadeOut(mr_elemento_2_2_1[2][1].get_brackets()[1]),
+                  FadeOut(mr_elemento_2_2_1[3].get_brackets()[0]),
+                  run_time=4)
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_2_2_2),
+                  FadeOut(elementos[1], nodos[1:3], label_elementos[1], label_nodos[1:3]),
+                  FadeOut(f_internas_elemento_2))
+        self.wait(2)
+        mr_elemento_2_2_3.move_to(ORIGIN)
+        self.play(FadeIn(mr_elemento_2_2_3))
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_2_2_3))
+        # ####################################
+        ########################################
+        tit = titulo("Fuerzas internas del elemento 3", size_titulo=36)
+        self.play(Write(tit[0]))
+        self.play(Create(tit[1]))
+        self.wait(2)
+        self.play(FadeOut(tit))
+
+        self.play(FadeIn(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]), FadeIn(mr_elemento_3_2),
+                  FadeIn(f_internas_elemento_3))
+        self.play(
+            ReplacementTransform(mr_elemento_3_2[0], mr_elemento_3_2_1[0]),
+            ReplacementTransform(mr_elemento_3_2[1], mr_elemento_3_2_1[1]),
+            ReplacementTransform(mr_elemento_3_2[2], mr_elemento_3_2_1[2]),
+            ReplacementTransform(mr_elemento_3_2[3], mr_elemento_3_2_1[3]),
+            run_time=4)
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(mr_elemento_3_2_1[2][1].get_entries(), mr_elemento_3_2_1[3].get_entries()),
+                                       mr_elemento_3_2_2[2].get_entries()),
+                  ReplacementTransform(mr_elemento_3_2_1[2][1].get_brackets()[0],
+                                       mr_elemento_3_2_2[2].get_brackets()[0]),
+                  ReplacementTransform(mr_elemento_3_2_1[3].get_brackets()[1],
+                                       mr_elemento_3_2_2[2].get_brackets()[1]),
+                  ReplacementTransform(mr_elemento_3_2_1[0], mr_elemento_3_2_2[0]),
+                  ReplacementTransform(mr_elemento_3_2_1[1], mr_elemento_3_2_2[1]),
+                  FadeOut(mr_elemento_3_2_1[2][1].get_brackets()[1]),
+                  FadeOut(mr_elemento_3_2_1[3].get_brackets()[0]),
+                  run_time=4)
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_3_2_2),
+                  FadeOut(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]),
+                  FadeOut(f_internas_elemento_3))
+        self.wait(2)
+        mr_elemento_3_2_3.move_to(ORIGIN)
+        self.play(FadeIn(mr_elemento_3_2_3))
+        self.wait(2)
+        self.play(FadeOut(mr_elemento_3_2_3))
 
 class matrizResorteAnimacion(Scene):
     def construct(self) -> None:
@@ -2256,9 +3182,9 @@ class matrizResorteAnimacion(Scene):
         punto_b_final = 3 * RIGHT
 
         # Instanciamos nuestro objeto personalizado
-        mi_resorte = resorte(punto_a_1, punto_b_1, n=40)
+        mi_resorte = ResorteManim(punto_a_1, punto_b_1, n=40)
         # porc_h= 0.1 por defecto, se cambia para que no aumente el d del resorte visualmente
-        mi_resorte_2 = resorte(punto_a_final, punto_b_final, n=40, porc_h=2 / 30)
+        mi_resorte_2 = ResorteManim(punto_a_final, punto_b_final, n=40, porc_h=2 / 30)
         n_a_1 = Dot(punto_a_1, radius=0.05, color=GRAY)
         n_b_1 = Dot(punto_b_1, radius=0.05, color=GRAY)
         n_a_2 = Dot(punto_a_2, radius=0.05, color=RED_D).set_z_index(1)

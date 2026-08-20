@@ -2,7 +2,7 @@ from manim import *
 import numpy as np
 from mnspy import *
 from mnspy.utilidades import _formato_float_latex
-from mnspy.ecuaciones_diferenciales_parciales.mef.ensamble import es_viga, es_resorte
+from mnspy.ecuaciones_diferenciales_parciales.mef.ensamble import es_viga, es_resorte, es_barra
 
 mi_plantilla = TexTemplate()
 mi_plantilla.add_to_preamble(r"\usepackage{cancel}")
@@ -209,22 +209,22 @@ class EnsambleAnimacion(Ensamble):
     def ecuacion_matriz_rigidez_global(self, reducida: bool = False, **kwargs) -> VMobject:
         return ecuacion_array_a_matriz(np.array(self._union._k.obtener_matriz(reducida)), **kwargs)
 
-    def sistema_ecuaciones_matriz_rigidez_global(self, EI_cte: bool = False, reducida: bool = False,
-                                                 h_buff_k: float | int = 1.8) -> VMobject:
-        vec_r_global = self.ecuacion_vector_etiquetas_reacciones(reducida=reducida)
-        vec_f_global = self.ecuacion_vector_fuerzas_nodales(reducida=reducida)
-        vec_k_global = self.ecuacion_matriz_rigidez_global(reducida=reducida, h_buff=h_buff_k)
-        vec_d_global = self.ecuacion_vector_etiquetas_desplazamientos(EI_cte=EI_cte, reducida=reducida)
-        if EI_cte:
-            return VGroup(vec_r_global, ecuacion_signo_igual(), ecuacion_EI(), vec_k_global, vec_d_global,
-                          ecuacion_signo_menos(), vec_f_global)
-        else:
-            return VGroup(vec_r_global, ecuacion_signo_igual(), vec_k_global, vec_d_global, ecuacion_signo_menos(),
-                          vec_f_global)
+    # def sistema_ecuaciones_matriz_rigidez_global(self, EI_cte: bool = False, reducida: bool = False,
+    #                                              h_buff_k: float | int = 1.8) -> VMobject:
+    #     vec_r_global = self.ecuacion_vector_etiquetas_reacciones(reducida=reducida)
+    #     vec_f_global = self.ecuacion_vector_fuerzas_nodales(reducida=reducida)
+    #     vec_k_global = self.ecuacion_matriz_rigidez_global(reducida=reducida, h_buff=h_buff_k)
+    #     vec_d_global = self.ecuacion_vector_etiquetas_desplazamientos(EI_cte=EI_cte, reducida=reducida)
+    #     if EI_cte:
+    #         return VGroup(vec_r_global, ecuacion_signo_igual(), ecuacion_EI(), vec_k_global, vec_d_global,
+    #                       ecuacion_signo_menos(), vec_f_global)
+    #     else:
+    #         return VGroup(vec_r_global, ecuacion_signo_igual(), vec_k_global, vec_d_global, ecuacion_signo_menos(),
+    #                       vec_f_global)
 
-    def sistema_ecuaciones_matriz_rigidez_global_2(self, EI_cte: bool = False, reducida: bool = False,
-                                                   h_buff_k: float | int = 1.8,
-                                                   carga_sobre_elementos: bool = False) -> VMobject:
+    def sistema_ecuaciones_matriz_rigidez_global(self, EI_cte: bool = False, reducida: bool = False,
+                                                 h_buff_k: float | int = 1.8,
+                                                 carga_sobre_elementos: bool = False) -> VMobject:
         vec_r_global = self.ecuacion_vector_etiquetas_reacciones(reducida=reducida)
         vec_f_global = self.ecuacion_vector_fuerzas_externas_nodales(reducida=reducida)
         vec_k_global = self.ecuacion_matriz_rigidez_global(reducida=reducida, h_buff=h_buff_k)
@@ -575,6 +575,9 @@ class EnsambleAnimacion(Ensamble):
             elif es_resorte(el):
                 elementos.add(
                     elemento_resorte(el.get_nodo_inicial().punto[:2], el.get_nodo_final().punto[:2], self.ejes))
+            elif es_barra(el):
+                elementos.add(
+                    elemento_barra(el.get_nodo_inicial().punto[0], el.get_nodo_final().punto[0], 0.25, self.ejes))
             punto_medio = self.ejes.c2p(
                 (np.array(el.get_nodo_inicial().punto) + np.array(el.get_nodo_final().punto)) / 2)
             # 1. Crear solo el texto
