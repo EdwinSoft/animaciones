@@ -1037,7 +1037,7 @@ class SecanteAnimacion(MovingCameraScene):
                 height=abs(linea_sup.get_y() - linea_inf.get_y()),  # Calcula el alto exacto de la celda
                 color=YELLOW,
                 fill_opacity=0.2,
-                stroke_width=2
+                stroke_width=0
             ).move_to((linea_sup.get_center() + linea_inf.get_center()) / 2)  # Lo centra entre las dos líneas
             # self.play(FadeIn(tabla))
 
