@@ -89,3 +89,25 @@ class NewtonRaphson(MovingCameraScene):
         self.wait(1)
         self.play(Restore(self.camera.frame), run_time=2)
         self.wait(2)
+
+
+class RotacionEspacio(LinearTransformationScene):
+    def __init__(self, **kwargs):
+        super().__init__(
+            show_coordinates=True,
+            show_basis_vectors=True,
+            include_background_plane=True,  # Mantiene la cuadrícula original estática de fondo
+            **kwargs
+        )
+
+    def construct(self):
+        # Matriz de rotación 2D para 45 grados
+        theta = np.radians(45)
+        matriz_rotacion = [
+            [np.cos(theta), -np.sin(theta)],
+            [np.sin(theta), np.cos(theta)]
+        ]
+
+        # Animar la transformación de todo el plano
+        self.apply_matrix(matriz_rotacion)
+        self.wait()

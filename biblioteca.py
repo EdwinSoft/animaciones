@@ -4,6 +4,8 @@ from mnspy import *
 from mnspy.utilidades import _formato_float_latex
 from mnspy.ecuaciones_diferenciales_parciales.mef.ensamble import es_viga, es_resorte, es_barra
 
+transformar_array_float_latex = np.vectorize(_formato_float_latex, excluded=['formato', 'tol_cero'])
+
 mi_plantilla = TexTemplate()
 mi_plantilla.add_to_preamble(r"\usepackage{cancel}")
 mi_plantilla.add_to_preamble(r"\usepackage{xcolor}")
@@ -15,7 +17,8 @@ mi_plantilla.add_to_preamble(r"\usepackage{xcolor}")
 
 
 class EnsambleAnimacion(Ensamble):
-    def __init__(self, lista_elementos: list[Elemento], escala: float | int | None = None):
+    def __init__(self, lista_elementos: list[Elemento], escala: float | int | None = None,
+                 ejes_div: list[float | int] = [1, 1]):
         super().__init__(lista_elementos)
         min_x, max_x = self._graf['lim_x'][0], self._graf['lim_x'][1]
         min_y, max_y = self._graf['lim_y'][0], self._graf['lim_y'][1]
@@ -23,11 +26,11 @@ class EnsambleAnimacion(Ensamble):
             min_y = max_y = 0.0
         centro = ((min_x + max_x) / 2, (min_y + max_y) / 2)
         if 16.0 * (max_y - min_y) > 9.0 * (max_x - min_x):
-            rango_y = [min_y, max_y, 1]
-            rango_x = [centro[0] - 0.5 * (max_y - min_y) * 16 / 9, centro[0] + 0.5 * (max_y - min_y) * 16 / 9, 1]
+            rango_y = [min_y, max_y, ejes_div[1]]
+            rango_x = [centro[0] - 0.5 * (max_y - min_y) * 16 / 9, centro[0] + 0.5 * (max_y - min_y) * 16 / 9, ejes_div[0]]
         else:
-            rango_x = [min_x, max_x, 1]
-            rango_y = [centro[1] - 0.5 * (max_x - min_x) * 9 / 16, centro[1] + 0.5 * (max_x - min_x) * 9 / 16, 1]
+            rango_x = [min_x, max_x, ejes_div[0]]
+            rango_y = [centro[1] - 0.5 * (max_x - min_x) * 9 / 16, centro[1] + 0.5 * (max_x - min_x) * 9 / 16, ejes_div[1]]
         if escala is None:
             f_escala = 0.9 * 8.0 / (rango_y[1] - rango_y[0])
         else:
@@ -137,7 +140,17 @@ class EnsambleAnimacion(Ensamble):
         return Matrix(np.array(etiquetas_fuerzas).reshape(-1, 1)
                       , left_bracket=r"\{", right_bracket=r"\}")
 
-    def ecuacion_vector_etiquetas_fuerzas_internas_resorte(self, ele: resorte, mostrar_valores: bool = False,
+    def ecuacion_vector_etiquetas_fuerzas_internas_resorte(self, ele: Resorte, mostrar_valores: bool = False,
+                                                           formato: str = '%.3g') -> VMobject:
+        etiquetas_fuerzas = ele._obtener_etiquetas_fuerzas()
+        if mostrar_valores:
+            fuerzas = (np.matmul(ele._k.k,
+                                 ele._obtener_desplazamientos())).reshape(1, -1).flatten()
+            etiquetas_fuerzas = etiquetas_fuerzas + np.array(['=', '=']) + np.char.mod(formato, fuerzas)
+        return Matrix(np.array(etiquetas_fuerzas).reshape(-1, 1)
+                      , left_bracket=r"\{", right_bracket=r"\}")
+
+    def ecuacion_vector_etiquetas_fuerzas_internas_barra(self, ele: Barra, mostrar_valores: bool = False,
                                                            formato: str = '%.3g') -> VMobject:
         etiquetas_fuerzas = ele._obtener_etiquetas_fuerzas()
         if mostrar_valores:
@@ -629,7 +642,30 @@ class EnsambleAnimacion(Ensamble):
         fuerzas_internas.add(VGroup(label_f_1, label_f_2, label_m_1, label_m_2))
         return fuerzas_internas
 
-    def elemento_fuerza_interna_resorte(self, ele: resorte, unidades: str | None = None,
+    def elemento_fuerza_interna_resorte(self, ele: Resorte, unidades: str | None = None,
+                                        mostrar_valores: bool = False) -> VMobject:
+        if unidades is None:
+            unidades = r"\,kN"
+        n_1 = ele.get_nodo_inicial()
+        n_2 = ele.get_nodo_final()
+        etiquetas_fuerzas = ele._obtener_etiquetas_fuerzas()
+        sentido_fuerzas = np.array([True, True])
+        if mostrar_valores:
+            etiquetas_fuerzas = (np.matmul(ele._k.k, ele._obtener_desplazamientos())).reshape(1, -1).flatten()
+            sentido_fuerzas = (etiquetas_fuerzas > 0.0).reshape(1, -1).flatten()
+            etiquetas_fuerzas = np.char.mod('%.3g', abs(etiquetas_fuerzas))
+        fuerzas_internas = VGroup()
+        f_1 = elemento_carga(n_1.punto, self.ejes, longitud=1, saliente=sentido_fuerzas[0], ang=0, color_carga=WHITE)
+        label_f_1 = MathTex(etiquetas_fuerzas[0] + unidades).next_to(f_1, LEFT, buff=0.0).scale(0.5).shift(
+            RIGHT * 0.0)
+        f_2 = elemento_carga(n_2.punto, self.ejes, longitud=1, saliente=sentido_fuerzas[1], ang=0, color_carga=WHITE)
+        label_f_2 = MathTex(etiquetas_fuerzas[1] + unidades).next_to(f_2, RIGHT, buff=0.0).scale(0.5).shift(
+            RIGHT * 0.0)
+        fuerzas_internas.add(VGroup(f_1, f_2))
+        fuerzas_internas.add(VGroup(label_f_1, label_f_2))
+        return fuerzas_internas
+
+    def elemento_fuerza_interna_barra(self, ele: Barra, unidades: str | None = None,
                                         mostrar_valores: bool = False) -> VMobject:
         if unidades is None:
             unidades = r"\,kN"
@@ -672,12 +708,14 @@ def elemento_viga(x_i: float, x_f: float, h: float | int, ejes: Axes) -> VMobjec
     viga = Rectangle(height=h, width=L, color=BLUE, fill_color=BLUE, fill_opacity=0.5, stroke_width=1).move_to(centro)
     return viga
 
+
 def elemento_barra(x_i: float, x_f: float, h: float | int, ejes: Axes) -> VMobject:
     coord_i = ejes.c2p((x_i, 0))
     coord_j = ejes.c2p((x_f, 0))
     centro = (coord_i + coord_j) / 2
     L = np.linalg.norm(coord_j - coord_i)
-    barra = Rectangle(height=h, width=L, color=BLUE, fill_color=BLUE, fill_opacity=0.5, stroke_width=1).move_to(centro)
+    barra = Rectangle(height=h, width=L, color=BLUE_D, fill_color=BLUE_D, fill_opacity=0.5, stroke_width=1).move_to(
+        centro)
     return barra
 
 
@@ -1097,6 +1135,18 @@ def ecuacion_vector_fuerza_resorte(id_elemento: int | str = '1', id_nodo_inicial
     )
     return vector_fuerzas
 
+def ecuacion_vector_fuerza_barra(id_elemento: int | str = '1', id_nodo_inicial: int | str = '1',
+                                   id_nodo_final: int | str = '2') -> VMobject:
+    str_elemento = str(id_elemento)
+    str_nodo_ini = str(id_nodo_inicial)
+    str_nodo_fin = str(id_nodo_final)
+    vector_fuerzas = Matrix(
+        [["f^{(" + str_elemento + ")}_{" + str_nodo_ini + "x}"],
+         ["f^{(" + str_elemento + ")}_{" + str_nodo_fin + "x}"]],
+        left_bracket=r"\{",  # Llave izquierda
+        right_bracket=r"\}"  # Llave derecha
+    )
+    return vector_fuerzas
 
 def ecuacion_vector_desplazamiento_viga(id_nodo_inicial: int | str = '1', id_nodo_final: int | str = '2') -> VMobject:
     str_nodo_ini = str(id_nodo_inicial)
@@ -1126,6 +1176,18 @@ def ecuacion_vector_desplazamiento_resorte(id_nodo_inicial: int | str = '1',
     )
     return vector_deformacion
 
+def ecuacion_vector_desplazamiento_barra(id_nodo_inicial: int | str = '1',
+                                           id_nodo_final: int | str = '2') -> VMobject:
+    str_nodo_ini = str(id_nodo_inicial)
+    str_nodo_fin = str(id_nodo_final)
+    vector_deformacion = Matrix(
+        [["u_{" + str_nodo_ini + "}"],
+         ["u_{" + str_nodo_fin + "}"],
+         ],
+        left_bracket=r"\{",  # Llave izquierda
+        right_bracket=r"\}"  # Llave derecha
+    )
+    return vector_deformacion
 
 def ecuacion_vector_fuerza_nodal_equivalente_viga(id_nodo_inicial: int | str = '1',
                                                   id_nodo_final: int | str = '2') -> VMobject:
@@ -1230,6 +1292,7 @@ def animacion_titulo(titulo: str, subtitulo: str = '') -> VMobject:
         todo = VGroup(titulo, caja).move_to(ORIGIN)
     return todo
 
+
 def crear_barra(p_i: np.ndarray, p_f: np.ndarray, h: float | int) -> VMobject:
     coord_i = p_i
     coord_j = p_f
@@ -1237,6 +1300,7 @@ def crear_barra(p_i: np.ndarray, p_f: np.ndarray, h: float | int) -> VMobject:
     L = np.linalg.norm(coord_j - coord_i)
     barra = Rectangle(height=h, width=L, color=BLUE, fill_color=BLUE, fill_opacity=0.5, stroke_width=1).move_to(centro)
     return barra
+
 
 def elemento_tabla(encabezado: list, datos: list, color_tabla: ManimColor = TEAL_C,
                    color_encabezado: ManimColor = TEAL_C) -> VMobject:

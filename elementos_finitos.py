@@ -2245,6 +2245,7 @@ class EjemploResorteAnimacion(Scene):
         self.wait(2)
         self.play(FadeOut(mr_elemento_3_2_3))
 
+
 class EjemploBarraAnimacion(Scene):
     def construct(self):
         # Solución del ejercicio con mnspy
@@ -2258,11 +2259,11 @@ class EjemploBarraAnimacion(Scene):
         e_3 = Barra('3', n_3, n_4, A=12E-4, E=1E11)
         #### Cargas
         n_2.agregar_fuerza_externa(15000, 'x')
-        mg = EnsambleAnimacion([e_1, e_2, e_3])
+        mg = EnsambleAnimacion([e_1, e_2, e_3], ejes_div=[0.1, 1])
         ## Se guarda los objetos antes de la solución en mnspy
         matriz_global_base = mg.sistema_ecuaciones_matriz_rigidez_global(reducida=False)
-        mat_k = ecuacion_array_a_matriz(np.array(mg._union._k.obtener_matriz(False))/2e8)
-        matriz_global_base[4]=VGroup(MathTex(r'2\times10^8'), mat_k).arrange(RIGHT)
+        mat_k = ecuacion_array_a_matriz(np.array(mg._union._k.obtener_matriz(False)) / 2e8)
+        matriz_global_base[4] = VGroup(MathTex(r'2\times10^8'), mat_k).arrange(RIGHT)
         matriz_global = matriz_global_base.copy().scale(0.5).arrange(RIGHT)
         matriz_global_reducida_inicial = mg.sistema_ecuaciones_matriz_rigidez_global(reducida=True)
         mat_k = ecuacion_array_a_matriz(np.array(mg._union._k.obtener_matriz(True)) / 2e8)
@@ -2271,15 +2272,17 @@ class EjemploBarraAnimacion(Scene):
 
         matriz_global_reducida_final = matriz_global_reducida_inicial[2:].copy().scale(0.5).arrange(RIGHT)
         matriz = matriz_global_reducida_inicial[4].copy()
-        vec_k_reduc_inverso = ecuacion_array_a_matriz(np.linalg.inv(np.array(mg._union._k.obtener_matriz(True))),
-                                                      h_buff=2.8)
-
+        vec_k_reduc_inverso = Matrix(
+            transformar_array_float_latex(np.linalg.inv(np.array(mg._union._k.obtener_matriz(True))),formato = '{:.5g}'), h_buff=3.8)
         sol = np.linalg.inv(np.array(mg._union._k.obtener_matriz(True))) @ np.array(mg._union._k.obtener_fuerzas(True))
-        solucion_reducida = ecuacion_array_a_matriz(sol, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
-        superindice = MathTex("-1").next_to(matriz, RIGHT, aligned_edge=UP, buff=0.1)
-        matriz_global_reducida_final_2 = VGroup(VGroup(matriz_global_reducida_inicial[4].copy(), superindice),
-                                                matriz_global_reducida_inicial[2].copy(),
-                                                ecuacion_signo_igual(), matriz_global_reducida_inicial[5].copy()).scale(
+        # solucion_reducida = ecuacion_array_a_matriz(sol, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
+        solucion_reducida = Matrix(transformar_array_float_latex(sol, formato='{:.5g}'), left_bracket=r"\{", right_bracket=r"\}")
+        superindice = MathTex("-1").next_to(matriz, RIGHT, aligned_edge=UP, buff=0.2)
+        matriz_global_reducida_final_2 = VGroup(
+            VGroup(VGroup(MathTex(r'5\times10^{-9}'), matriz_global_reducida_inicial[4][1].copy()).arrange(RIGHT),
+                   superindice),
+            matriz_global_reducida_inicial[2].copy(),
+            ecuacion_signo_igual(), matriz_global_reducida_inicial[5].copy()).scale(
             0.5).arrange(RIGHT)
         matriz_global_reducida_final_3 = VGroup(vec_k_reduc_inverso,
                                                 matriz_global_reducida_inicial[2].copy(),
@@ -2291,9 +2294,9 @@ class EjemploBarraAnimacion(Scene):
             0.5).arrange(RIGHT)
 
         sol_1 = VGroup(MathTex(r'{u_2}').set_color(BLUE), ecuacion_signo_igual(),
-                       MathTex(f'{sol[0][0]:.8f}')).scale(0.5).arrange(RIGHT)
+                       solucion_reducida.get_entries()[0]).scale(0.5).arrange(RIGHT)
         sol_2 = VGroup(MathTex(r'{u_3}').set_color(BLUE), ecuacion_signo_igual(),
-                       MathTex(f'{sol[1][0]:.8f}')).scale(0.5).arrange(RIGHT).next_to(sol_1, DOWN)
+                       solucion_reducida.get_entries()[1]).scale(0.5).arrange(RIGHT).next_to(sol_1, DOWN)
 
         ### Grados de libertad
         n_1_gdl = VGroup(mg.get_grados_libertad(n_1, 'x', offset=0.0, longitud=0.8))
@@ -2314,12 +2317,17 @@ class EjemploBarraAnimacion(Scene):
         mg.solucionar_por_gauss_y_calcular_reacciones()
         sol_final = np.array(mg._union._k.obtener_matriz(False)) @ np.array(mg._union._k.obtener_desplazamientos(False))
         sol_final_resta = sol_final - mg._union._k.obtener_fuerzas(False)
-        solucion = ecuacion_array_a_matriz(sol_final, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
+        #solucion = ecuacion_array_a_matriz(sol_final, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
+        solucion = Matrix(transformar_array_float_latex(sol_final, formato='{:.5g}'), left_bracket=r"\{",
+                                   right_bracket=r"\}")
 
         matriz_global_final_base = mg.sistema_ecuaciones_matriz_rigidez_global(reducida=False)
+        mat_k = ecuacion_array_a_matriz(np.array(mg._union._k.obtener_matriz(False)) / 2e8)
+        matriz_global_final_base[4] = VGroup(MathTex(r'2\times10^8'), mat_k).arrange(RIGHT)
         matriz_global_final = matriz_global_final_base.copy().scale(0.35).arrange(RIGHT)
         matriz_global_final_2 = matriz_global_final_base.copy()
         matriz_global_final_2[0] = matriz_global_base.copy()[0]
+
         matriz_global_final_2.scale(0.35).arrange(RIGHT)
         matriz_global_final_3 = matriz_global_final_base.copy()
         matriz_global_final_3[0] = matriz_global_base.copy()[0]
@@ -2337,8 +2345,11 @@ class EjemploBarraAnimacion(Scene):
         matriz_global_final_3.scale(0.35).arrange(RIGHT)
         matriz_global_final_5.submobjects.pop(3)
         matriz_global_final_5.submobjects.pop(3)
-        matriz_global_final_5[2] = ecuacion_array_a_matriz(sol_final_resta, formato_num='{x:.8f}', left_bracket=r"\{",
-                                                           right_bracket=r"\}")
+        # matriz_global_final_5[2] = ecuacion_array_a_matriz(sol_final_resta, formato_num='{x:.8f}', left_bracket=r"\{",
+        #                                                    right_bracket=r"\}")
+        matriz_global_final_5[2] = Matrix(transformar_array_float_latex(sol_final_resta, formato='{:.5g}'), left_bracket=r"\{",
+                                   right_bracket=r"\}")
+
         matriz_global_final_5.scale(0.35).arrange(RIGHT)
 
         # ############
@@ -2352,14 +2363,17 @@ class EjemploBarraAnimacion(Scene):
         nodos, label_nodos, soportes = mg.get_nodos_y_soportes()
         nodos.set_color(RED)
         # ############
-
         elementos, label_elementos = mg.get_elementos()
-
-        label_elementos.shift(0.4 * DOWN)
-        # k_1 = MathTex(r'k_1=200\,N/mm', color=WHITE).scale(0.7).next_to(elementos[0], UP)
-        # k_2 = MathTex(r'k_2=400\,N/mm', color=WHITE).scale(0.7).next_to(elementos[1], UP)
-        # k_3 = MathTex(r'k_3=600\,N/mm', color=WHITE).scale(0.7).next_to(elementos[2], UP)
-
+        ############
+        cotas = VGroup()
+        p_1 = mg.c2p([0.0, 0.0, 0.0]) + DOWN
+        p_2 = mg.c2p([0.6, 0.0, 0.0]) + DOWN
+        cotas.add(crear_cota(p_1, p_2, r'0.6\,m', GRAY))
+        p_3 = mg.c2p([1.2, 0.0, 0.0]) + DOWN
+        cotas.add(crear_cota(p_2, p_3, r'0.6\,m', GRAY))
+        p_4 = mg.c2p([1.8, 0.0, 0.0]) + DOWN
+        cotas.add(crear_cota(p_3, p_4, r'0.6\,m', GRAY))
+        ############
         enunciado = Tex(
             r"Para el ensamblaje de tres barras mostrado en la Figura, determine\\",
             r"(a) la matriz de rigidez global, (b) los desplazamientos de los nodos 2 y 3, y \\",
@@ -2371,42 +2385,34 @@ class EjemploBarraAnimacion(Scene):
         ).to_edge(UP + LEFT)
         # ############
 
-        # Ecuaciones generales del resorte
-        ecuacion_local_resorte = VGroup(Matrix([['f']], left_bracket=r"\{", right_bracket=r"\}"),
-                                        ecuacion_signo_igual().copy(), Matrix([['k']]),
-                                        Matrix([['d']], left_bracket=r"\{", right_bracket=r"\}")).arrange(
+        # Ecuaciones generales de la barra
+        ecuacion_local_barra = VGroup(Matrix([['f']], left_bracket=r"\{", right_bracket=r"\}"),
+                                      ecuacion_signo_igual().copy(), Matrix([['k']]),
+                                      Matrix([['d']], left_bracket=r"\{", right_bracket=r"\}")).arrange(
             RIGHT).move_to(DOWN * 2)
-        matrix_rigidez = Matrix(
-            [['1', '-1'],
-             ['-1', '1']]
-        )
-        matrix_rigidez = VGroup(MathTex(r'\frac{AE}{L}'),Matrix(
+        matrix_rigidez = VGroup(MathTex(r'\frac{AE}{L}'), Matrix(
             [['1', '-1'],
              ['-1', '1']]
         )).arrange(RIGHT)
         ## Ecuaciones Elemento 1
-        ecuacion_local_resorte_1 = ecuacion_local_resorte.copy()
-        matriz_k_1 = ecuacion_vector_fuerza_resorte('1', '1', '3')
+        ecuacion_local_barra_1 = ecuacion_local_barra.copy()
+        matriz_k_1 = ecuacion_vector_fuerza_barra('1', '1', '2')
         ### Cargas en elemento 1
         ### Grados de libertad en elemento 1
-        grados_el_1 = VGroup(*n_1_gdl.copy(), *n_3_gdl.copy()).set_z_index(1)
-        label_etiquetas_grados_el_1 = VGroup(*n_1_labels_gdl.copy(), *n_3_labels_gdl.copy())
+        grados_el_1 = VGroup(*n_1_gdl.copy(), *n_2_gdl.copy()).set_z_index(1)
+        label_etiquetas_grados_el_1 = VGroup(*n_1_labels_gdl.copy(), *n_2_labels_gdl.copy())
         label_etiquetas_grados_el_1[0].next_to(grados_el_1[0], UP, buff=0.1)
         label_etiquetas_grados_el_1[1].next_to(grados_el_1[1], RIGHT, buff=0.1)
         #######################################################################################################
         ### Escena elemento 1
         escena_elemento_1 = VGroup(elementos[0], nodos[0:2], soportes[0:1], label_elementos[0], label_nodos[0:2])
-        matrix_rigidez_1_1 = Matrix(
-            [['200', '-200'],
-             ['-200', '200']]
-        )
         matrix_rigidez_1_1 = VGroup(MathTex(r'2\times 10^8'), Matrix(
             [['1', '-1'],
              ['-1', '1']]
         )).arrange(RIGHT)
         matrix_rigidez_1_2 = matrix_rigidez_1_1.copy()
         matrix_rigidez_1_3 = matrix_rigidez_1_1.copy()
-        vector_desplazamientos_el_1 = ecuacion_vector_desplazamiento_resorte('1', '3')
+        vector_desplazamientos_el_1 = ecuacion_vector_desplazamiento_barra('1', '2')
         vector_desplazamientos_modificado_1_3 = vector_desplazamientos_el_1_modificado.copy()
         mr_elemento_1 = VGroup(matriz_k_1.copy(), ecuacion_signo_igual().copy(), matrix_rigidez.copy(),
                                vector_desplazamientos_el_1.copy()).arrange(RIGHT, buff=0.2)
@@ -2424,22 +2430,25 @@ class EjemploBarraAnimacion(Scene):
         mr_elemento_1_2_2 = mr_elemento_1_2_1.copy()
         mr_elemento_1_2_2.submobjects.pop(3)
         sol_el_1_1 = np.array(e_1._k.obtener_matriz(False)) @ np.array(e_1._k.obtener_desplazamientos(False))
-        mr_elemento_1_2_2[2] = ecuacion_array_a_matriz(sol_el_1_1, formato_num='{x:.8f}', left_bracket=r"\{",
-                                                       right_bracket=r"\}").scale(0.5)
+        # mr_elemento_1_2_2[2] = ecuacion_array_a_matriz(sol_el_1_1, formato_num='{x:.8f}', left_bracket=r"\{",
+        #                                                right_bracket=r"\}").scale(0.5)
+        mr_elemento_1_2_2[2] = Matrix(transformar_array_float_latex(sol_el_1_1, formato='{:.5g}'), left_bracket=r"\{",
+                                   right_bracket=r"\}").scale(0.5)
+
         mr_elemento_1_2_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
         mr_elemento_1_2_3 = mr_elemento_1_2_1.copy()
-        mr_elemento_1_2_3[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_resorte(e_1, mostrar_valores=True,
-                                                                                     formato='%.8g').scale(0.5)
+        mr_elemento_1_2_3[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_barra(e_1, mostrar_valores=True,
+                                                                                   formato='%.8g').scale(0.5)
         mr_elemento_1_2_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        f_internas_elemento_1 = mg.elemento_fuerza_interna_resorte(e_1, unidades='')
+        f_internas_elemento_1 = mg.elemento_fuerza_interna_barra(e_1, unidades='')
         #######################################################################################################
         ## Ecuaciones Elemento 2
-        ecuacion_local_resorte_2 = ecuacion_local_resorte.copy()
-        matriz_k_2 = ecuacion_vector_fuerza_resorte('2', '3', '4')
+        ecuacion_local_barra_2 = ecuacion_local_barra.copy()
+        matriz_k_2 = ecuacion_vector_fuerza_barra('2', '2', '3')
         ### Cargas en elemento 2
         ### Grados de libertad en elemento 2
-        grados_el_2 = VGroup(*n_3_gdl.copy(), *n_4_gdl.copy()).set_z_index(1)
-        label_etiquetas_grados_el_2 = VGroup(*n_3_labels_gdl.copy(), *n_4_labels_gdl.copy())
+        grados_el_2 = VGroup(*n_2_gdl.copy(), *n_3_gdl.copy()).set_z_index(1)
+        label_etiquetas_grados_el_2 = VGroup(*n_2_labels_gdl.copy(), *n_3_labels_gdl.copy())
         label_etiquetas_grados_el_2[0].next_to(grados_el_2[0], LEFT, buff=0.1)
         label_etiquetas_grados_el_2[1].next_to(grados_el_2[1], RIGHT, buff=0.1)
 
@@ -2447,17 +2456,13 @@ class EjemploBarraAnimacion(Scene):
         escena_elemento_2 = VGroup(elementos[1], nodos[1:3],
                                    # soportes[0:1],
                                    label_elementos[1], label_nodos[1:3])
-        matrix_rigidez_2_1 = Matrix(
-            [['400', '-400'],
-             ['-400', '400']]
-        )
         matrix_rigidez_2_1 = VGroup(MathTex(r'2\times 10^8'), Matrix(
             [['1', '-1'],
              ['-1', '1']]
         )).arrange(RIGHT)
         matrix_rigidez_2_2 = matrix_rigidez_2_1.copy()
         matrix_rigidez_2_3 = matrix_rigidez_2_1.copy()
-        vector_desplazamientos_el_2 = ecuacion_vector_desplazamiento_resorte('3', '4')
+        vector_desplazamientos_el_2 = ecuacion_vector_desplazamiento_barra('2', '3')
         vector_desplazamientos_modificado_2_3 = vector_desplazamientos_el_2_modificado.copy()
         mr_elemento_2 = VGroup(matriz_k_2.copy(), ecuacion_signo_igual().copy(), matrix_rigidez.copy(),
                                vector_desplazamientos_el_2.copy()).arrange(RIGHT, buff=0.2)
@@ -2475,22 +2480,24 @@ class EjemploBarraAnimacion(Scene):
         mr_elemento_2_2_2 = mr_elemento_2_2_1.copy()
         mr_elemento_2_2_2.submobjects.pop(3)
         sol_el_2_1 = np.array(e_2._k.obtener_matriz(False)) @ np.array(e_2._k.obtener_desplazamientos(False))
-        mr_elemento_2_2_2[2] = ecuacion_array_a_matriz(sol_el_2_1, formato_num='{x:.8f}', left_bracket=r"\{",
-                                                       right_bracket=r"\}").scale(0.5)
+        # mr_elemento_2_2_2[2] = ecuacion_array_a_matriz(sol_el_2_1, formato_num='{x:.8f}', left_bracket=r"\{",
+        #                                                right_bracket=r"\}").scale(0.5)
+        mr_elemento_2_2_2[2] = Matrix(transformar_array_float_latex(sol_el_2_1, formato='{:.5g}'), left_bracket=r"\{",
+                                      right_bracket=r"\}").scale(0.5)
         mr_elemento_2_2_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
         mr_elemento_2_2_3 = mr_elemento_2_2_1.copy()
-        mr_elemento_2_2_3[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_resorte(e_2, mostrar_valores=True,
-                                                                                     formato='%.8g').scale(0.5)
+        mr_elemento_2_2_3[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_barra(e_2, mostrar_valores=True,
+                                                                                   formato='%.8g').scale(0.5)
         mr_elemento_2_2_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        f_internas_elemento_2 = mg.elemento_fuerza_interna_resorte(e_2, unidades='')
+        f_internas_elemento_2 = mg.elemento_fuerza_interna_barra(e_2, unidades='')
         #######################################################################################################
         ## Ecuaciones Elemento 3
-        ecuacion_local_resorte_3 = ecuacion_local_resorte.copy()
-        matriz_k_3 = ecuacion_vector_fuerza_resorte('3', '4', '2')
+        ecuacion_local_barra_3 = ecuacion_local_barra.copy()
+        matriz_k_3 = ecuacion_vector_fuerza_barra('3', '3', '4')
         ### Cargas en elemento 3
         ### Grados de libertad en elemento 3
-        grados_el_3 = VGroup(*n_4_gdl.copy(), *n_2_gdl.copy()).set_z_index(1)
-        label_etiquetas_grados_el_3 = VGroup(*n_4_labels_gdl.copy(), *n_2_labels_gdl.copy())
+        grados_el_3 = VGroup(*n_3_gdl.copy(), *n_4_gdl.copy()).set_z_index(1)
+        label_etiquetas_grados_el_3 = VGroup(*n_3_labels_gdl.copy(), *n_4_labels_gdl.copy())
         label_etiquetas_grados_el_3[0].next_to(grados_el_3[0], LEFT, buff=0.1)
         label_etiquetas_grados_el_3[1].next_to(grados_el_3[1], UP, buff=0.1)
 
@@ -2506,7 +2513,7 @@ class EjemploBarraAnimacion(Scene):
         )).arrange(RIGHT)
         matrix_rigidez_3_2 = matrix_rigidez_3_1.copy()
         matrix_rigidez_3_3 = matrix_rigidez_3_1.copy()
-        vector_desplazamientos_el_3 = ecuacion_vector_desplazamiento_resorte('4', '2')
+        vector_desplazamientos_el_3 = ecuacion_vector_desplazamiento_barra('3', '4')
         vector_desplazamientos_modificado_3_3 = vector_desplazamientos_el_3_modificado.copy()
         mr_elemento_3 = VGroup(matriz_k_3.copy(), ecuacion_signo_igual().copy(), matrix_rigidez.copy(),
                                vector_desplazamientos_el_3.copy()).arrange(RIGHT, buff=0.2)
@@ -2524,194 +2531,24 @@ class EjemploBarraAnimacion(Scene):
         mr_elemento_3_2_2 = mr_elemento_3_2_1.copy()
         mr_elemento_3_2_2.submobjects.pop(3)
         sol_el_3_1 = np.array(e_3._k.obtener_matriz(False)) @ np.array(e_3._k.obtener_desplazamientos(False))
-        mr_elemento_3_2_2[2] = ecuacion_array_a_matriz(sol_el_3_1, formato_num='{x:.8f}', left_bracket=r"\{",
-                                                       right_bracket=r"\}").scale(0.5)
+        # mr_elemento_3_2_2[2] = ecuacion_array_a_matriz(sol_el_3_1, formato_num='{x:.8f}', left_bracket=r"\{",
+        #                                                right_bracket=r"\}").scale(0.5)
+        mr_elemento_3_2_2[2] = Matrix(transformar_array_float_latex(sol_el_3_1, formato='{:.5g}'), left_bracket=r"\{",
+                                      right_bracket=r"\}").scale(0.5)
         mr_elemento_3_2_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
         mr_elemento_3_2_3 = mr_elemento_3_2_1.copy()
-        mr_elemento_3_2_3[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_resorte(e_3, mostrar_valores=True,
-                                                                                     formato='%.8g').scale(0.5)
+        mr_elemento_3_2_3[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_barra(e_3, mostrar_valores=True,
+                                                                                   formato='%.8g').scale(0.5)
         mr_elemento_3_2_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        f_internas_elemento_3 = mg.elemento_fuerza_interna_resorte(e_3, unidades='')
+        f_internas_elemento_3 = mg.elemento_fuerza_interna_barra(e_3, unidades='')
         f_internas_elemento_3[0][1].shift(LEFT)
         f_internas_elemento_3[1][1].next_to(f_internas_elemento_3[0][1], UP, buff=0.0).shift(0.5 * RIGHT)
-        # #######################################################################################################
-        # ### Escena elemento 2
-        # escena_elemento_2 = VGroup(elementos[1], nodos[1:3], soportes[1:3], label_elementos[1], label_nodos[1:3],
-        #                            cargas[2:5])
-        # factor_matrix_rigidez_2_1 = MathTex(r'\dfrac{EI}{1000}')
-        # factor_matrix_rigidez_2_2 = MathTex('EI')
-        # factor_matrix_rigidez_2_3 = factor_matrix_rigidez_2_2.copy()
-        # factor_matrix_rigidez_2_4 = factor_matrix_rigidez_2_2.copy()
-        #
-        # matrix_rigidez_2_1 = Matrix(
-        #     [['12', '60', '-12', '60'],
-        #      ['60', '400', '-60', '200'],
-        #      ['-12', '-60', '12', '-60'],
-        #      ['60', '200', '-60', '400']]
-        # )
-        # matrix_rigidez_2_2 = Matrix(
-        #     [['0.012', '0.06', '-0.012', '0.06'],
-        #      ['0.06', '0.4', '-0.06', '0.2'],
-        #      ['-0.012', '-0.06', '0.012', '-0.06'],
-        #      ['0.06', '0.2', '-0.060', '0.4']],
-        #     h_buff=1.8
-        # )
-        # matrix_rigidez_2_3 = matrix_rigidez_2_2.copy()
-        # matrix_rigidez_2_4 = matrix_rigidez_2_2.copy()
-        # vector_desplazamientos_el_2 = ecuacion_vector_desplazamiento_viga(2, 3)
-        # vector_desplazamientos_modificado_2_3 = vector_desplazamientos_el_2_modificado.copy()
-        # vector_desplazamientos_modificado_2_4 = vector_desplazamientos_el_2_modificado.copy()
-        # vector_fuerza_nodal_equivalente_viga_2 = ecuacion_array_a_matriz(e_2._obtener_fuerzas(), left_bracket=r"\{",
-        #                                                                  right_bracket=r"\}")
-        # mr_elemento_2 = VGroup(matriz_k_2.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez.copy(),
-        #                        matrix_rigidez.copy(),
-        #                        vector_desplazamientos_el_2.copy(), ecuacion_signo_menos().copy(),
-        #                        ecuacion_vector_fuerza_nodal_equivalente_viga(2, 3).copy()).arrange(RIGHT, buff=0.2)
-        # mr_elemento_2.to_edge(DOWN).scale(0.5)
-        # mr_elemento_2_1 = VGroup(matriz_k_2.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_2_1,
-        #                          matrix_rigidez_2_1, vector_desplazamientos_el_2.copy(), ecuacion_signo_menos().copy(),
-        #                          ecuacion_vector_fuerza_nodal_equivalente_viga(2, 3).copy()).arrange(RIGHT, buff=0.2)
-        # mr_elemento_2_1.to_edge(DOWN).scale(0.5)
-        # mr_elemento_2_2 = VGroup(matriz_k_2.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_2_2,
-        #                          matrix_rigidez_2_2, vector_desplazamientos_el_2.copy(), ecuacion_signo_menos().copy(),
-        #                          ecuacion_vector_fuerza_nodal_equivalente_viga(2, 3).copy()).arrange(RIGHT,
-        #                                                                                              buff=0.2)
-        # mr_elemento_2_2.to_edge(DOWN).scale(0.5)
-        # mr_elemento_2_3 = VGroup(matriz_k_2.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_2_3,
-        #                          matrix_rigidez_2_3, vector_desplazamientos_modificado_2_3,
-        #                          ecuacion_signo_menos().copy(),
-        #                          ecuacion_vector_fuerza_nodal_equivalente_viga(2, 3).copy()).arrange(RIGHT,
-        #                                                                                              buff=0.2)
-        # mr_elemento_2_3.to_edge(DOWN).scale(0.5)
-        # mr_elemento_2_4 = VGroup(matriz_k_2.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_2_4,
-        #                          matrix_rigidez_2_4, vector_desplazamientos_modificado_2_4,
-        #                          ecuacion_signo_menos().copy(),
-        #                          vector_fuerza_nodal_equivalente_viga_2).arrange(RIGHT,
-        #                                                                          buff=0.2)
-        # mr_elemento_2_4.to_edge(DOWN).scale(0.5)
-        # mr_elemento_2_4_1 = mr_elemento_2_4.copy()
-        # mr_elemento_2_4_1[4] = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_2, EI_cte=True,
-        #                                                                              reducida=False).scale(0.5)
-        # mr_elemento_2_4_1.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        # mr_elemento_2_4_2 = mr_elemento_2_4_1.copy()
-        # mr_elemento_2_4_2.submobjects.pop(2)
-        # mr_elemento_2_4_2.submobjects.pop(2)
-        # sol_el_2_1 = np.array(e_2._k.obtener_matriz(False)) @ np.array(e_2._k.obtener_desplazamientos(False))
-        # sol_el_2_2 = sol_el_2_1 - e_2._obtener_fuerzas()
-        # mr_elemento_2_4_2[2] = ecuacion_array_a_matriz(sol_el_2_1, formato_num='{x:.8f}', left_bracket=r"\{",
-        #                                                right_bracket=r"\}").scale(0.5)
-        # mr_elemento_2_4_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        # mr_elemento_2_4_3 = mr_elemento_2_4_2.copy()
-        # mr_elemento_2_4_3.submobjects.pop(2)
-        # mr_elemento_2_4_3.submobjects.pop(2)
-        # mr_elemento_2_4_3[2] = ecuacion_array_a_matriz(sol_el_2_2, formato_num='{x:.8f}', left_bracket=r"\{",
-        #                                                right_bracket=r"\}").scale(0.5)
-        # mr_elemento_2_4_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        # mr_elemento_2_4_4 = mr_elemento_2_4_1.copy()
-        # mr_elemento_2_4_4[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_viga(e_1, mostrar_valores=True,
-        #                                                                           formato='%.8g').scale(0.5)
-        # mr_elemento_2_4_4.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        # ecuacion_v_e_2 = MathTex(sp.latex(e_2.ecuacion_de_cortante()), color=BLUE_A)
-        # ecuacion_m_e_2 = MathTex(sp.latex(e_2.ecuacion_de_momento()), color=GREEN_A)
-        # ec_e_2 = VGroup(ecuacion_v_e_2, ecuacion_m_e_2).arrange(DOWN, buff=0.2).scale(0.5).to_corner(DR, buff=0.5)
-        #
-        # ## Ecuaciones Elemento 3
-        # ecuacion_local_viga_3 = ecuacion_local_viga.copy()
-        # matriz_k_3 = ecuacion_vector_fuerza_viga(3, 3, 4)
-        # ### Cargas nodales equivalentes
-        # # Ninguna
-        # ### Cargas en elemento 3
-        # # Ninguna
-        # ### Grados de libertad en elemento 3
-        # grados_el_3 = VGroup(*n_3_gdl.copy(), *n_4_gdl.copy()).set_z_index(1)
-        # label_etiquetas_grados_el_3 = VGroup(*n_3_labels_gdl.copy(), *n_4_labels_gdl.copy())
-        # label_etiquetas_grados_el_3[0].next_to(grados_el_3[0], DOWN, buff=0.02).scale(0.5)
-        # label_etiquetas_grados_el_3[1].next_to(grados_el_3[1], UR, buff=-0.25).scale(0.5)
-        # label_etiquetas_grados_el_3[2].next_to(grados_el_3[2], UP, buff=0.02).scale(0.5)
-        # label_etiquetas_grados_el_3[3].next_to(grados_el_3[3], DOWN, buff=0.0).scale(0.5)
-        #
-        # f_internas_elemento_2 = mg.elemento_fuerza_interna_viga(e_2, unidades=['', ''])
-        # #######################################################################################################
-        # ### Escena elemento 3
-        # escena_elemento_3 = VGroup(elementos[2], nodos[2:4], soportes[2:4], label_elementos[2], label_nodos[2:4])
-        # factor_matrix_rigidez_3_1 = MathTex(r'\dfrac{EI}{125}')
-        # factor_matrix_rigidez_3_2 = MathTex('EI')
-        # factor_matrix_rigidez_3_3 = factor_matrix_rigidez_3_2.copy()
-        # factor_matrix_rigidez_3_4 = factor_matrix_rigidez_3_2.copy()
-        # matrix_rigidez_3_1 = Matrix(
-        #     [['12', '30', '-12', '30'],
-        #      ['30', '100', '-30', '50'],
-        #      ['-12', '-30', '12', '-30'],
-        #      ['63', '50', '-30', '100']]
-        # )
-        #
-        # matrix_rigidez_3_2 = ecuacion_array_a_matriz(e_3.get_matriz_rigidez(), h_buff=1.8)
-        # matrix_rigidez_3_3 = matrix_rigidez_3_2.copy()
-        # matrix_rigidez_3_4 = matrix_rigidez_3_2.copy()
-        # vector_desplazamientos_el_3 = ecuacion_vector_desplazamiento_viga(3, 4)
-        # vector_desplazamientos_modificado_3_3 = vector_desplazamientos_el_3_modificado.copy()
-        # vector_desplazamientos_modificado_3_4 = vector_desplazamientos_el_3_modificado.copy()
-        # vector_fuerza_nodal_equivalente_viga_3 = ecuacion_array_a_matriz(e_3._obtener_fuerzas(), left_bracket=r"\{",
-        #                                                                  right_bracket=r"\}")
-        # mr_elemento_3 = VGroup(matriz_k_3.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez.copy(),
-        #                        matrix_rigidez.copy(),
-        #                        vector_desplazamientos_el_3.copy(), ecuacion_signo_menos().copy(),
-        #                        ecuacion_vector_fuerza_nodal_equivalente_viga(3, 4).copy()).arrange(RIGHT, buff=0.2)
-        # mr_elemento_3.to_edge(DOWN).scale(0.5)
-        # mr_elemento_3_1 = VGroup(matriz_k_3.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_3_1,
-        #                          matrix_rigidez_3_1, vector_desplazamientos_el_3.copy(), ecuacion_signo_menos().copy(),
-        #                          ecuacion_vector_fuerza_nodal_equivalente_viga(3, 4).copy()).arrange(RIGHT, buff=0.2)
-        # mr_elemento_3_1.to_edge(DOWN).scale(0.5)
-        # mr_elemento_3_2 = VGroup(matriz_k_3.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_3_2,
-        #                          matrix_rigidez_3_2, vector_desplazamientos_el_3.copy(), ecuacion_signo_menos().copy(),
-        #                          ecuacion_vector_fuerza_nodal_equivalente_viga(3, 4).copy()).arrange(RIGHT,
-        #                                                                                              buff=0.2)
-        # mr_elemento_3_2.to_edge(DOWN).scale(0.5)
-        # mr_elemento_3_3 = VGroup(matriz_k_3.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_3_3,
-        #                          matrix_rigidez_3_3, vector_desplazamientos_modificado_3_3,
-        #                          ecuacion_signo_menos().copy(),
-        #                          ecuacion_vector_fuerza_nodal_equivalente_viga(3, 4).copy()).arrange(RIGHT,
-        #                                                                                              buff=0.2)
-        # mr_elemento_3_3.to_edge(DOWN).scale(0.5)
-        # mr_elemento_3_4 = VGroup(matriz_k_3.copy(), ecuacion_signo_igual().copy(), factor_matrix_rigidez_3_4,
-        #                          matrix_rigidez_3_4, vector_desplazamientos_modificado_3_4,
-        #                          ecuacion_signo_menos().copy(),
-        #                          vector_fuerza_nodal_equivalente_viga_3).arrange(RIGHT,
-        #                                                                          buff=0.2)
-        # mr_elemento_3_4.to_edge(DOWN).scale(0.5)
-        # mr_elemento_3_4_1 = mr_elemento_3_4.copy()
-        # mr_elemento_3_4_1[4] = mg.ecuacion_vector_etiquetas_desplazamientos_elemento(e_3, EI_cte=True,
-        #                                                                              reducida=False).scale(0.5)
-        # mr_elemento_3_4_1.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        # mr_elemento_3_4_2 = mr_elemento_3_4_1.copy()
-        # mr_elemento_3_4_2.submobjects.pop(2)
-        # mr_elemento_3_4_2.submobjects.pop(2)
-        # sol_el_3_1 = np.array(e_3._k.obtener_matriz(False)) @ np.array(e_3._k.obtener_desplazamientos(False))
-        # sol_el_3_2 = sol_el_3_1 - e_3._obtener_fuerzas()
-        # mr_elemento_3_4_2[2] = ecuacion_array_a_matriz(sol_el_3_1, formato_num='{x:.8f}', left_bracket=r"\{",
-        #                                                right_bracket=r"\}").scale(0.5)
-        # mr_elemento_3_4_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        # mr_elemento_3_4_3 = mr_elemento_3_4_2.copy()
-        # mr_elemento_3_4_3.submobjects.pop(2)
-        # mr_elemento_3_4_3.submobjects.pop(2)
-        # mr_elemento_3_4_3[2] = ecuacion_array_a_matriz(sol_el_3_2, formato_num='{x:.8f}', left_bracket=r"\{",
-        #                                                right_bracket=r"\}").scale(0.5)
-        # mr_elemento_3_4_3.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        # mr_elemento_3_4_4 = mr_elemento_3_4_1.copy()
-        # mr_elemento_3_4_4[0] = mg.ecuacion_vector_etiquetas_fuerzas_internas_viga(e_3, mostrar_valores=True,
-        #                                                                           formato='%.8g').scale(0.5)
-        # mr_elemento_3_4_4.arrange(RIGHT, buff=0.2).to_edge(DOWN)
-        # ecuacion_v_e_3 = MathTex(sp.latex(e_3.ecuacion_de_cortante()), color=BLUE_A)
-        # ecuacion_m_e_3 = MathTex(sp.latex(e_3.ecuacion_de_momento()), color=GREEN_A)
-        # ec_e_3 = VGroup(ecuacion_v_e_3, ecuacion_m_e_3).arrange(DOWN, buff=0.2).scale(0.5).to_corner(DR, buff=0.5)
-        #
-        # f_internas_elemento_3 = mg.elemento_fuerza_interna_viga(e_3, unidades=['', ''])
         # ## Elementos intermedios
-        ## Diagrama resorte inicial
-        escena_inicial = VGroup(elementos, soportes, cargas_puntuales, label_nodos, label_elementos)
+        ## Diagrama barra inicial
+        escena_inicial = VGroup(elementos, soportes, cargas_puntuales, label_nodos, label_elementos, cotas)
         escena_inicial.save_state()
         escena_inicial.to_edge(DOWN + LEFT)
-        escena = VGroup(nodos, elementos, soportes, label_elementos, label_nodos, cargas_puntuales)
+        escena = VGroup(nodos, elementos, soportes, label_elementos, label_nodos, cargas_puntuales, cotas)
 
         # Animaciones
         tit = titulo("Método de Elementos Finitos", "Análisis de un ensamble de barras")
@@ -2723,7 +2560,7 @@ class EjemploBarraAnimacion(Scene):
 
         ## Enunciado
         self.play(Write(enunciado), run_time=5)
-        ## Diagrama de los resortes
+        ## Diagrama de las barras
         self.play(FadeIn(escena_inicial), run_time=2)
         self.wait(5)
         self.play(FadeOut(enunciado), run_time=2)
@@ -2739,7 +2576,7 @@ class EjemploBarraAnimacion(Scene):
         self.play(Restore(escena_inicial))
         self.wait(2)
         ## Discretización del ensamble
-        # self.play(Create(mg.ejes), run_time=2)
+        self.play(Create(mg.ejes), run_time=2)
         # self.play(FadeOut(viga), run_time=2)
         self.play(DrawBorderThenFill(nodos), run_time=2)
         # self.play(Write(label_nodos), Write(label_elementos), run_time=2)
@@ -2749,10 +2586,11 @@ class EjemploBarraAnimacion(Scene):
                 [3, 1.2, 'Libre'],
                 [4, 1.8, 'Restringido']]
         tab_nodos = elemento_tabla(etiquetas, rows).scale(0.5).to_edge(DOWN, buff=0.5)
-        etiquetas = [MathTex('Elemento'), MathTex(r'Nodo_i'), MathTex(r'Nodo_j'), MathTex('L[m]'), MathTex('E[Pa]'), MathTex('A[m^2]')]
-        rows = [[1, 1, 2, 0.6, r'2.0\times 10 ^{11}', r'6.0\times 10 ^{-4}'],
-                [2, 2, 3, 0.6, r'2.0\times 10 ^{11}', r'6.0\times 10 ^{-4}'],
-                [3, 3, 4, 0.6, r'1.0\times 10 ^{11}', r'12.0\times 10 ^{-4}']]
+        etiquetas = [MathTex('Elemento'), MathTex(r'Nodo_i'), MathTex(r'Nodo_j'), MathTex('L[m]'), MathTex('E[Pa]'),
+                     MathTex('A[m^2]'), MathTex(r'\frac{AE}{L}[N/m]')]
+        rows = [[1, 1, 2, 0.6, r'2.0\times 10 ^{11}', r'6.0\times 10 ^{-4}',r'2\times 10^8'],
+                [2, 2, 3, 0.6, r'2.0\times 10 ^{11}', r'6.0\times 10 ^{-4}',r'2\times 10^8'],
+                [3, 3, 4, 0.6, r'1.0\times 10 ^{11}', r'12.0\times 10 ^{-4}',r'2\times 10^8']]
         tab_elementos = elemento_tabla(etiquetas, rows).scale(0.5).to_edge(DOWN, buff=0.5)
         VGroup(tab_nodos, tab_elementos).arrange(RIGHT, buff=1).to_edge(DOWN, buff=0.5)
         self.play(Create(tab_nodos[1]), Create(tab_nodos[2]), run_time=1)
@@ -2771,9 +2609,9 @@ class EjemploBarraAnimacion(Scene):
         self.play(FadeOut(tit))
         self.play(FadeIn(escena_elemento_1), run_time=2)
         self.wait(1)
-        self.play(Write(ecuacion_local_resorte_1), run_time=2)
+        self.play(Write(ecuacion_local_barra_1), run_time=2)
         self.wait(2)
-        self.play(ReplacementTransform(ecuacion_local_resorte_1, mr_elemento_1), run_time=2)
+        self.play(ReplacementTransform(ecuacion_local_barra_1, mr_elemento_1), run_time=2)
         self.play(ReplacementTransform(mr_elemento_1, mr_elemento_1_1), run_time=2)
         self.wait(2)
         self.play(FadeOut(soportes[0:1]), run_time=2)
@@ -2800,9 +2638,9 @@ class EjemploBarraAnimacion(Scene):
         self.play(FadeOut(tit))
         self.play(FadeIn(escena_elemento_2), run_time=2)
         self.wait(1)
-        self.play(Write(ecuacion_local_resorte_2), run_time=2)
+        self.play(Write(ecuacion_local_barra_2), run_time=2)
         self.wait(2)
-        self.play(ReplacementTransform(ecuacion_local_resorte_2, mr_elemento_2), run_time=2)
+        self.play(ReplacementTransform(ecuacion_local_barra_2, mr_elemento_2), run_time=2)
         self.play(ReplacementTransform(mr_elemento_2, mr_elemento_2_1), run_time=2)
         self.wait(2)
         # self.play(FadeOut(soportes[0:1]), run_time=2)
@@ -2829,9 +2667,9 @@ class EjemploBarraAnimacion(Scene):
         self.play(FadeOut(tit))
         self.play(FadeIn(escena_elemento_3), run_time=2)
         self.wait(1)
-        self.play(Write(ecuacion_local_resorte_3), run_time=2)
+        self.play(Write(ecuacion_local_barra_3), run_time=2)
         self.wait(2)
-        self.play(ReplacementTransform(ecuacion_local_resorte_3, mr_elemento_3), run_time=2)
+        self.play(ReplacementTransform(ecuacion_local_barra_3, mr_elemento_3), run_time=2)
         self.play(ReplacementTransform(mr_elemento_3, mr_elemento_3_1), run_time=2)
         self.wait(2)
         self.play(FadeOut(soportes[1]), run_time=2)
@@ -2848,7 +2686,8 @@ class EjemploBarraAnimacion(Scene):
         self.play(FadeIn(f_internas_elemento_3))
         self.wait(2)
         self.play(FadeOut(f_internas_elemento_3))
-        self.play(FadeOut(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]), FadeOut(mr_elemento_3_2))
+        self.play(FadeOut(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]), FadeOut(mr_elemento_3_2),
+                  FadeOut(mg.ejes))
         tit = titulo("Matriz de rigidez goblal (Ensamblaje)", size_titulo=36)
         self.play(Write(tit[0]))
         self.play(Create(tit[1]))
@@ -2881,10 +2720,15 @@ class EjemploBarraAnimacion(Scene):
             ReplacementTransform(VGroup(m_1[1], m_2[1], m_3[1]), matriz_global[3]),
             runtime=4)
         self.play(
-            ReplacementTransform(VGroup(m_1[2][1].get_brackets()[0], m_2[2][1].get_brackets()[0], m_3[2][1].get_brackets()[0]),
-                                 matriz_global[4][1].get_brackets()[0]),
-            ReplacementTransform(VGroup(m_1[2][1].get_brackets()[1], m_2[2][1].get_brackets()[1], m_3[2][1].get_brackets()[1]),
-                                 matriz_global[4][1].get_brackets()[1]),
+            ReplacementTransform(VGroup(m_1[2][0], m_2[2][0], m_3[2][0]), matriz_global[4][0]),
+            runtime=4)
+        self.play(
+            ReplacementTransform(
+                VGroup(m_1[2][1].get_brackets()[0], m_2[2][1].get_brackets()[0], m_3[2][1].get_brackets()[0]),
+                matriz_global[4][1].get_brackets()[0]),
+            ReplacementTransform(
+                VGroup(m_1[2][1].get_brackets()[1], m_2[2][1].get_brackets()[1], m_3[2][1].get_brackets()[1]),
+                matriz_global[4][1].get_brackets()[1]),
             m_1[3].animate.next_to(matriz_global[4][1], RIGHT, buff=0.5).align_to(m_1[3], UP),
             m_2[3].animate.next_to(matriz_global[4][1], RIGHT, buff=0.5).align_to(m_2[3], UP),
             m_3[3].animate.next_to(matriz_global[4][1], RIGHT, buff=0.5).align_to(m_3[3], UP),
@@ -2946,6 +2790,7 @@ class EjemploBarraAnimacion(Scene):
                           matriz_global[5].get_rows()[3]),
                   *[FadeOut(elem) for elem in elementos_no_reducida],
                   ReplacementTransform(matriz_global[1:4], matriz_global_reducida[1:4]),
+                  ReplacementTransform(matriz_global[4][0], matriz_global_reducida[4][0]),
                   ReplacementTransform(matriz_global[0].get_entries()[1], matriz_global_reducida[0].get_entries()[0]),
                   ReplacementTransform(matriz_global[0].get_entries()[2], matriz_global_reducida[0].get_entries()[1]),
                   ReplacementTransform(elementos_reducida[0], matriz_global_reducida[4][1].get_entries()[0]),
@@ -2958,7 +2803,7 @@ class EjemploBarraAnimacion(Scene):
         self.wait(2)
         self.play(ReplacementTransform(matriz_global_reducida[2], matriz_global_reducida_final[0]),
                   ReplacementTransform(matriz_global_reducida[3], matriz_global_reducida_final[1]),
-                  ReplacementTransform(matriz_global_reducida[4][1], matriz_global_reducida_final[2]),
+                  ReplacementTransform(matriz_global_reducida[4], matriz_global_reducida_final[2]),
                   ReplacementTransform(matriz_global_reducida[5], matriz_global_reducida_final[3]),
                   FadeOut(matriz_global_reducida[0], matriz_global_reducida[1]), run_time=4)
         self.play(FadeOut(matriz_global_reducida_final))
@@ -2984,7 +2829,8 @@ class EjemploBarraAnimacion(Scene):
                   ReplacementTransform(matriz_global_reducida_final_2[1], matriz_global_reducida_final_3[1]),
                   ReplacementTransform(matriz_global_reducida_final_2[2], matriz_global_reducida_final_3[2]),
                   ReplacementTransform(matriz_global_reducida_final_2[3], matriz_global_reducida_final_3[3]),
-                  FadeOut(matriz_global_reducida_final_2[0][1]), run_time=4)
+                  FadeOut(matriz_global_reducida_final_2[0][1]), FadeOut(matriz_global_reducida_final_2[0][0][0]),
+                  run_time=4)
         self.wait(2)
         self.play(ReplacementTransform(
             VGroup(matriz_global_reducida_final_3[0].get_entries(), matriz_global_reducida_final_3[1].get_entries()),
@@ -3018,13 +2864,14 @@ class EjemploBarraAnimacion(Scene):
         self.wait(2)
         self.play(ReplacementTransform(VGroup(matriz_global_final_2[0:4]), VGroup(matriz_global_final_3[0:4])),
                   ReplacementTransform(
-                      VGroup(matriz_global_final_2[4].get_entries(), matriz_global_final_2[5].get_entries()),
+                      VGroup(matriz_global_final_2[4][0], matriz_global_final_2[4][1].get_entries(),
+                             matriz_global_final_2[5].get_entries()),
                       VGroup(matriz_global_final_3[4].get_entries())),
-                  ReplacementTransform(matriz_global_final_2[4].get_brackets()[0],
+                  ReplacementTransform(matriz_global_final_2[4][1].get_brackets()[0],
                                        matriz_global_final_3[4].get_brackets()[0]),
                   ReplacementTransform(matriz_global_final_2[5].get_brackets()[1],
                                        matriz_global_final_3[4].get_brackets()[1]),
-                  FadeOut(matriz_global_final_2[4].get_brackets()[1]),
+                  FadeOut(matriz_global_final_2[4][1].get_brackets()[1]),
                   FadeOut(matriz_global_final_2[5].get_brackets()[0]),
                   # FadeOut(matriz_global_final_2[2]),
                   # ReplacementTransform(VGroup(matriz_global_final_2[5:7]), VGroup(matriz_global_final_3[3:5])),
@@ -3078,17 +2925,19 @@ class EjemploBarraAnimacion(Scene):
             ReplacementTransform(mr_elemento_1_2[3], mr_elemento_1_2_1[3]),
             run_time=4)
         self.wait(2)
-        self.play(ReplacementTransform(VGroup(mr_elemento_1_2_1[2][1].get_entries(), mr_elemento_1_2_1[3].get_entries()),
-                                       mr_elemento_1_2_2[2].get_entries()),
-                  ReplacementTransform(mr_elemento_1_2_1[2][1].get_brackets()[0],
-                                       mr_elemento_1_2_2[2].get_brackets()[0]),
-                  ReplacementTransform(mr_elemento_1_2_1[3].get_brackets()[1],
-                                       mr_elemento_1_2_2[2].get_brackets()[1]),
-                  ReplacementTransform(mr_elemento_1_2_1[0], mr_elemento_1_2_2[0]),
-                  ReplacementTransform(mr_elemento_1_2_1[1], mr_elemento_1_2_2[1]),
-                  FadeOut(mr_elemento_1_2_1[2][1].get_brackets()[1]),
-                  FadeOut(mr_elemento_1_2_1[3].get_brackets()[0]),
-                  run_time=4)
+        self.play(
+            ReplacementTransform(VGroup(mr_elemento_1_2_1[2][0], mr_elemento_1_2_1[2][1].get_entries(),
+                                        mr_elemento_1_2_1[3].get_entries()),
+                                 mr_elemento_1_2_2[2].get_entries()),
+            ReplacementTransform(mr_elemento_1_2_1[2][1].get_brackets()[0],
+                                 mr_elemento_1_2_2[2].get_brackets()[0]),
+            ReplacementTransform(mr_elemento_1_2_1[3].get_brackets()[1],
+                                 mr_elemento_1_2_2[2].get_brackets()[1]),
+            ReplacementTransform(mr_elemento_1_2_1[0], mr_elemento_1_2_2[0]),
+            ReplacementTransform(mr_elemento_1_2_1[1], mr_elemento_1_2_2[1]),
+            FadeOut(mr_elemento_1_2_1[2][1].get_brackets()[1]),
+            FadeOut(mr_elemento_1_2_1[3].get_brackets()[0]),
+            run_time=4)
         self.wait(2)
         self.play(FadeOut(mr_elemento_1_2_2),
                   FadeOut(elementos[0], nodos[0:2], label_elementos[0], label_nodos[0:2]),
@@ -3114,17 +2963,19 @@ class EjemploBarraAnimacion(Scene):
             ReplacementTransform(mr_elemento_2_2[3], mr_elemento_2_2_1[3]),
             run_time=4)
         self.wait(2)
-        self.play(ReplacementTransform(VGroup(mr_elemento_2_2_1[2][1].get_entries(), mr_elemento_2_2_1[3].get_entries()),
-                                       mr_elemento_2_2_2[2].get_entries()),
-                  ReplacementTransform(mr_elemento_2_2_1[2][1].get_brackets()[0],
-                                       mr_elemento_2_2_2[2].get_brackets()[0]),
-                  ReplacementTransform(mr_elemento_2_2_1[3].get_brackets()[1],
-                                       mr_elemento_2_2_2[2].get_brackets()[1]),
-                  ReplacementTransform(mr_elemento_2_2_1[0], mr_elemento_2_2_2[0]),
-                  ReplacementTransform(mr_elemento_2_2_1[1], mr_elemento_2_2_2[1]),
-                  FadeOut(mr_elemento_2_2_1[2][1].get_brackets()[1]),
-                  FadeOut(mr_elemento_2_2_1[3].get_brackets()[0]),
-                  run_time=4)
+        self.play(
+            ReplacementTransform(VGroup(mr_elemento_2_2_1[2][0], mr_elemento_2_2_1[2][1].get_entries(),
+                                        mr_elemento_2_2_1[3].get_entries()),
+                                 mr_elemento_2_2_2[2].get_entries()),
+            ReplacementTransform(mr_elemento_2_2_1[2][1].get_brackets()[0],
+                                 mr_elemento_2_2_2[2].get_brackets()[0]),
+            ReplacementTransform(mr_elemento_2_2_1[3].get_brackets()[1],
+                                 mr_elemento_2_2_2[2].get_brackets()[1]),
+            ReplacementTransform(mr_elemento_2_2_1[0], mr_elemento_2_2_2[0]),
+            ReplacementTransform(mr_elemento_2_2_1[1], mr_elemento_2_2_2[1]),
+            FadeOut(mr_elemento_2_2_1[2][1].get_brackets()[1]),
+            FadeOut(mr_elemento_2_2_1[3].get_brackets()[0]),
+            run_time=4)
         self.wait(2)
         self.play(FadeOut(mr_elemento_2_2_2),
                   FadeOut(elementos[1], nodos[1:3], label_elementos[1], label_nodos[1:3]),
@@ -3151,17 +3002,19 @@ class EjemploBarraAnimacion(Scene):
             ReplacementTransform(mr_elemento_3_2[3], mr_elemento_3_2_1[3]),
             run_time=4)
         self.wait(2)
-        self.play(ReplacementTransform(VGroup(mr_elemento_3_2_1[2][1].get_entries(), mr_elemento_3_2_1[3].get_entries()),
-                                       mr_elemento_3_2_2[2].get_entries()),
-                  ReplacementTransform(mr_elemento_3_2_1[2][1].get_brackets()[0],
-                                       mr_elemento_3_2_2[2].get_brackets()[0]),
-                  ReplacementTransform(mr_elemento_3_2_1[3].get_brackets()[1],
-                                       mr_elemento_3_2_2[2].get_brackets()[1]),
-                  ReplacementTransform(mr_elemento_3_2_1[0], mr_elemento_3_2_2[0]),
-                  ReplacementTransform(mr_elemento_3_2_1[1], mr_elemento_3_2_2[1]),
-                  FadeOut(mr_elemento_3_2_1[2][1].get_brackets()[1]),
-                  FadeOut(mr_elemento_3_2_1[3].get_brackets()[0]),
-                  run_time=4)
+        self.play(
+            ReplacementTransform(VGroup(mr_elemento_3_2_1[2][0], mr_elemento_3_2_1[2][1].get_entries(),
+                                        mr_elemento_3_2_1[3].get_entries()),
+                                 mr_elemento_3_2_2[2].get_entries()),
+            ReplacementTransform(mr_elemento_3_2_1[2][1].get_brackets()[0],
+                                 mr_elemento_3_2_2[2].get_brackets()[0]),
+            ReplacementTransform(mr_elemento_3_2_1[3].get_brackets()[1],
+                                 mr_elemento_3_2_2[2].get_brackets()[1]),
+            ReplacementTransform(mr_elemento_3_2_1[0], mr_elemento_3_2_2[0]),
+            ReplacementTransform(mr_elemento_3_2_1[1], mr_elemento_3_2_2[1]),
+            FadeOut(mr_elemento_3_2_1[2][1].get_brackets()[1]),
+            FadeOut(mr_elemento_3_2_1[3].get_brackets()[0]),
+            run_time=4)
         self.wait(2)
         self.play(FadeOut(mr_elemento_3_2_2),
                   FadeOut(elementos[2], nodos[2:4], label_elementos[2], label_nodos[2:4]),
@@ -3171,6 +3024,7 @@ class EjemploBarraAnimacion(Scene):
         self.play(FadeIn(mr_elemento_3_2_3))
         self.wait(2)
         self.play(FadeOut(mr_elemento_3_2_3))
+
 
 class matrizResorteAnimacion(Scene):
     def construct(self) -> None:
@@ -3440,11 +3294,14 @@ class matrizBarraAnimacion(Scene):
         ecuacion_esfuerzo = MathTex(r'\sigma_x', '=', 'E', r'\varepsilon_x')
         ecuacion_T = MathTex('T', '=', 'A', r'\sigma_x')
         ecuacion_T_2 = MathTex('T', '=', 'A', 'E', r'\varepsilon_x').scale(0.5)
-        ecuacion_T_3 = MathTex('T', '=', 'A', 'E', r'\left(', r'\frac{', 'u_2', '-', 'u_1', '}{', 'L', '}', r'\right)').scale(0.5)
-        ecuacion_T_4 = MathTex('T', '=', r'\frac{', 'A', 'E', '}{', 'L', '}', r'\left(', 'u_2', '-', 'u_1', r'\right)').scale(0.5)
+        ecuacion_T_3 = MathTex('T', '=', 'A', 'E', r'\left(', r'\frac{', 'u_2', '-', 'u_1', '}{', 'L', '}',
+                               r'\right)').scale(0.5)
+        ecuacion_T_4 = MathTex('T', '=', r'\frac{', 'A', 'E', '}{', 'L', '}', r'\left(', 'u_2', '-', 'u_1',
+                               r'\right)').scale(0.5)
 
-        ecuacion_f_1_1 = MathTex('f_{1x}','=', '-','T').scale(0.5)
-        ecuacion_f_1_2 = MathTex('f_{1x}', '=', '-', r'\frac{', 'A', 'E', '}{', 'L', '}', r'\left(', 'u_2', '-', 'u_1', r'\right)').scale(0.5)
+        ecuacion_f_1_1 = MathTex('f_{1x}', '=', '-', 'T').scale(0.5)
+        ecuacion_f_1_2 = MathTex('f_{1x}', '=', '-', r'\frac{', 'A', 'E', '}{', 'L', '}', r'\left(', 'u_2', '-', 'u_1',
+                                 r'\right)').scale(0.5)
         ecuacion_f_1_3 = MathTex('f_{1x}', '=', r'\frac{', 'A', 'E', '}{', 'L', '}', r'\left(', 'u_1', '-', 'u_2',
                                  r'\right)').scale(0.5)
 
@@ -3456,14 +3313,14 @@ class matrizBarraAnimacion(Scene):
         ecuacion_f_2_4 = MathTex('f_{2x}', '=', r'\frac{', 'A', 'E', '}{', 'L', '}', r'\left(', '-', 'u_1', '+', 'u_2',
                                  r'\right)').scale(0.5)
         ecuacion_local_barra_1 = VGroup(Matrix([['f_{1x}'], ['f_{2x}']], left_bracket=r"\{", right_bracket=r"\}"),
-                                          ecuacion_signo_igual(),MathTex(r'\frac{', 'A', 'E', '}{', 'L', '}'),
-                                          Matrix([['1', '-1'], ['-1', '1']]),
-                                          Matrix([['u_1'], ['u_2']], left_bracket=r"\{", right_bracket=r"\}")
-                                          ).arrange(RIGHT).scale(0.5).move_to(DOWN * 3.2)
+                                        ecuacion_signo_igual(), MathTex(r'\frac{', 'A', 'E', '}{', 'L', '}'),
+                                        Matrix([['1', '-1'], ['-1', '1']]),
+                                        Matrix([['u_1'], ['u_2']], left_bracket=r"\{", right_bracket=r"\}")
+                                        ).arrange(RIGHT).scale(0.5).move_to(DOWN * 3.2)
         ecuacion_local_barra_2 = VGroup(Matrix([['f']], left_bracket=r"\{", right_bracket=r"\}"),
-                                          ecuacion_signo_igual(),
-                                          Matrix([['k']]), Matrix([['d']], left_bracket=r"\{", right_bracket=r"\}")
-                                          ).arrange(RIGHT).scale(0.5).move_to(DOWN * 3)
+                                        ecuacion_signo_igual(),
+                                        Matrix([['k']]), Matrix([['d']], left_bracket=r"\{", right_bracket=r"\}")
+                                        ).arrange(RIGHT).scale(0.5).move_to(DOWN * 3)
         grupo_ecuaciones_1 = VGroup(ecuacion_deformacion, ecuacion_esfuerzo, ecuacion_T).scale(0.5).arrange(DOWN,
                                                                                                             buff=0.2).move_to(
             2 * DOWN)
@@ -3474,7 +3331,7 @@ class matrizBarraAnimacion(Scene):
         ecuacion_T_2.move_to(grupo_ecuaciones_1[2])
         ecuacion_T_3.move_to(grupo_ecuaciones_1[2])
         ecuacion_T_4.move_to(grupo_ecuaciones_1[2])
-        ecuacion_f_1_1.next_to(grupo_ecuaciones_1,DOWN, buff=0.3)
+        ecuacion_f_1_1.next_to(grupo_ecuaciones_1, DOWN, buff=0.3)
 
         # Animamos su aparición
         self.play(FadeIn(barra_incial, n_a_1, n_b_1, n_a_2, n_b_2, label_1, label_2, cota_L), run_time=3)
@@ -3504,19 +3361,19 @@ class matrizBarraAnimacion(Scene):
         self.wait(2)
         self.play(ReplacementTransform(grupo_ecuaciones_1[2][0:3], ecuacion_T_2[0:3]),
                   ReplacementTransform(grupo_ecuaciones_1[1][2:], ecuacion_T_2[3:]),
-                  FadeOut(grupo_ecuaciones_1[1][0:2],grupo_ecuaciones_1[2][3]),
+                  FadeOut(grupo_ecuaciones_1[1][0:2], grupo_ecuaciones_1[2][3]),
                   run_time=2)
         self.wait(2)
         self.play(ReplacementTransform(ecuacion_T_2[0:4], ecuacion_T_3[0:4]),
                   ReplacementTransform(grupo_ecuaciones_1[0][2:9], ecuacion_T_3[5:12]),
-                  FadeOut(grupo_ecuaciones_1[0][0:2],ecuacion_T_2[4]),
+                  FadeOut(grupo_ecuaciones_1[0][0:2], ecuacion_T_2[4]),
                   FadeIn(ecuacion_T_3[4], ecuacion_T_3[12]),
                   run_time=2)
         self.wait(2)
         self.play(TransformMatchingTex(ecuacion_T_3, ecuacion_T_4),
                   run_time=2)
         self.wait(2)
-        self.play(ecuacion_T_4.animate.move_to(2*DOWN), run_time=2)
+        self.play(ecuacion_T_4.animate.move_to(2 * DOWN), run_time=2)
         ecuacion_f_1_1.next_to(ecuacion_T_4, DOWN, buff=0.4)
         ecuacion_f_1_2.move_to(ecuacion_f_1_1)
         ecuacion_f_1_3.move_to(ecuacion_f_1_1)
@@ -3525,13 +3382,13 @@ class matrizBarraAnimacion(Scene):
         ecuacion_f_2_2.move_to(ecuacion_f_2_1)
         ecuacion_f_2_3.move_to(ecuacion_f_2_1)
         ecuacion_f_2_4.move_to(ecuacion_f_2_1)
-        self.play(FadeIn(ecuacion_f_1_1,ecuacion_f_2_1), run_time=2)
+        self.play(FadeIn(ecuacion_f_1_1, ecuacion_f_2_1), run_time=2)
         self.play(ReplacementTransform(ecuacion_T_4[2:], ecuacion_f_1_2[3:]),
                   ReplacementTransform(ecuacion_T_4[2:].copy(), ecuacion_f_2_2[2:]),
                   ReplacementTransform(ecuacion_f_1_1[:3], ecuacion_f_1_2[:3]),
                   ReplacementTransform(ecuacion_f_2_1[:2], ecuacion_f_2_2[:2]),
-                  FadeOut(ecuacion_f_1_1[3],ecuacion_f_2_1[2],ecuacion_T_4[0:2]),
-                  #FadeIn(ecuacion_T_3[4], ecuacion_T_3[12]),
+                  FadeOut(ecuacion_f_1_1[3], ecuacion_f_2_1[2], ecuacion_T_4[0:2]),
+                  # FadeIn(ecuacion_T_3[4], ecuacion_T_3[12]),
                   run_time=2)
         self.wait(2)
         self.play(TransformMatchingTex(ecuacion_f_1_2, ecuacion_f_1_3),
@@ -3542,7 +3399,7 @@ class matrizBarraAnimacion(Scene):
                   run_time=2)
         self.wait(2)
         self.play(ecuacion_f_1_3.animate.shift(1.2 * UP),
-                  ecuacion_f_2_4.animate.shift(1.2 * UP),run_time=2)
+                  ecuacion_f_2_4.animate.shift(1.2 * UP), run_time=2)
         self.wait(2)
         self.play(FadeIn(ecuacion_local_barra_1[0].get_brackets(), ecuacion_local_barra_1[1],
                          ecuacion_local_barra_1[3].get_brackets(), ecuacion_local_barra_1[4].get_brackets()),
@@ -3580,7 +3437,6 @@ class matrizBarraAnimacion(Scene):
         self.play(Write(ecuacion_local_barra_2),
                   run_time=2)
         self.wait(2)
-
 
 
 class pruebas(Scene):
