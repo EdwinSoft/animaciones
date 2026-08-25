@@ -2273,10 +2273,12 @@ class EjemploBarraAnimacion(Scene):
         matriz_global_reducida_final = matriz_global_reducida_inicial[2:].copy().scale(0.5).arrange(RIGHT)
         matriz = matriz_global_reducida_inicial[4].copy()
         vec_k_reduc_inverso = Matrix(
-            transformar_array_float_latex(np.linalg.inv(np.array(mg._union._k.obtener_matriz(True))),formato = '{:.5g}'), h_buff=3.8)
+            transformar_array_float_latex(np.linalg.inv(np.array(mg._union._k.obtener_matriz(True))), formato='{:.5g}'),
+            h_buff=3.8)
         sol = np.linalg.inv(np.array(mg._union._k.obtener_matriz(True))) @ np.array(mg._union._k.obtener_fuerzas(True))
         # solucion_reducida = ecuacion_array_a_matriz(sol, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
-        solucion_reducida = Matrix(transformar_array_float_latex(sol, formato='{:.5g}'), left_bracket=r"\{", right_bracket=r"\}")
+        solucion_reducida = Matrix(transformar_array_float_latex(sol, formato='{:.5g}'), left_bracket=r"\{",
+                                   right_bracket=r"\}")
         superindice = MathTex("-1").next_to(matriz, RIGHT, aligned_edge=UP, buff=0.2)
         matriz_global_reducida_final_2 = VGroup(
             VGroup(VGroup(MathTex(r'5\times10^{-9}'), matriz_global_reducida_inicial[4][1].copy()).arrange(RIGHT),
@@ -2317,9 +2319,9 @@ class EjemploBarraAnimacion(Scene):
         mg.solucionar_por_gauss_y_calcular_reacciones()
         sol_final = np.array(mg._union._k.obtener_matriz(False)) @ np.array(mg._union._k.obtener_desplazamientos(False))
         sol_final_resta = sol_final - mg._union._k.obtener_fuerzas(False)
-        #solucion = ecuacion_array_a_matriz(sol_final, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
+        # solucion = ecuacion_array_a_matriz(sol_final, formato_num='{x:.8f}', left_bracket=r"\{", right_bracket=r"\}")
         solucion = Matrix(transformar_array_float_latex(sol_final, formato='{:.5g}'), left_bracket=r"\{",
-                                   right_bracket=r"\}")
+                          right_bracket=r"\}")
 
         matriz_global_final_base = mg.sistema_ecuaciones_matriz_rigidez_global(reducida=False)
         mat_k = ecuacion_array_a_matriz(np.array(mg._union._k.obtener_matriz(False)) / 2e8)
@@ -2347,8 +2349,9 @@ class EjemploBarraAnimacion(Scene):
         matriz_global_final_5.submobjects.pop(3)
         # matriz_global_final_5[2] = ecuacion_array_a_matriz(sol_final_resta, formato_num='{x:.8f}', left_bracket=r"\{",
         #                                                    right_bracket=r"\}")
-        matriz_global_final_5[2] = Matrix(transformar_array_float_latex(sol_final_resta, formato='{:.5g}'), left_bracket=r"\{",
-                                   right_bracket=r"\}")
+        matriz_global_final_5[2] = Matrix(transformar_array_float_latex(sol_final_resta, formato='{:.5g}'),
+                                          left_bracket=r"\{",
+                                          right_bracket=r"\}")
 
         matriz_global_final_5.scale(0.35).arrange(RIGHT)
 
@@ -2433,7 +2436,7 @@ class EjemploBarraAnimacion(Scene):
         # mr_elemento_1_2_2[2] = ecuacion_array_a_matriz(sol_el_1_1, formato_num='{x:.8f}', left_bracket=r"\{",
         #                                                right_bracket=r"\}").scale(0.5)
         mr_elemento_1_2_2[2] = Matrix(transformar_array_float_latex(sol_el_1_1, formato='{:.5g}'), left_bracket=r"\{",
-                                   right_bracket=r"\}").scale(0.5)
+                                      right_bracket=r"\}").scale(0.5)
 
         mr_elemento_1_2_2.arrange(RIGHT, buff=0.2).to_edge(DOWN)
         mr_elemento_1_2_3 = mr_elemento_1_2_1.copy()
@@ -2588,9 +2591,9 @@ class EjemploBarraAnimacion(Scene):
         tab_nodos = elemento_tabla(etiquetas, rows).scale(0.5).to_edge(DOWN, buff=0.5)
         etiquetas = [MathTex('Elemento'), MathTex(r'Nodo_i'), MathTex(r'Nodo_j'), MathTex('L[m]'), MathTex('E[Pa]'),
                      MathTex('A[m^2]'), MathTex(r'\frac{AE}{L}[N/m]')]
-        rows = [[1, 1, 2, 0.6, r'2.0\times 10 ^{11}', r'6.0\times 10 ^{-4}',r'2\times 10^8'],
-                [2, 2, 3, 0.6, r'2.0\times 10 ^{11}', r'6.0\times 10 ^{-4}',r'2\times 10^8'],
-                [3, 3, 4, 0.6, r'1.0\times 10 ^{11}', r'12.0\times 10 ^{-4}',r'2\times 10^8']]
+        rows = [[1, 1, 2, 0.6, r'2.0\times 10 ^{11}', r'6.0\times 10 ^{-4}', r'2\times 10^8'],
+                [2, 2, 3, 0.6, r'2.0\times 10 ^{11}', r'6.0\times 10 ^{-4}', r'2\times 10^8'],
+                [3, 3, 4, 0.6, r'1.0\times 10 ^{11}', r'12.0\times 10 ^{-4}', r'2\times 10^8']]
         tab_elementos = elemento_tabla(etiquetas, rows).scale(0.5).to_edge(DOWN, buff=0.5)
         VGroup(tab_nodos, tab_elementos).arrange(RIGHT, buff=1).to_edge(DOWN, buff=0.5)
         self.play(Create(tab_nodos[1]), Create(tab_nodos[2]), run_time=1)
@@ -3677,3 +3680,83 @@ class pruebas2(Scene):
         # Instanciamos nuestro objeto personalizado
         mi_resorte = resorte(punto_a_1, punto_b_1, n=40)
         self.add(mi_resorte)
+
+
+class rotacion_ejes(Scene):
+    def construct(self) -> None:
+        ang = 30
+        t = np.array(
+            [[np.cos(np.radians(ang)), np.sin(np.radians(ang)), 0],
+             [-np.sin(np.radians(ang)), np.cos(np.radians(ang)), 0], [0, 0, 1]])
+        ejes = NumberPlane(
+            x_range=[-5, 10, 1],
+            y_range=[-1, 7, 1],
+            x_axis_config={
+                "include_numbers": False,
+                "include_tip": True,
+                "tip_shape": StealthTip,
+                "label_direction": DOWN
+            },
+            y_axis_config={
+                "include_numbers": False,
+                "include_tip": True,
+                "tip_shape": StealthTip,
+                "label_direction": LEFT
+            },
+            background_line_style={
+                "stroke_opacity": 0.1
+            }
+        ).scale(0.8)
+        coor_p = np.array([3, 6, 0])
+        coor_p_x = np.array([3, 0, 0])
+        coor_p_y = np.array([0, 6, 0])
+        coor_p_2 = t @ coor_p
+        coor_p_x_2 = np.array([coor_p_2[0], 0, 0])
+        coor_p_y_2 = np.array([0, coor_p_2[1], 0])
+        labels = ejes.get_axis_labels(x_label="x", y_label="y")
+        ejes_p = ejes.copy().set_color(BLUE)
+        ejes.set_z_index(1)
+        labels_p = ejes_p.get_axis_labels(x_label=r"x^\prime", y_label=r"y^\prime").set_color(GRAY).set_opacity(0)
+        punto_p = Dot(ejes.c2p(coor_p), color=RED).set_z_index(1)
+        cota_x = crear_cota(ejes.c2p([0, 0]) + 0.5 * DOWN, ejes.c2p(coor_p_x) + 0.5 * DOWN, 'u', color=GRAY)
+        cota_y = crear_cota(ejes.c2p([0, 0]) + 0.5 * LEFT, ejes.c2p(coor_p_y) + 0.5 * LEFT, 'v', color=GRAY)
+        linea_u = DashedLine(ejes.c2p(coor_p), ejes.c2p(coor_p_y), color=WHITE, stroke_width=1)
+        linea_v = DashedLine(ejes.c2p(coor_p), ejes.c2p(coor_p_x), color=WHITE, stroke_width=1)
+
+        self.play(Write(ejes), run_time=2)
+        self.wait(2)
+        self.play(Write(labels), run_time=2)
+        self.wait(2)
+        self.play(Write(punto_p), run_time=2)
+        self.wait(2)
+        self.play(Write(linea_v), run_time=2)
+        self.wait(2)
+        self.play(Write(cota_x), run_time=2)
+        self.wait(2)
+        self.play(Write(linea_u), run_time=2)
+        self.wait(2)
+        self.play(Write(cota_y), run_time=2)
+        self.wait(2)
+
+        self.play(ejes_p.animate.rotate(np.radians(ang), about_point=ejes.c2p([0, 0])),
+                  labels_p.animate.rotate(np.radians(ang), about_point=ejes.c2p([0, 0])),
+                  run_time=10)
+        cota_x_2 = crear_cota(ejes_p.c2p([0, 0, 0]) + 0.5 * np.array([0, -1, 0]) @ t,
+                              ejes_p.c2p(coor_p_x_2) + 0.5 * np.array([0, -1, 0]) @ t, r'u^\prime',
+                              color=GRAY)
+        cota_y_2 = crear_cota(ejes_p.c2p([0, 0, 0]) + 0.5 * np.array([-1, 0, 0]) @ t,
+                              ejes_p.c2p(coor_p_y_2) + 0.5 * np.array([-1, 0, 0]) @ t, r'v^\prime',
+                              color=GRAY)
+        linea_u_2 = DashedLine(ejes_p.c2p(coor_p_2), ejes_p.c2p(coor_p_y_2), color=BLUE, stroke_width=1)
+        linea_v_2 = DashedLine(ejes_p.c2p(coor_p_2), ejes_p.c2p(coor_p_x_2), color=BLUE, stroke_width=1)
+
+        self.play(labels_p.animate.set_opacity(1), run_time=2)
+        self.wait(2)
+        self.play(Write(linea_v_2), run_time=2)
+        self.wait(2)
+        self.play(Write(cota_x_2), run_time=2)
+        self.wait(2)
+        self.play(Write(linea_u_2), run_time=2)
+        self.wait(2)
+        self.play(Write(cota_y_2), run_time=2)
+        self.wait(2)
