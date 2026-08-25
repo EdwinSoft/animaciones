@@ -3716,7 +3716,7 @@ class rotacion_ejes(Scene):
         labels = ejes.get_axis_labels(x_label="x", y_label="y")
         ejes_p = ejes.copy().set_color(BLUE)
         ejes.set_z_index(1)
-        labels_p = ejes_p.get_axis_labels(x_label=r"x^\prime", y_label=r"y^\prime").set_color(GRAY).set_opacity(0)
+        labels_p = ejes_p.get_axis_labels(x_label=r"x^\prime", y_label=r"y^\prime").set_color(BLUE).set_opacity(0)
         punto_p = Dot(ejes.c2p(coor_p), color=RED).set_z_index(1)
         cota_x = crear_cota(ejes.c2p([0, 0]) + 0.5 * DOWN, ejes.c2p(coor_p_x) + 0.5 * DOWN, 'u', color=GRAY)
         cota_y = crear_cota(ejes.c2p([0, 0]) + 0.5 * LEFT, ejes.c2p(coor_p_y) + 0.5 * LEFT, 'v', color=GRAY)
@@ -3741,6 +3741,27 @@ class rotacion_ejes(Scene):
         self.play(ejes_p.animate.rotate(np.radians(ang), about_point=ejes.c2p([0, 0])),
                   labels_p.animate.rotate(np.radians(ang), about_point=ejes.c2p([0, 0])),
                   run_time=10)
+
+        # Add angle arc
+        angulo_cota = Arc(
+            start_angle=0,
+            angle=np.radians(ang),
+            radius=1.5,
+            arc_center=ejes.c2p([0, 0]),
+            color=YELLOW
+        )
+        angulo_texto = MathTex(r'\theta', color=YELLOW).next_to(angulo_cota.point_from_proportion(0.5), UR, buff=0.1).scale(0.8)
+        self.play(Create(angulo_cota), Write(angulo_texto), run_time=2)
+        angulo_cota_2 = Arc(
+            start_angle=3 * PI / 2,
+            angle=np.radians(ang),
+            radius=1.5,
+            arc_center=ejes_p.c2p(coor_p_2),
+            color=YELLOW
+        )
+        angulo_texto_2 = MathTex(r'\theta', color=YELLOW).next_to(angulo_cota_2.point_from_proportion(0.5), DOWN,
+                                                                  buff=0.1).scale(0.8)
+
         cota_x_2 = crear_cota(ejes_p.c2p([0, 0, 0]) + 0.5 * np.array([0, -1, 0]) @ t,
                               ejes_p.c2p(coor_p_x_2) + 0.5 * np.array([0, -1, 0]) @ t, r'u^\prime',
                               color=GRAY)
@@ -3749,14 +3770,51 @@ class rotacion_ejes(Scene):
                               color=GRAY)
         linea_u_2 = DashedLine(ejes_p.c2p(coor_p_2), ejes_p.c2p(coor_p_y_2), color=BLUE, stroke_width=1)
         linea_v_2 = DashedLine(ejes_p.c2p(coor_p_2), ejes_p.c2p(coor_p_x_2), color=BLUE, stroke_width=1)
-
+        coor_d_2 = np.array([3 * np.cos(np.radians(ang)), 0, 0])
+        coor_e_2 = coor_d_2 + np.array([6 * np.sin(np.radians(ang)), -3 * np.sin(np.radians(ang)), 0])
+        tri_1 = Polygon(ejes_p.c2p([0, 0, 0]), ejes_p.c2p(coor_d_2), ejes.c2p(coor_p_x), color=GREEN,
+                        fill_opacity=0.5, stroke_width=0)
+        tri_2 = Polygon(ejes_p.c2p(coor_p_2), ejes_p.c2p(coor_e_2), ejes.c2p(coor_p_x), color=GREEN,
+                        fill_opacity=0.5, stroke_width=0)
+        linea_ang_90_1_1 = Line(ejes_p.c2p(coor_e_2 + UP * 0.2), ejes_p.c2p(coor_e_2 + UP * 0.2 + LEFT * 0.2),
+                                stroke_width=1, color=GREEN)
+        linea_ang_90_1_2 = Line(ejes_p.c2p(coor_e_2 + UP * 0.2 + LEFT * 0.2), ejes_p.c2p(coor_e_2 + LEFT * 0.2),
+                                stroke_width=1, color=GREEN)
+        linea_ang_90_1 = VGroup(linea_ang_90_1_1, linea_ang_90_1_2)
+        linea_ang_90_2_1 = Line(ejes_p.c2p(coor_d_2 + LEFT * 0.2), ejes_p.c2p(coor_d_2 + LEFT * 0.2 + DOWN * 0.2),
+                                stroke_width=1, color=GREEN)
+        linea_ang_90_2_2 = Line(ejes_p.c2p(coor_d_2 + LEFT * 0.2 + DOWN * 0.2), ejes_p.c2p(coor_d_2 + DOWN * 0.2),
+                                stroke_width=1, color=GREEN)
+        linea_ang_90_2 = VGroup(linea_ang_90_2_1, linea_ang_90_2_2)
+        linea_a = Line(ejes_p.c2p([0, 0, 0]), ejes_p.c2p(coor_d_2), color=RED, stroke_width=2)
+        texto_linea_a = MathTex(r'u\cos(\theta)').rotate(np.radians(ang)).scale(0.5).next_to(linea_a, UP)
+        linea_b = Line(ejes.c2p(coor_p_x), ejes_p.c2p(coor_e_2), color=RED, stroke_width=2)
+        texto_linea_b = MathTex(r'v\sin(\theta)').rotate(np.radians(ang)).scale(0.5).next_to(linea_b, DOWN).shift(np.array([0.1, 0.2, 0]))
         self.play(labels_p.animate.set_opacity(1), run_time=2)
         self.wait(2)
         self.play(Write(linea_v_2), run_time=2)
+        self.wait(2)
+        self.play(Create(angulo_cota_2), Write(angulo_texto_2), run_time=2)
         self.wait(2)
         self.play(Write(cota_x_2), run_time=2)
         self.wait(2)
         self.play(Write(linea_u_2), run_time=2)
         self.wait(2)
         self.play(Write(cota_y_2), run_time=2)
+        self.wait(2)
+        self.play(DrawBorderThenFill(tri_1), run_time=2)
+        self.wait(2)
+        self.play(Create(linea_ang_90_2), run_time=2)
+        self.wait(2)
+        self.play(DrawBorderThenFill(tri_2), run_time=2)
+        self.wait(2)
+        self.play(Create(linea_ang_90_1), run_time=2)
+        self.wait(2)
+        self.play(Create(linea_a), run_time=2)
+        self.wait(2)
+        self.play(Create(texto_linea_a), run_time=2)
+        self.wait(2)
+        self.play(Create(linea_b), run_time=2)
+        self.wait(2)
+        self.play(Create(texto_linea_b), run_time=2)
         self.wait(2)
