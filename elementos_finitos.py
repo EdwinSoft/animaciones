@@ -3789,7 +3789,7 @@ class rotacion_ejes(Scene):
         linea_a = Line(ejes_p.c2p([0, 0, 0]), ejes_p.c2p(coor_d_2), color=RED, stroke_width=2)
         texto_linea_a = MathTex(r'u\cos(\theta)').rotate(np.radians(ang)).scale(0.5).next_to(linea_a, UP)
         linea_b = Line(ejes.c2p(coor_p_x), ejes_p.c2p(coor_e_2), color=RED, stroke_width=2)
-        texto_linea_b = MathTex(r'v\sin(\theta)').rotate(np.radians(ang)).scale(0.5).next_to(linea_b, DOWN).shift(np.array([0.1, 0.2, 0]))
+        texto_linea_b = MathTex(r'v\sin(\theta)').rotate(np.radians(ang)).scale(0.5).next_to(linea_b, DOWN).shift(np.array([0.8, 0.8, 0]))
         self.play(labels_p.animate.set_opacity(1), run_time=2)
         self.wait(2)
         self.play(Write(linea_v_2), run_time=2)
