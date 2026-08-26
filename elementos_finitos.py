@@ -3750,7 +3750,8 @@ class rotacion_ejes(Scene):
             arc_center=ejes.c2p([0, 0]),
             color=YELLOW
         )
-        angulo_texto = MathTex(r'\theta', color=YELLOW).next_to(angulo_cota.point_from_proportion(0.5), UR, buff=0.1).scale(0.8)
+        angulo_texto = MathTex(r'\theta', color=YELLOW).next_to(angulo_cota.point_from_proportion(0.5), UR,
+                                                                buff=0.1).scale(0.8)
         self.play(Create(angulo_cota), Write(angulo_texto), run_time=2)
         angulo_cota_2 = Arc(
             start_angle=3 * PI / 2,
@@ -3787,9 +3788,23 @@ class rotacion_ejes(Scene):
                                 stroke_width=1, color=GREEN)
         linea_ang_90_2 = VGroup(linea_ang_90_2_1, linea_ang_90_2_2)
         linea_a = Line(ejes_p.c2p([0, 0, 0]), ejes_p.c2p(coor_d_2), color=RED, stroke_width=2)
-        texto_linea_a = MathTex(r'u\cos(\theta)').rotate(np.radians(ang)).scale(0.5).next_to(linea_a, UP)
+        texto_linea_a = MathTex(r'u\cos(\theta)').rotate(np.radians(ang)).scale(0.5).next_to(linea_a.get_center(), UL,
+                                                                                             buff=-0.1)
         linea_b = Line(ejes.c2p(coor_p_x), ejes_p.c2p(coor_e_2), color=RED, stroke_width=2)
-        texto_linea_b = MathTex(r'v\sin(\theta)').rotate(np.radians(ang)).scale(0.5).next_to(linea_b, DOWN).shift(np.array([0.8, 0.8, 0]))
+        texto_linea_b = MathTex(r'v\sin(\theta)').rotate(np.radians(ang)).scale(0.5).next_to(linea_b.get_center(), DR,
+                                                                                             buff=-0.1)
+
+        linea_c = Line(ejes_p.c2p(coor_p_2), ejes_p.c2p(coor_e_2), color=RED, stroke_width=2)
+        texto_linea_c = MathTex(r'v\cos(\theta)').rotate(np.radians(ang - 90)).scale(0.5).next_to(linea_c.get_center(),
+                                                                                                  RIGHT, buff=0.1)
+        linea_d = Line(ejes_p.c2p(coor_d_2), ejes.c2p(coor_p_x), color=RED, stroke_width=2)
+        texto_linea_d = MathTex(r'u\sin(\theta)').rotate(np.radians(ang - 90)).scale(0.5).next_to(linea_d.get_center(),
+                                                                                                  RIGHT, buff=0.1)
+
+        u_prima = MathTex(r'u^\prime', '=', r'u\cos(\theta)', '+', r'v\sin(\theta)').scale(0.8)
+        v_prima = MathTex(r'v^\prime', '=', r'v\cos(\theta)', '-', r'u\sin(\theta)').scale(0.8)
+        ec = VGroup(u_prima, v_prima).arrange(DOWN, buff=0.1).move_to(4.5 * RIGHT + 0.4 * DOWN)
+
         self.play(labels_p.animate.set_opacity(1), run_time=2)
         self.wait(2)
         self.play(Write(linea_v_2), run_time=2)
@@ -3817,4 +3832,64 @@ class rotacion_ejes(Scene):
         self.play(Create(linea_b), run_time=2)
         self.wait(2)
         self.play(Create(texto_linea_b), run_time=2)
+        self.wait(2)
+        self.play(Write(u_prima), run_time=2)
+        self.wait(2)
+        self.play(FadeOut(linea_a, linea_b, texto_linea_a, texto_linea_b), run_time=2)
+        self.wait(2)
+        self.play(Create(linea_c), run_time=2)
+        self.wait(2)
+        self.play(Create(texto_linea_c), run_time=2)
+        self.wait(2)
+        self.play(Create(linea_d), run_time=2)
+        self.wait(2)
+        self.play(Create(texto_linea_d), run_time=2)
+        self.wait(2)
+        self.play(Write(v_prima), run_time=2)
+        self.wait(2)
+        self.play(FadeOut(linea_c, linea_d, texto_linea_c, texto_linea_d), run_time=2)
+        self.wait(2)
+        self.play(
+            FadeOut(ejes, ejes_p, labels, labels_p, cota_x, cota_x_2, cota_y, cota_y_2, angulo_cota, angulo_cota_2,
+                    angulo_texto, angulo_texto_2, linea_u, linea_u_2, linea_v, linea_v_2, linea_ang_90_1,
+                    linea_ang_90_2, punto_p, tri_1, tri_2),
+            ec.animate.move_to(2 * UP),
+            run_time=2)
+        self.wait(2)
+        v_prima_2 = MathTex(r'v^\prime', '=', '-', r'u\sin(\theta)', '+', r'v\cos(\theta)').scale(0.8).move_to(ec[1])
+        d_rot = Matrix([[r'u^\prime'], [r'v^\prime']], left_bracket=r"\{", right_bracket=r"\}")
+        mat_t = Matrix([[r'\cos(\theta)', r'\sin(\theta)'], [r'-\sin(\theta)', r'\cos(\theta)']], h_buff=2.0)
+        d = Matrix([['u'], ['v']], left_bracket=r"\{", right_bracket=r"\}")
+        transformacion = VGroup(d_rot, MathTex('='), mat_t, d).arrange(RIGHT, buff=0.1).scale(0.8)
+        self.play(ReplacementTransform(ec[1][0], v_prima_2[0]),
+                  ReplacementTransform(ec[1][1], v_prima_2[1]),
+                  ReplacementTransform(ec[1][2], v_prima_2[5]),
+                  ReplacementTransform(ec[1][3], v_prima_2[2]),
+                  ReplacementTransform(ec[1][4], v_prima_2[3]),
+                  FadeIn(v_prima_2[4]),
+                  run_time=2)
+        self.wait(2)
+        ec[1]=v_prima_2
+        self.play(FadeIn(transformacion[0].get_brackets(), transformacion[2].get_brackets(),
+                         transformacion[3].get_brackets()),
+                  run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(ec[0][0], transformacion[0].get_entries()[0]),
+                  ReplacementTransform(v_prima_2[0], transformacion[0].get_entries()[1]),
+                  run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(ec[0][1], ec[1][1]), transformacion[1]),
+                  run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(ec[0][2][1:], transformacion[2].get_entries()[0]),
+                  ReplacementTransform(ec[0][4][1:], transformacion[2].get_entries()[1]),
+                  ReplacementTransform(ec[1][2], transformacion[2].get_entries()[2][0]),
+                  ReplacementTransform(ec[1][3][1:], transformacion[2].get_entries()[2][0][1:]),
+                  ReplacementTransform(ec[1][5][1:], transformacion[2].get_entries()[3]),
+                  run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(VGroup(ec[0][2][0],ec[1][3][0] ), transformacion[3].get_entries()[0]),
+                  ReplacementTransform(VGroup(ec[0][4][0],ec[1][5][0] ), transformacion[3].get_entries()[1]),
+                  FadeOut(ec[0][3],ec[1][4]),
+                  run_time=2)
         self.wait(2)
