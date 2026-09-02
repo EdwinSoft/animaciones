@@ -3731,8 +3731,9 @@ class rotacion_ejes(Scene):
             tip_shape=StealthTip,  # Aquí cambias la forma
             max_tip_length_to_length_ratio=0.15  # Controla el tamaño de la punta
         )
-        texto_vector_d = MathTex(r'\overrightarrow{d}', color=RED_D).rotate(np.atan(2)).scale(0.5).next_to(d.get_center(), UL,
-                                                                                             buff=0.1)
+        texto_vector_d = MathTex(r'\overrightarrow{d}', color=RED_D).rotate(np.atan(2)).scale(0.5).next_to(
+            d.get_center(), UL,
+            buff=0.1)
         d_x = Arrow(
             start=ejes.c2p(ORIGIN),
             end=ejes.c2p(coor_p_x),
@@ -3845,7 +3846,7 @@ class rotacion_ejes(Scene):
         linea_ang_90_2_2 = Line(ejes_p.c2p(coor_d_2 + LEFT * 0.2 + DOWN * 0.2), ejes_p.c2p(coor_d_2 + DOWN * 0.2),
                                 stroke_width=1, color=GREEN)
         linea_ang_90_2 = VGroup(linea_ang_90_2_1, linea_ang_90_2_2)
-        linea_a = Line(ejes_p.c2p([0, 0, 0]), ejes_p.c2p(coor_d_2), color=RED, stroke_width=2)
+        linea_a = Line(ejes_p.c2p([0, 0, 0]), ejes_p.c2p(coor_d_2), color=RED, stroke_width=2).set_z_index(1.2)
         texto_linea_a = MathTex(r'u\cos(\theta)').rotate(np.radians(ang)).scale(0.5).next_to(linea_a.get_center(), UL,
                                                                                              buff=-0.1)
         linea_b = Line(ejes.c2p(coor_p_x), ejes_p.c2p(coor_e_2), color=RED, stroke_width=2)
@@ -3914,7 +3915,7 @@ class rotacion_ejes(Scene):
         self.play(
             FadeOut(ejes, ejes_p, labels, labels_p, cota_x, cota_x_2, cota_y, cota_y_2, angulo_cota, angulo_cota_2,
                     angulo_texto, angulo_texto_2, linea_u, linea_u_2, linea_v, linea_v_2, linea_ang_90_1,
-                    linea_ang_90_2, punto_p,d,d_x, d_y,d_x_2, d_y_2, texto_vector_d, tri_1, tri_2),
+                    linea_ang_90_2, punto_p, d, d_x, d_y, d_x_2, d_y_2, texto_vector_d, tri_1, tri_2),
             ec.animate.move_to(2 * UP),
             run_time=2)
         self.wait(2)
@@ -3923,6 +3924,12 @@ class rotacion_ejes(Scene):
         mat_t = Matrix([[r'\cos(\theta)', r'\sin(\theta)'], [r'-\sin(\theta)', r'\cos(\theta)']], h_buff=2.0)
         d = Matrix([['u'], ['v']], left_bracket=r"\{", right_bracket=r"\}")
         transformacion = VGroup(d_rot, MathTex('='), mat_t, d).arrange(RIGHT, buff=0.1).scale(0.8)
+        transformacion_2 = VGroup(MathTex(r'\left\lbrace d^\prime\right\rbrace'), MathTex('='),
+                                  MathTex(r'\left[T\right]'), MathTex(r'\left\lbrace d\right\rbrace')).arrange(
+            RIGHT, buff=0.1).scale(0.8).next_to(transformacion, DOWN)
+        transformacion_3 = VGroup(MathTex(r'\left\lbrace f^\prime\right\rbrace'), MathTex('='),
+                                  MathTex(r'\left[T\right]'), MathTex(r'\left\lbrace f\right\rbrace')).arrange(
+            RIGHT, buff=0.1).scale(0.8).next_to(transformacion_2, DOWN)
         self.play(ReplacementTransform(ec[1][0], v_prima_2[0]),
                   ReplacementTransform(ec[1][1], v_prima_2[1]),
                   ReplacementTransform(ec[1][2], v_prima_2[5]),
@@ -3931,7 +3938,7 @@ class rotacion_ejes(Scene):
                   FadeIn(v_prima_2[4]),
                   run_time=2)
         self.wait(2)
-        ec[1]=v_prima_2
+        ec[1] = v_prima_2
         self.play(FadeIn(transformacion[0].get_brackets(), transformacion[2].get_brackets(),
                          transformacion[3].get_brackets()),
                   run_time=2)
@@ -3950,8 +3957,153 @@ class rotacion_ejes(Scene):
                   ReplacementTransform(ec[1][5][1:], transformacion[2].get_entries()[3]),
                   run_time=2)
         self.wait(2)
-        self.play(ReplacementTransform(VGroup(ec[0][2][0],ec[1][3][0] ), transformacion[3].get_entries()[0]),
-                  ReplacementTransform(VGroup(ec[0][4][0],ec[1][5][0] ), transformacion[3].get_entries()[1]),
-                  FadeOut(ec[0][3],ec[1][4]),
+        self.play(ReplacementTransform(VGroup(ec[0][2][0], ec[1][3][0]), transformacion[3].get_entries()[0]),
+                  ReplacementTransform(VGroup(ec[0][4][0], ec[1][5][0]), transformacion[3].get_entries()[1]),
+                  FadeOut(ec[0][3], ec[1][4]),
                   run_time=2)
+        self.play(Write(transformacion_2), run_time=2)
+        self.wait(6)
+        self.play(Write(transformacion_3), run_time=2)
         self.wait(2)
+
+
+class matrizBarraInclinada(Scene):
+    def construct(self) -> None:
+        ang = 30
+        t = np.array(
+            [[np.cos(np.radians(ang)), np.sin(np.radians(ang)), 0],
+             [-np.sin(np.radians(ang)), np.cos(np.radians(ang)), 0], [0, 0, 1]])
+        ejes = NumberPlane(
+            x_range=[-5, 10, 1],
+            y_range=[-1, 7, 1],
+            x_axis_config={
+                "include_numbers": False,
+                "include_tip": True,
+                "tip_shape": StealthTip,
+                "label_direction": DOWN
+            },
+            y_axis_config={
+                "include_numbers": False,
+                "include_tip": True,
+                "tip_shape": StealthTip,
+                "label_direction": LEFT
+            },
+            background_line_style={
+                "stroke_opacity": 0.1
+            }
+        ).scale(0.8)
+        ejes.set_z_index(1)
+        labels = ejes.get_axis_labels(x_label="x, u", y_label="y, v")
+        ejes_p = ejes.copy().set_color(BLUE)
+        labels_p = ejes_p.get_axis_labels(x_label=r"x^\prime, u^\prime", y_label=r"y^\prime").set_color(BLUE)
+        ejes_p.rotate(np.radians(ang), about_point=ejes.c2p(ORIGIN)).shift(0.7 * (UP + RIGHT))
+        labels_p.rotate(np.radians(ang), about_point=ejes.c2p(ORIGIN)).shift(0.7 * (UP + RIGHT))
+
+        punto_a = ejes_p.c2p(ORIGIN)
+        punto_a_0 = ejes_p.c2p(LEFT)
+        punto_b = ejes_p.c2p(5 * RIGHT)
+        punto_b_0 = ejes_p.c2p(6 * RIGHT)
+        angulo_cota = Arc(
+            start_angle=0,
+            angle=np.radians(ang),
+            radius=2,
+            stroke_width=1,
+            arc_center=ejes.c2p([0, 0]) + np.array([0.7 * (1 - 1 / np.tan(np.radians(ang))), 0, 0]),
+            color=YELLOW
+        )
+        angulo_texto = MathTex(r'\theta', color=YELLOW).next_to(angulo_cota.point_from_proportion(0.5), RIGHT,
+                                                                buff=0.1).scale(0.8)
+
+        # Instanciamos nuestro objeto personalizado
+        barra = elemento_armadura((0, 0), (5, 0), 0.25, ejes_p).rotate(np.radians(ang))
+        n_a = Dot(punto_a, radius=0.05, color=GRAY)
+        n_b = Dot(punto_b, radius=0.05, color=GRAY)
+        label_n_a = LabeledDot(MathTex('1', color=WHITE), color=GREEN, stroke_color=GREEN, stroke_width=1,
+                               fill_opacity=0.8).next_to(n_a, UP, buff=0.1).scale(0.5).rotate(
+            np.radians(ang))
+        label_n_b = LabeledDot(MathTex('2', color=WHITE), color=GREEN, stroke_color=GREEN, stroke_width=1,
+                               fill_opacity=0.8).next_to(n_b, UP, buff=0.1).scale(0.5).rotate(
+            np.radians(ang))
+        fuerza_1 = Arrow(
+            start=punto_a_0,
+            end=punto_a,
+            buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+            color=GRAY,
+            stroke_width=5,  # Grosor de la línea
+            tip_shape=StealthTip,  # Aquí cambias la forma
+            max_tip_length_to_length_ratio=0.15  # Controla el tamaño de la punta
+        ).set_z_index(1.1)
+        label_f_1 = MathTex(r'u_1^\prime,f_{1x}^\prime', color=GRAY).scale(0.4).next_to(fuerza_1.get_center(), DOWN,
+                                                                                        buff=0.1).rotate(
+            np.radians(ang))
+        fuerza_2 = Arrow(
+            start=punto_b,
+            end=punto_b_0,
+            buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+            color=GRAY,
+            stroke_width=5,  # Grosor de la línea
+            tip_shape=StealthTip,  # Aquí cambias la forma
+            max_tip_length_to_length_ratio=0.15  # Controla el tamaño de la punta
+        ).set_z_index(1.1)
+        label_f_2 = MathTex(r'u_2^\prime,f_{2x}^\prime', color=GRAY).scale(0.4).next_to(fuerza_2.get_center(), DOWN,
+                                                                                        buff=0.1).rotate(
+            np.radians(ang))
+        ecuacion_local_barra_1 = VGroup(
+            Matrix([[r'f^\prime_{1x}'], [r'f^\prime_{2x}']], left_bracket=r"\{", right_bracket=r"\}"),
+            ecuacion_signo_igual(), MathTex(r'\frac{', 'A', 'E', '}{', 'L', '}'),
+            Matrix([['1', '-1'], ['-1', '1']]),
+            Matrix([[r'u^\prime_1'], [r'u^\prime_2']], left_bracket=r"\{", right_bracket=r"\}")
+            ).arrange(RIGHT).scale(0.5).move_to(UP * 3 + 1.5 * RIGHT).set_color(BLUE)
+        ecuacion_local_barra_2 = VGroup(Matrix([[r'f^\prime']], left_bracket=r"\{", right_bracket=r"\}"),
+                                        ecuacion_signo_igual(),
+                                        Matrix([[r'k^\prime']]),
+                                        Matrix([[r'd^\prime']], left_bracket=r"\{", right_bracket=r"\}")
+                                        ).arrange(RIGHT).scale(0.5).next_to(ecuacion_local_barra_1, DOWN).set_color(
+            BLUE)
+        ecuacion_global_barra_1 = VGroup(
+            Matrix([['f_{1x}'], ['f_{1y}'], ['f_{2x}'], ['f_{2y}']], left_bracket=r"\{", right_bracket=r"\}"),
+            ecuacion_signo_igual(), Matrix([['k']]),
+            Matrix([['u_1'], ['v_1'], ['u_2'], ['v_2']], left_bracket=r"\{", right_bracket=r"\}")
+        ).arrange(RIGHT).scale(0.5).move_to(5 * RIGHT).set_color(WHITE)
+        ecuacion_global_barra_1[2].set_color(RED_E)
+        ecuacion_global_barra_2 = VGroup(Matrix([['f']], left_bracket=r"\{", right_bracket=r"\}"),
+                                         ecuacion_signo_igual(),
+                                         Matrix([['k']]),
+                                         Matrix([['d']], left_bracket=r"\{", right_bracket=r"\}")
+                                         ).arrange(RIGHT).scale(0.5).next_to(ecuacion_global_barra_1, DOWN).set_color(
+            WHITE)
+        ecuacion_global_barra_2[2].set_color(RED_E)
+        self.play(Write(ejes), run_time=4)
+        self.wait(2)
+        self.play(Write(labels), run_time=2)
+        self.wait(2)
+        self.play(Write(barra), run_time=2)
+        self.wait(2)
+        self.play(Write(angulo_cota), Write(angulo_texto), run_time=2)
+        self.wait(2)
+        self.play(Write(n_a), Write(n_b), Write(label_n_a), Write(label_n_b), run_time=2)
+        self.wait(2)
+        self.play(Write(ejes_p), run_time=4)
+        self.wait(2)
+        self.play(Write(labels_p), run_time=2)
+        self.wait(2)
+        self.play(Write(fuerza_1), Write(label_f_1), run_time=2)
+        self.wait(2)
+        self.play(Write(fuerza_2), Write(label_f_2), run_time=2)
+        self.wait(2)
+        self.play(Write(ecuacion_local_barra_1), run_time=2)
+        self.wait(2)
+        self.play(Write(ecuacion_local_barra_2), run_time=2)
+        self.wait(2)
+        self.play(Write(ecuacion_global_barra_1), run_time=2)
+        self.wait(2)
+        self.play(Write(ecuacion_global_barra_2), run_time=2)
+        self.wait(2)
+        self.play(
+            FadeOut(ejes, ejes_p, label_n_a, label_n_b, n_a, n_b, fuerza_1, label_f_1, fuerza_2, label_f_2, angulo_cota,
+                    angulo_texto, labels, labels_p, barra),
+            ecuacion_local_barra_1.animate.move_to(3*UP),
+            ecuacion_local_barra_2.animate.move_to(2 * UP),
+            ecuacion_global_barra_1.animate.move_to(0.5*UP),
+            ecuacion_global_barra_2.animate.move_to(DOWN),
+            run_time=6)
