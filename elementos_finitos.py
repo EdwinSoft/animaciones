@@ -3722,18 +3722,56 @@ class rotacion_ejes(Scene):
         cota_y = crear_cota(ejes.c2p([0, 0]) + 0.5 * LEFT, ejes.c2p(coor_p_y) + 0.5 * LEFT, 'v', color=GRAY)
         linea_u = DashedLine(ejes.c2p(coor_p), ejes.c2p(coor_p_y), color=WHITE, stroke_width=1)
         linea_v = DashedLine(ejes.c2p(coor_p), ejes.c2p(coor_p_x), color=WHITE, stroke_width=1)
-
+        d = Arrow(
+            start=ejes.c2p(ORIGIN),
+            end=ejes.c2p(coor_p),
+            buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+            color=RED_D,
+            stroke_width=4,  # Grosor de la línea
+            tip_shape=StealthTip,  # Aquí cambias la forma
+            max_tip_length_to_length_ratio=0.15  # Controla el tamaño de la punta
+        )
+        texto_vector_d = MathTex(r'\overrightarrow{d}', color=RED_D).rotate(np.atan(2)).scale(0.5).next_to(d.get_center(), UL,
+                                                                                             buff=0.1)
+        d_x = Arrow(
+            start=ejes.c2p(ORIGIN),
+            end=ejes.c2p(coor_p_x),
+            buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+            color=WHITE,
+            fill_opacity=0.7,
+            stroke_width=4,  # Grosor de la línea
+            tip_shape=StealthTip,  # Aquí cambias la forma
+            max_tip_length_to_length_ratio=0.1  # Controla el tamaño de la punta
+        ).set_z_index(1.1)
+        d_y = Arrow(
+            start=ejes.c2p(ORIGIN),
+            end=ejes.c2p(coor_p_y),
+            buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+            color=WHITE,
+            fill_opacity=0.7,
+            stroke_width=4,  # Grosor de la línea
+            tip_shape=StealthTip,  # Aquí cambias la forma
+            max_tip_length_to_length_ratio=0.05  # Controla el tamaño de la punta
+        ).set_z_index(1.1)
         self.play(Write(ejes), run_time=2)
         self.wait(2)
         self.play(Write(labels), run_time=2)
         self.wait(2)
         self.play(Write(punto_p), run_time=2)
         self.wait(2)
+        self.play(Write(d), run_time=2)
+        self.wait(2)
+        self.play(Write(texto_vector_d), run_time=2)
+        self.wait(2)
         self.play(Write(linea_v), run_time=2)
+        self.wait(2)
+        self.play(Write(d_x), run_time=2)
         self.wait(2)
         self.play(Write(cota_x), run_time=2)
         self.wait(2)
         self.play(Write(linea_u), run_time=2)
+        self.wait(2)
+        self.play(Write(d_y), run_time=2)
         self.wait(2)
         self.play(Write(cota_y), run_time=2)
         self.wait(2)
@@ -3741,8 +3779,26 @@ class rotacion_ejes(Scene):
         self.play(ejes_p.animate.rotate(np.radians(ang), about_point=ejes.c2p([0, 0])),
                   labels_p.animate.rotate(np.radians(ang), about_point=ejes.c2p([0, 0])),
                   run_time=10)
-
-        # Add angle arc
+        d_x_2 = Arrow(
+            start=ejes.c2p(ORIGIN),
+            end=ejes_p.c2p(coor_p_x_2),
+            buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+            color=BLUE,
+            fill_opacity=0.7,
+            stroke_width=4,  # Grosor de la línea
+            tip_shape=StealthTip,  # Aquí cambias la forma
+            max_tip_length_to_length_ratio=0.05  # Controla el tamaño de la punta
+        ).set_z_index(1.1)
+        d_y_2 = Arrow(
+            start=ejes.c2p(ORIGIN),
+            end=ejes_p.c2p(coor_p_y_2),
+            buff=0,  # ¡Fundamental para que toque los puntos exactamente!
+            color=BLUE,
+            fill_opacity=0.7,
+            stroke_width=4,  # Grosor de la línea
+            tip_shape=StealthTip,  # Aquí cambias la forma
+            max_tip_length_to_length_ratio=0.1  # Controla el tamaño de la punta
+        ).set_z_index(1.1)
         angulo_cota = Arc(
             start_angle=0,
             angle=np.radians(ang),
@@ -3766,6 +3822,8 @@ class rotacion_ejes(Scene):
         cota_x_2 = crear_cota(ejes_p.c2p([0, 0, 0]) + 0.5 * np.array([0, -1, 0]) @ t,
                               ejes_p.c2p(coor_p_x_2) + 0.5 * np.array([0, -1, 0]) @ t, r'u^\prime',
                               color=GRAY)
+        cota_x_2[0].set_z_index(-1.5)
+        cota_x_2[3].set_z_index(-1)
         cota_y_2 = crear_cota(ejes_p.c2p([0, 0, 0]) + 0.5 * np.array([-1, 0, 0]) @ t,
                               ejes_p.c2p(coor_p_y_2) + 0.5 * np.array([-1, 0, 0]) @ t, r'v^\prime',
                               color=GRAY)
@@ -3811,9 +3869,13 @@ class rotacion_ejes(Scene):
         self.wait(2)
         self.play(Create(angulo_cota_2), Write(angulo_texto_2), run_time=2)
         self.wait(2)
+        self.play(Write(d_x_2), run_time=2)
+        self.wait(2)
         self.play(Write(cota_x_2), run_time=2)
         self.wait(2)
         self.play(Write(linea_u_2), run_time=2)
+        self.wait(2)
+        self.play(Write(d_y_2), run_time=2)
         self.wait(2)
         self.play(Write(cota_y_2), run_time=2)
         self.wait(2)
@@ -3852,7 +3914,7 @@ class rotacion_ejes(Scene):
         self.play(
             FadeOut(ejes, ejes_p, labels, labels_p, cota_x, cota_x_2, cota_y, cota_y_2, angulo_cota, angulo_cota_2,
                     angulo_texto, angulo_texto_2, linea_u, linea_u_2, linea_v, linea_v_2, linea_ang_90_1,
-                    linea_ang_90_2, punto_p, tri_1, tri_2),
+                    linea_ang_90_2, punto_p,d,d_x, d_y,d_x_2, d_y_2, texto_vector_d, tri_1, tri_2),
             ec.animate.move_to(2 * UP),
             run_time=2)
         self.wait(2)
