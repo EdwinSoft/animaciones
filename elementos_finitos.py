@@ -4073,6 +4073,30 @@ class matrizBarraInclinada(Scene):
                                          ).arrange(RIGHT).scale(0.5).next_to(ecuacion_global_barra_1, DOWN).set_color(
             WHITE)
         ecuacion_global_barra_2[2].set_color(RED_E)
+
+        d_rot = Matrix([[r'u^\prime'], [r'v^\prime']], left_bracket=r"\{", right_bracket=r"\}")
+        mat_t = Matrix([[r'\cos(\theta)', r'\sin(\theta)'], [r'-\sin(\theta)', r'\cos(\theta)']], h_buff=2.0)
+        mat_t_mod = Matrix([['C', 'S'], ['-S', 'C']])
+        d = Matrix([['u'], ['v']], left_bracket=r"\{", right_bracket=r"\}")
+        t_1 = VGroup(d_rot.copy(), MathTex('='), mat_t.copy(), d.copy()).arrange(RIGHT, buff=0.1).scale(0.5).move_to(3*UP+2.5*RIGHT)
+        t_2 = VGroup(d_rot.copy(), MathTex('='), mat_t_mod.copy(), d.copy()).arrange(RIGHT, buff=0.1).scale(0.5).move_to(t_1)
+        ec_cos = MathTex('C',r'=\cos(\theta)').scale(0.5).next_to(t_1, DOWN)
+        ec_sin = MathTex('S', r'=\sin(\theta)').scale(0.5).next_to(ec_cos, DOWN)
+        d_rot_1 = Matrix([[r'u_1^\prime'], [r'v_1^\prime']], left_bracket=r"\{", right_bracket=r"\}")
+        d_1 = Matrix([['u_1'], ['v_1']], left_bracket=r"\{", right_bracket=r"\}")
+        d_rot_2 = Matrix([[r'u_2^\prime'], [r'v_2^\prime']], left_bracket=r"\{", right_bracket=r"\}")
+        d_2 = Matrix([['u_2'], ['v_2']], left_bracket=r"\{", right_bracket=r"\}")
+        d_rot_1_mod = Matrix([[r'u_1^\prime'], [r'v_1^\prime = 0']], left_bracket=r"\{", right_bracket=r"\}")
+        d_rot_2_mod = Matrix([[r'u_2^\prime'], [r'v_2^\prime = 0']], left_bracket=r"\{", right_bracket=r"\}")
+        t_3_1 = VGroup(d_rot_1.copy(), MathTex('='), mat_t_mod.copy(), d_1.copy()).arrange(RIGHT, buff=0.1).scale(
+            0.5).next_to(t_2, DOWN)
+        t_3_2 = VGroup(d_rot_2.copy(), MathTex('='), mat_t_mod.copy(), d_2.copy()).arrange(RIGHT, buff=0.1).scale(
+            0.5).next_to(t_3_1, DOWN)
+        t_4_1 = VGroup(d_rot_1_mod.copy(), MathTex('='), mat_t_mod.copy(), d_1.copy()).arrange(RIGHT, buff=0.1).scale(
+            0.5).move_to(t_3_1)
+        t_4_2 = VGroup(d_rot_2_mod.copy(), MathTex('='), mat_t_mod.copy(), d_2.copy()).arrange(RIGHT, buff=0.1).scale(
+            0.5).move_to(t_3_2)
+
         self.play(Write(ejes), run_time=4)
         self.wait(2)
         self.play(Write(labels), run_time=2)
@@ -4102,8 +4126,43 @@ class matrizBarraInclinada(Scene):
         self.play(
             FadeOut(ejes, ejes_p, label_n_a, label_n_b, n_a, n_b, fuerza_1, label_f_1, fuerza_2, label_f_2, angulo_cota,
                     angulo_texto, labels, labels_p, barra),
-            ecuacion_local_barra_1.animate.move_to(3*UP),
-            ecuacion_local_barra_2.animate.move_to(2 * UP),
-            ecuacion_global_barra_1.animate.move_to(0.5*UP),
-            ecuacion_global_barra_2.animate.move_to(DOWN),
+            ecuacion_local_barra_1.animate.move_to(3*UP+2.5*LEFT),
+            ecuacion_local_barra_2.animate.move_to(2 * UP+2.5*LEFT),
+            ecuacion_global_barra_1.animate.move_to(0.5*UP+2.5*LEFT),
+            ecuacion_global_barra_2.animate.move_to(DOWN+2.5*LEFT),
             run_time=6)
+        self.wait(2)
+        self.play(Write(t_1), run_time=2)
+        self.wait(2)
+        self.play(Write(ec_cos),Write(ec_sin), run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(ec_cos[0].copy(), t_2[2].get_entries()[0]),
+                  ReplacementTransform(ec_cos[0], t_2[2].get_entries()[3]),
+                  ReplacementTransform(ec_sin[0].copy(), t_2[2].get_entries()[1]),
+                  ReplacementTransform(ec_sin[0], t_2[2].get_entries()[2][0][1]),
+                  ReplacementTransform(t_1[2].get_brackets(), t_2[2].get_brackets()),
+                  ReplacementTransform(t_1[0:2], t_2[0:2]),
+                  ReplacementTransform(t_1[3], t_2[3]),
+                  FadeIn(t_2[2].get_entries()[2][0][0]),
+                  FadeOut(ec_cos[1],ec_sin[1]),
+                  FadeOut(t_1[2].get_entries()),
+                  run_time=2 )
+        self.wait(2)
+        self.play(Write(t_3_1), run_time=2)
+        self.wait(2)
+        self.play(Write(t_3_2), run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(t_3_1[1:],t_4_1[1:]),
+                  ReplacementTransform(t_3_2[1:], t_4_2[1:]),
+                  ReplacementTransform(t_3_1[0].get_brackets(), t_4_1[0].get_brackets()),
+                  ReplacementTransform(t_3_1[0].get_entries()[0], t_4_1[0].get_entries()[0]),
+                  ReplacementTransform(t_3_1[0].get_entries()[1], t_4_1[0].get_entries()[1]),
+                  ReplacementTransform(t_3_2[0].get_brackets(), t_4_2[0].get_brackets()),
+                  ReplacementTransform(t_3_2[0].get_entries()[0], t_4_2[0].get_entries()[0]),
+                  ReplacementTransform(t_3_2[0].get_entries()[1], t_4_2[0].get_entries()[1]),
+                  run_time=2)
+        self.wait(2)
+        # self.play(Write(t_4_1), run_time=2)
+        # self.wait(2)
+        # self.play(Write(t_4_2), run_time=2)
+        # self.wait(2)
