@@ -4053,13 +4053,21 @@ class matrizBarraInclinada(Scene):
             ecuacion_signo_igual(), MathTex(r'\frac{', 'A', 'E', '}{', 'L', '}'),
             Matrix([['1', '-1'], ['-1', '1']]),
             Matrix([[r'u^\prime_1'], [r'u^\prime_2']], left_bracket=r"\{", right_bracket=r"\}")
-            ).arrange(RIGHT).scale(0.5).move_to(UP * 3 + 1.5 * RIGHT).set_color(BLUE)
+        ).arrange(RIGHT).scale(0.5).move_to(UP * 3 + 1.5 * RIGHT).set_color(BLUE)
         ecuacion_local_barra_2 = VGroup(Matrix([[r'f^\prime']], left_bracket=r"\{", right_bracket=r"\}"),
                                         ecuacion_signo_igual(),
                                         Matrix([[r'k^\prime']]),
                                         Matrix([[r'd^\prime']], left_bracket=r"\{", right_bracket=r"\}")
                                         ).arrange(RIGHT).scale(0.5).next_to(ecuacion_local_barra_1, DOWN).set_color(
             BLUE)
+        ecuacion_local_barra_final = VGroup(
+            Matrix([[r'f^\prime_{1x}'], [r'f^\prime_{1y}=0'], [r'f^\prime_{2x}'], [r'f^\prime_{2y}=0']],
+                   left_bracket=r"\{", right_bracket=r"\}"),
+            ecuacion_signo_igual(), MathTex(r'\frac{', 'A', 'E', '}{', 'L', '}'),
+            Matrix([['1', '0', '-1', '0'], ['0', '0', '0', '0'], ['-1', '0', '1', '0'], ['0', '0', '0', '0']]),
+            Matrix([[r'u^\prime_1'], [r'v^\prime_1=0'], [r'u^\prime_2'], [r'v^\prime_2=0']], left_bracket=r"\{",
+                   right_bracket=r"\}")
+        ).arrange(RIGHT).scale(0.5).set_color(BLUE)
         ecuacion_global_barra_1 = VGroup(
             Matrix([['f_{1x}'], ['f_{1y}'], ['f_{2x}'], ['f_{2y}']], left_bracket=r"\{", right_bracket=r"\}"),
             ecuacion_signo_igual(), Matrix([['k']]),
@@ -4075,12 +4083,18 @@ class matrizBarraInclinada(Scene):
         ecuacion_global_barra_2[2].set_color(RED_E)
 
         d_rot = Matrix([[r'u^\prime'], [r'v^\prime']], left_bracket=r"\{", right_bracket=r"\}")
+        f_rot = Matrix([[r'f_x^\prime'], [r'f_y^\prime']], left_bracket=r"\{", right_bracket=r"\}")
         mat_t = Matrix([[r'\cos(\theta)', r'\sin(\theta)'], [r'-\sin(\theta)', r'\cos(\theta)']], h_buff=2.0)
         mat_t_mod = Matrix([['C', 'S'], ['-S', 'C']])
         d = Matrix([['u'], ['v']], left_bracket=r"\{", right_bracket=r"\}")
-        t_1 = VGroup(d_rot.copy(), MathTex('='), mat_t.copy(), d.copy()).arrange(RIGHT, buff=0.1).scale(0.5).move_to(3*UP+2.5*RIGHT)
-        t_2 = VGroup(d_rot.copy(), MathTex('='), mat_t_mod.copy(), d.copy()).arrange(RIGHT, buff=0.1).scale(0.5).move_to(t_1)
-        ec_cos = MathTex('C',r'=\cos(\theta)').scale(0.5).next_to(t_1, DOWN)
+        f = Matrix([['f_x'], ['f_y']], left_bracket=r"\{", right_bracket=r"\}")
+        t_1 = VGroup(d_rot.copy(), MathTex('='), mat_t.copy(), d.copy()).arrange(RIGHT, buff=0.1).scale(0.5).move_to(
+            3 * UP + 2.5 * RIGHT)
+        t_2 = VGroup(d_rot.copy(), MathTex('='), mat_t_mod.copy(), d.copy()).arrange(RIGHT, buff=0.1).scale(
+            0.5).move_to(t_1)
+        t_f = VGroup(f_rot.copy(), MathTex('='), mat_t_mod.copy(), f.copy()).arrange(RIGHT, buff=0.1).scale(
+            0.5).move_to(t_2)
+        ec_cos = MathTex('C', r'=\cos(\theta)').scale(0.5).next_to(t_1, DOWN)
         ec_sin = MathTex('S', r'=\sin(\theta)').scale(0.5).next_to(ec_cos, DOWN)
         d_rot_1 = Matrix([[r'u_1^\prime'], [r'v_1^\prime']], left_bracket=r"\{", right_bracket=r"\}")
         d_1 = Matrix([['u_1'], ['v_1']], left_bracket=r"\{", right_bracket=r"\}")
@@ -4096,7 +4110,102 @@ class matrizBarraInclinada(Scene):
             0.5).move_to(t_3_1)
         t_4_2 = VGroup(d_rot_2_mod.copy(), MathTex('='), mat_t_mod.copy(), d_2.copy()).arrange(RIGHT, buff=0.1).scale(
             0.5).move_to(t_3_2)
+        d_rot_final = Matrix([[r'u_1^\prime'],
+                              [r'v_1^\prime = 0'],
+                              [r'u_2^\prime'],
+                              [r'v_2^\prime = 0']],
+                             left_bracket=r"\{", right_bracket=r"\}")
+        mat_t_final = Matrix([['C', 'S', '0', '0'],
+                              ['-S', 'C', '0', '0'],
+                              ['0', '0', 'C', 'S'],
+                              ['0', '0', '-S', 'C']
+                              ])
+        mat_t_t_final = Matrix([['C', '-S', '0', '0'],
+                                ['S', 'C', '0', '0'],
+                                ['0', '0', 'C', '-S'],
+                                ['0', '0', 'S', 'C']
+                                ])
+        d_final = Matrix([['u_1'],
+                          ['v_1'],
+                          ['u_2'],
+                          ['v_2']
+                          ], left_bracket=r"\{", right_bracket=r"\}")
+        f_rot_final = Matrix([[r'f_{1x}^\prime'],
+                              [r'f_{1y}^\prime = 0'],
+                              [r'f_{2x}^\prime'],
+                              [r'f_{2y}^\prime = 0']],
+                             left_bracket=r"\{", right_bracket=r"\}")
+        f_final = Matrix([['f_{1x}'],
+                          ['f_{1y}'],
+                          ['f_{2x}'],
+                          ['f_{2y}']
+                          ], left_bracket=r"\{", right_bracket=r"\}")
+        mat_t_mult = Matrix([['C^2', 'CS', '-C^2', '-CS'],
+                              ['CS', 'S^2', '-CS', '-S^2'],
+                              ['-C^2', '-CS', 'C^2', 'CS'],
+                              ['-CS', '-S^2', '-S', 'S^2']
+                              ])
+        t_5 = VGroup(d_rot_final.copy(), MathTex('='), mat_t_final.copy(), d_final.copy()).arrange(RIGHT,
+                                                                                                   buff=0.1).scale(
+            0.5).next_to(t_4_2, DOWN)
+        t_f_final = VGroup(f_rot_final.copy(), MathTex('='), mat_t_final.copy(), f_final.copy()).arrange(RIGHT,
+                                                                                                         buff=0.1).scale(
+            0.5).next_to(t_2, DOWN)
 
+        rot_d = VGroup(Matrix([[r'd^\prime']], left_bracket=r"\{", right_bracket=r"\}"),
+                       ecuacion_signo_igual(),
+                       Matrix([['T']]),
+                       Matrix([['d']], left_bracket=r"\{", right_bracket=r"\}")
+                       ).arrange(RIGHT).scale(0.5).next_to(ecuacion_local_barra_1, UP)
+        rot_f = VGroup(Matrix([[r'f^\prime']], left_bracket=r"\{", right_bracket=r"\}"),
+                       ecuacion_signo_igual(),
+                       Matrix([['T']]),
+                       Matrix([['f']], left_bracket=r"\{", right_bracket=r"\}")
+                       ).arrange(RIGHT).scale(0.5).next_to(rot_d, UP)
+        inversa = VGroup(Matrix([['T']]), MathTex("-1"))
+        inversa[1].scale(0.8).next_to(inversa[0], RIGHT, aligned_edge=UP, buff=0.1).shift(UP * 0.2)
+        transpuesta = VGroup(Matrix([['T']]), MathTex("T"))
+        transpuesta[1].scale(0.8).next_to(transpuesta[0], RIGHT, aligned_edge=UP, buff=0.1).shift(UP * 0.2)
+
+        ecuacion_local_barra_3 = VGroup(Matrix([['T']]),
+                                        Matrix([['f']], left_bracket=r"\{", right_bracket=r"\}"),
+                                        ecuacion_signo_igual(),
+                                        Matrix([[r'k^\prime']]),
+                                        Matrix([['T']]),
+                                        Matrix([['d']], left_bracket=r"\{", right_bracket=r"\}")
+                                        ).arrange(RIGHT).scale(0.5).move_to(ecuacion_local_barra_2).set_color(
+            BLUE)
+        ecuacion_local_barra_4 = VGroup(Matrix([['f']], left_bracket=r"\{", right_bracket=r"\}"),
+                                        ecuacion_signo_igual(), inversa,
+                                        Matrix([[r'k^\prime']]),
+                                        Matrix([['T']]),
+                                        Matrix([['d']], left_bracket=r"\{", right_bracket=r"\}")
+                                        ).arrange(RIGHT).scale(0.5).move_to(ecuacion_local_barra_2).set_color(
+            BLUE)
+        ecuacion_local_barra_5 = VGroup(Matrix([['f']], left_bracket=r"\{", right_bracket=r"\}"),
+                                        ecuacion_signo_igual(), transpuesta.copy(),
+                                        Matrix([[r'k^\prime']]),
+                                        Matrix([['T']]),
+                                        Matrix([['d']], left_bracket=r"\{", right_bracket=r"\}")
+                                        ).arrange(RIGHT).scale(0.5).move_to(ecuacion_local_barra_2).set_color(
+            BLUE)
+        k_inclinada_1 = VGroup(Matrix([['k']]), ecuacion_signo_igual(), transpuesta.copy(),
+                               Matrix([[r'k^\prime']]),
+                               Matrix([['T']])
+                               ).arrange(RIGHT).scale(0.5).move_to(ecuacion_local_barra_2)
+        k_inclinada_1[0].set_color(RED_E)
+        k_inclinada_2 = VGroup(Matrix([['k']]), ecuacion_signo_igual(), mat_t_t_final.copy(),
+                               MathTex(r'\frac{', 'A', 'E', '}{', 'L', '}'),
+                               Matrix([['1', '0', '-1', '0'], ['0', '0', '0', '0'], ['-1', '0', '1', '0'],
+                                       ['0', '0', '0', '0']]),
+                               mat_t_final.copy()
+                               ).arrange(RIGHT).scale(0.5).move_to(ecuacion_local_barra_2)
+        k_inclinada_2[0].set_color(RED_E)
+        k_inclinada_3 = VGroup(Matrix([['k']]), ecuacion_signo_igual(),
+                               MathTex(r'\frac{', 'A', 'E', '}{', 'L', '}'),
+                               mat_t_mult.copy()
+                               ).arrange(RIGHT).scale(0.5).move_to(ecuacion_local_barra_2)
+        k_inclinada_3[0].set_color(RED_E)
         self.play(Write(ejes), run_time=4)
         self.wait(2)
         self.play(Write(labels), run_time=2)
@@ -4126,15 +4235,15 @@ class matrizBarraInclinada(Scene):
         self.play(
             FadeOut(ejes, ejes_p, label_n_a, label_n_b, n_a, n_b, fuerza_1, label_f_1, fuerza_2, label_f_2, angulo_cota,
                     angulo_texto, labels, labels_p, barra),
-            ecuacion_local_barra_1.animate.move_to(3*UP+2.5*LEFT),
-            ecuacion_local_barra_2.animate.move_to(2 * UP+2.5*LEFT),
-            ecuacion_global_barra_1.animate.move_to(0.5*UP+2.5*LEFT),
-            ecuacion_global_barra_2.animate.move_to(DOWN+2.5*LEFT),
+            ecuacion_local_barra_1.animate.move_to(3 * UP + 2.5 * LEFT),
+            ecuacion_local_barra_2.animate.move_to(2 * UP + 2.5 * LEFT),
+            ecuacion_global_barra_1.animate.move_to(0.5 * UP + 2.5 * LEFT),
+            ecuacion_global_barra_2.animate.move_to(DOWN + 2.5 * LEFT),
             run_time=6)
         self.wait(2)
         self.play(Write(t_1), run_time=2)
         self.wait(2)
-        self.play(Write(ec_cos),Write(ec_sin), run_time=2)
+        self.play(Write(ec_cos), Write(ec_sin), run_time=2)
         self.wait(2)
         self.play(ReplacementTransform(ec_cos[0].copy(), t_2[2].get_entries()[0]),
                   ReplacementTransform(ec_cos[0], t_2[2].get_entries()[3]),
@@ -4144,15 +4253,15 @@ class matrizBarraInclinada(Scene):
                   ReplacementTransform(t_1[0:2], t_2[0:2]),
                   ReplacementTransform(t_1[3], t_2[3]),
                   FadeIn(t_2[2].get_entries()[2][0][0]),
-                  FadeOut(ec_cos[1],ec_sin[1]),
+                  FadeOut(ec_cos[1], ec_sin[1]),
                   FadeOut(t_1[2].get_entries()),
-                  run_time=2 )
+                  run_time=2)
         self.wait(2)
         self.play(Write(t_3_1), run_time=2)
         self.wait(2)
         self.play(Write(t_3_2), run_time=2)
         self.wait(2)
-        self.play(ReplacementTransform(t_3_1[1:],t_4_1[1:]),
+        self.play(ReplacementTransform(t_3_1[1:], t_4_1[1:]),
                   ReplacementTransform(t_3_2[1:], t_4_2[1:]),
                   ReplacementTransform(t_3_1[0].get_brackets(), t_4_1[0].get_brackets()),
                   ReplacementTransform(t_3_1[0].get_entries()[0], t_4_1[0].get_entries()[0]),
@@ -4162,7 +4271,122 @@ class matrizBarraInclinada(Scene):
                   ReplacementTransform(t_3_2[0].get_entries()[1], t_4_2[0].get_entries()[1]),
                   run_time=2)
         self.wait(2)
-        # self.play(Write(t_4_1), run_time=2)
-        # self.wait(2)
-        # self.play(Write(t_4_2), run_time=2)
-        # self.wait(2)
+        self.play(ReplacementTransform(t_4_1[0].get_brackets()[0], t_5[0].get_brackets()[0]),
+                  ReplacementTransform(t_4_2[0].get_brackets()[0], t_5[0].get_brackets()[0]),
+                  ReplacementTransform(t_4_1[0].get_brackets()[1], t_5[0].get_brackets()[1]),
+                  ReplacementTransform(t_4_2[0].get_brackets()[1], t_5[0].get_brackets()[1]),
+                  ReplacementTransform(VGroup(t_4_1[1], t_4_2[1]), t_5[1]),
+                  ReplacementTransform(t_4_1[2].get_brackets()[0], t_5[2].get_brackets()[0]),
+                  ReplacementTransform(t_4_2[2].get_brackets()[0], t_5[2].get_brackets()[0]),
+                  ReplacementTransform(t_4_1[2].get_brackets()[1], t_5[2].get_brackets()[1]),
+                  ReplacementTransform(t_4_2[2].get_brackets()[1], t_5[2].get_brackets()[1]),
+                  ReplacementTransform(t_4_1[3].get_brackets()[0], t_5[3].get_brackets()[0]),
+                  ReplacementTransform(t_4_2[3].get_brackets()[0], t_5[3].get_brackets()[0]),
+                  ReplacementTransform(t_4_1[3].get_brackets()[1], t_5[3].get_brackets()[1]),
+                  ReplacementTransform(t_4_2[3].get_brackets()[1], t_5[3].get_brackets()[1]),
+                  run_time=2)
+        self.play(ReplacementTransform(t_4_1[0].get_entries(), t_5[0].get_entries()[:2]),
+                  ReplacementTransform(t_4_2[0].get_entries(), t_5[0].get_entries()[2:]),
+                  ReplacementTransform(t_4_1[2].get_entries()[:2], t_5[2].get_entries()[:2]),
+                  ReplacementTransform(t_4_1[2].get_entries()[2:], t_5[2].get_entries()[4:6]),
+                  ReplacementTransform(t_4_2[2].get_entries()[:2], t_5[2].get_entries()[10:12]),
+                  ReplacementTransform(t_4_2[2].get_entries()[2:], t_5[2].get_entries()[14:]),
+                  ReplacementTransform(t_4_1[3].get_entries(), t_5[3].get_entries()[:2]),
+                  ReplacementTransform(t_4_2[3].get_entries(), t_5[3].get_entries()[2:]),
+                  run_time=2)
+        self.play(FadeIn(t_5[2].get_entries()[2:4]),
+                  FadeIn(t_5[2].get_entries()[6:10]),
+                  FadeIn(t_5[2].get_entries()[12:14]),
+                  run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(t_2, t_f), run_time=2)
+        self.wait(2)
+        self.play(FadeIn(t_f_final), run_time=2)
+        self.wait(2)
+        self.play(FadeOut(t_f),
+                  t_f_final.animate.move_to(t_f),
+                  run_time=2)
+        self.wait(2)
+        self.play(t_5.animate.next_to(t_f_final, DOWN),
+                  run_time=2)
+        self.wait(2)
+        ecuacion_local_barra_final.next_to(t_5, DOWN)
+        self.play(
+            ReplacementTransform(ecuacion_local_barra_1[0].get_brackets(),
+                                 ecuacion_local_barra_final[0].get_brackets()),
+            ReplacementTransform(ecuacion_local_barra_1[3].get_brackets(),
+                                 ecuacion_local_barra_final[3].get_brackets()),
+            ReplacementTransform(ecuacion_local_barra_1[4].get_brackets(),
+                                 ecuacion_local_barra_final[4].get_brackets()),
+            ReplacementTransform(ecuacion_local_barra_1[1], ecuacion_local_barra_final[1]),
+            run_time=2)
+        self.wait(2)
+        self.play(
+            ReplacementTransform(ecuacion_local_barra_1[0].get_entries()[0],
+                                 ecuacion_local_barra_final[0].get_entries()[0]),
+            ReplacementTransform(ecuacion_local_barra_1[0].get_entries()[1],
+                                 ecuacion_local_barra_final[0].get_entries()[2]),
+            ReplacementTransform(ecuacion_local_barra_1[2], ecuacion_local_barra_final[2]),
+            ReplacementTransform(ecuacion_local_barra_1[3].get_entries()[0],
+                                 ecuacion_local_barra_final[3].get_entries()[0]),
+            ReplacementTransform(ecuacion_local_barra_1[3].get_entries()[1],
+                                 ecuacion_local_barra_final[3].get_entries()[2]),
+            ReplacementTransform(ecuacion_local_barra_1[3].get_entries()[2],
+                                 ecuacion_local_barra_final[3].get_entries()[8]),
+            ReplacementTransform(ecuacion_local_barra_1[3].get_entries()[3],
+                                 ecuacion_local_barra_final[3].get_entries()[10]),
+            ReplacementTransform(ecuacion_local_barra_1[4].get_entries()[0],
+                                 ecuacion_local_barra_final[4].get_entries()[0]),
+            ReplacementTransform(ecuacion_local_barra_1[4].get_entries()[1],
+                                 ecuacion_local_barra_final[4].get_entries()[2]),
+            run_time=2)
+        self.wait(2)
+        self.play(FadeIn(ecuacion_local_barra_final[0].get_entries()[1]),
+                  FadeIn(ecuacion_local_barra_final[0].get_entries()[3]),
+                  FadeIn(ecuacion_local_barra_final[3].get_entries()[1]),
+                  FadeIn(ecuacion_local_barra_final[3].get_entries()[3:8]),
+                  FadeIn(ecuacion_local_barra_final[3].get_entries()[9]),
+                  FadeIn(ecuacion_local_barra_final[3].get_entries()[11:]),
+                  FadeIn(ecuacion_local_barra_final[4].get_entries()[1]),
+                  FadeIn(ecuacion_local_barra_final[4].get_entries()[3]),
+                  run_time=2)
+        self.wait(2)
+        rot_d.next_to(ecuacion_local_barra_2, UP)
+        rot_f.next_to(rot_d, UP)
+        self.play(Write(rot_d), run_time=2)
+        self.wait(2)
+        self.play(Write(rot_f), run_time=2)
+        self.wait(2)
+        ecuacion_local_barra_3.move_to(ecuacion_local_barra_2)
+        ecuacion_local_barra_4.move_to(ecuacion_local_barra_2)
+        ecuacion_local_barra_5.move_to(ecuacion_local_barra_2)
+        k_inclinada_1.move_to(3 * UP)
+        k_inclinada_2.next_to(k_inclinada_1, DOWN)
+        k_inclinada_3.next_to(k_inclinada_2, DOWN)
+        self.play(ReplacementTransform(rot_f[2:], ecuacion_local_barra_3[0:2]),
+                  ReplacementTransform(rot_d[2:], ecuacion_local_barra_3[4:]),
+                  ReplacementTransform(ecuacion_local_barra_2[1], ecuacion_local_barra_3[2]),
+                  ReplacementTransform(ecuacion_local_barra_2[2], ecuacion_local_barra_3[3]),
+                  FadeOut(rot_f[:2], rot_d[:2]),
+                  FadeOut(ecuacion_local_barra_2[0], ecuacion_local_barra_2[3]),
+                  # FadeIn(ecuacion_local_barra_3[2]),
+                  run_time=10)
+        self.wait(2)
+        self.play(ReplacementTransform(ecuacion_local_barra_3[0], ecuacion_local_barra_4[2][0]),
+                  ReplacementTransform(ecuacion_local_barra_3[1], ecuacion_local_barra_4[0]),
+                  ReplacementTransform(ecuacion_local_barra_3[2], ecuacion_local_barra_4[1]),
+                  ReplacementTransform(ecuacion_local_barra_3[3:], ecuacion_local_barra_4[3:]),
+                  FadeIn(ecuacion_local_barra_4[2][1]),
+                  run_time=2)
+        self.wait(2)
+        self.play(ReplacementTransform(ecuacion_local_barra_4, ecuacion_local_barra_5),
+                  run_time=2)
+        self.wait(2)
+        self.play(FadeOut(ecuacion_global_barra_1, ecuacion_global_barra_2, ecuacion_local_barra_5,
+                          ecuacion_local_barra_final, t_5, t_f_final))
+        self.play(Write(k_inclinada_1), run_time=2)
+        self.wait(2)
+        self.play(Write(k_inclinada_2), run_time=2)
+        self.wait(2)
+        self.play(Write(k_inclinada_3), run_time=2)
+        self.wait(2)
